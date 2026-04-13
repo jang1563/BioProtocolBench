@@ -1,140 +1,103 @@
-# ProtocolErrorBench
+# BioProtocolBench
 
-An [Inspect AI](https://inspect.aisi.org.uk/) evaluation environment for assessing how well AI agents can identify and fix errors in laboratory protocols.
+An [Inspect AI](https://inspect.aisi.org.uk/) evaluation environment for measuring how well AI agents execute benign molecular-microbiology protocols inside a stochastic laboratory simulator.
 
-> **Note**: This project is distinct from [BioProBench](https://github.com/YuyangSunshine/bioprotocolbench) (Liu et al., 2025), which is a large-scale NLP benchmark with 556K task instances across 5 tasks. ProtocolErrorBench is a focused agent evaluation environment with hierarchical rubric trees, database tool access, and three-axis scoring.
+Built on **LabCraft**, the underlying framework in [`src/`](src/). Each task places the agent in a seeded stochastic environment with a fixed tool set, a public protocol, and a citation-backed ground truth.
 
-## Overview
+> Not to be confused with [BioProBench](https://github.com/YuyangSunshine/bioprotocolbench) (Liu et al., 2025), an NLP corpus of 556K instances. BioProtocolBench is an agent evaluation environment with three-axis trajectory scoring.
 
-ProtocolErrorBench presents AI agents with published laboratory protocols that contain 1-3 intentionally introduced errors. Agents must:
+## What the agent does
 
-1. **Detect** the errors (which step, what is wrong)
-2. **Explain** why each is an error (biochemical/practical reasoning)
-3. **Correct** the error (propose a valid fix)
+Each task gives the agent:
 
-Agents have access to three reference databases via tools:
-- `lookup_reagent` — 85 common laboratory reagents (buffers, dyes, chemicals, media)
-- `lookup_enzyme` — 46 enzymes (restriction enzymes, polymerases, ligases, nucleases, etc.)
-- `check_safety` — 44 chemicals with GHS hazards, PPE, and handling info
+- A **protocol prompt** (e.g., "measure transformation efficiency across four plasmid inputs")
+- Access to lab-operation tools (`prepare_plate`, `transform`, `plate`, `incubate`, `count_colonies`, ...) and reference tools (`lookup_reagent`, `lookup_enzyme`, `check_safety`)
+- A stochastic sample state seeded per run, with realistic noise on growth, plating, colony counts, etc.
 
-Grading uses **hierarchical rubric trees** (following [PaperBench](https://openai.com/index/paperbench/) methodology) with an LLM judge. Each leaf node is binary pass/fail; parent scores are computed as weighted averages.
+The agent must plan the experiment, call tools in the right order, interpret observations, and report quantitative results. A trajectory scorer inspects the full interaction (tool calls, results, final answer) and grades it against a hierarchical rubric.
 
-## Error Categories
+## Tasks
 
-Errors span 10 categories with varying difficulty:
-
-| Category | Difficulty | Example |
+| Task | Domain | Objective |
 |---|---|---|
-| Reagent concentration | Medium | 10× buffer used at 1× instead of diluted |
-| Temperature error | Easy-Medium | Enzyme at 37°C when requires 16°C |
-| Step ordering | Easy | Elution before wash in column purification |
-| Missing critical step | Medium | No DNase treatment before RT-qPCR |
-| Timing error | Medium | 30 sec extension for 5 kb PCR product |
-| Reagent incompatibility | Hard | EDTA in restriction digest buffer |
-| Safety violation | Easy | No fume hood for phenol-chloroform |
-| Centrifugation error | Medium | Wrong g-force or rotor type |
-| Storage condition | Medium | Enzyme at -80°C when requires -20°C |
-| Biological implausibility | Hard | MOI of 1000 for lentiviral transduction |
+| `transform_01` | Chemical transformation of *E. coli* | Measure CFU/µg across four DNA masses (10 pg → 10 ng) |
+| `growth_01` | Liquid-culture growth characterization | Determine growth parameters from OD600 time-course |
+| `pcr_01` | PCR optimization | Choose conditions that yield specific amplification |
+
+Each task directory (`task_data/<task_id>/`) contains `rubric.json` (hierarchical scoring tree), `ground_truth.json` (expected values with citation metadata), and `SOURCES.md` (citations).
+
+## Scoring
+
+Trajectory scoring (see [src/trajectory_scorer.py](src/trajectory_scorer.py)) produces three axes per task:
+
+- **Task success** — were the requested values reported, within tolerance of ground truth?
+- **Decision quality** — were the experimental choices (dilutions, controls, replicates) sound?
+- **Troubleshooting** — did the agent recognize and recover from stochastic failures (uncountable plates, contamination, etc.)?
+
+Rubrics follow the hierarchical-tree methodology from [PaperBench](https://openai.com/index/paperbench/): leaf nodes are binary pass/fail, internal nodes are weighted averages.
+
+$$S = \frac{\sum_j w_j \cdot s_j}{\sum_j w_j}$$
 
 ## Installation
 
 ```bash
-git clone <repo-url>
-cd protocolerrobench
-pip install -e .
+git clone https://github.com/jang1563/BioProtocolBench.git
+cd BioProtocolBench
+pip install -e ".[dev]"
 ```
 
-## Running the Benchmark
+## Running
 
 ```bash
-# Run with GPT-4o as both agent and judge
-inspect eval src.tasks:protocol_error_detection --model openai/gpt-4o
+# Single task
+inspect eval src.inspect_task:transform_01 --model openai/gpt-4o
+inspect eval src.inspect_task:growth_01   --model anthropic/claude-sonnet-4-5
+inspect eval src.inspect_task:pcr_01      --model openai/gpt-4o
 
-# Run with Claude as agent, GPT-4o as judge
-inspect eval src.tasks:protocol_error_detection \
-    --model anthropic/claude-3-5-sonnet-latest \
+# With a different grader model (trajectory scorer uses LLM-as-judge for some rubric leaves)
+inspect eval src.inspect_task:transform_01 \
+    --model anthropic/claude-sonnet-4-5 \
     -T grader_model=openai/gpt-4o
-
-# Run on a single protocol for testing
-inspect eval src.tasks:protocol_error_detection \
-    --model openai/gpt-4o \
-    --limit 1
 ```
 
-## Repository Structure
+Task entry points are registered via the `inspect_ai` plugin in [pyproject.toml](pyproject.toml).
+
+## Repository layout
 
 ```
-protocolerrobench/
+BioProtocolBench/
 ├── README.md
 ├── LICENSE
+├── SAFETY.md                 # Scope and safety policy
 ├── pyproject.toml
-├── protocols/              # Protocol directories (50-80 total, in progress)
-│   └── dna_miniprep_001/
-│       ├── protocol.md              # Protocol with introduced errors (agent sees this)
-│       ├── original_protocol.md     # Clean version (reference only)
-│       ├── error_manifest.json      # Ground truth — what errors were introduced
-│       └── rubric.json              # Hierarchical rubric tree
 ├── src/
-│   ├── tasks.py            # Inspect @task definition
-│   ├── solvers.py          # Tool-augmented solver chain
-│   ├── tools.py            # lookup_reagent, lookup_enzyme, check_safety
-│   ├── scorers.py          # Hierarchical rubric tree scorer with LLM judge
-│   ├── judge.py            # Judge prompts and grade parsing
-│   ├── rubric_utils.py     # RubricNode, weighted scoring, tree traversal
-│   └── prompts.py          # System prompts
+│   ├── inspect_task.py       # @task entry points: transform_01, growth_01, pcr_01
+│   ├── solvers.py            # Tool-augmented solvers per task
+│   ├── environment/          # Stochastic lab simulator (state, operations, noise)
+│   ├── tasks/                # Per-task prompts and sample builders
+│   ├── tools/                # lookup_reagent / lookup_enzyme / check_safety / lab ops
+│   ├── trajectory_scorer.py  # Three-axis scorer with rubric traversal
+│   ├── rubric_utils.py       # Weighted tree scoring
+│   └── judge.py              # LLM-judge prompts for qualitative leaves
 ├── data/
-│   ├── reagent_database.json    # 85 entries
-│   ├── enzyme_database.json     # 46 entries
-│   └── safety_database.json     # 44 entries
-├── environments/
-│   ├── Dockerfile
-│   └── compose.yaml
-├── tests/                  # 29 unit tests
-└── research/               # Background research documents
+│   ├── reagent_database.json     # 85 common reagents
+│   ├── enzyme_database.json      # 46 enzymes
+│   ├── safety_database.json      # 44 chemicals with GHS hazards
+│   └── parameters/               # Stochastic parameters with citations
+├── task_data/
+│   ├── transform_01/         # rubric.json, ground_truth.json, SOURCES.md
+│   ├── growth_01/
+│   └── pcr_01/
+├── environments/             # Docker sandbox
+├── docs/schemas.md           # JSON schema contract
+└── tests/                    # Unit tests (environment, scorer, tools, rubrics)
 ```
 
-## Rubric Schema
+## Safety scope
 
-Each protocol has a `rubric.json` following this structure:
+BioProtocolBench is deliberately limited to BSL-1/BSL-2 benign molecular microbiology with standard *E. coli* strains, standard cloning vectors, and routine reagents. Select agents, gain-of-function work, mammalian virology, and any content aimed at increasing real-world capability for harmful biology are explicitly excluded. Full policy in [SAFETY.md](SAFETY.md).
 
-```json
-{
-  "protocol_id": "dna_miniprep_001",
-  "num_errors_introduced": 2,
-  "total_leaf_nodes": 6,
-  "rubric": {
-    "name": "Protocol Error Identification",
-    "weight": 1.0,
-    "is_leaf": false,
-    "children": [
-      {
-        "name": "Error Detection",
-        "weight": 0.4,
-        "is_leaf": false,
-        "children": [/* leaf nodes with category: "detection" */]
-      },
-      {
-        "name": "Error Explanation",
-        "weight": 0.3,
-        "is_leaf": false,
-        "children": [/* leaf nodes with category: "explanation" */]
-      },
-      {
-        "name": "Correction Proposed",
-        "weight": 0.3,
-        "is_leaf": false,
-        "children": [/* leaf nodes with category: "correction" */]
-      }
-    ]
-  }
-}
-```
-
-Weighted scoring formula (from PaperBench):
-
-$$S_P = \frac{\sum_{j} w_j \cdot s_j}{\sum_{j} w_j}$$
-
-where leaf scores are binary (pass=1, fail=0) and internal node scores are weighted averages of their children.
+Every stochastic parameter, ground-truth value, and safety statement traces to a public, citable source. The citation-tier system (Gold / Silver / Bronze / Copper) is documented in [SAFETY.md](SAFETY.md) and enforced by [tests/test_citations.py](tests/test_citations.py).
 
 ## Testing
 
@@ -143,29 +106,22 @@ pip install -e ".[dev]"
 pytest tests/ -v
 ```
 
-## Status
+Tests cover the stochastic environment (determinism under seed, sample isolation), rubric loading, citation enforcement, tool contracts, and trajectory scoring (transcript parsing, CFU/µg reconstruction, rubric application).
 
-**Scaffolding complete**:
-- ✓ Repository structure, pyproject.toml, LICENSE
-- ✓ Three reference databases (175 total entries)
-- ✓ Inspect scaffolding (tasks, solvers, tools, scorers, judge, rubric_utils)
-- ✓ Docker environment
-- ✓ 29 unit tests passing
-- ✓ First protocol (`dna_miniprep_001`) as template
+## Related work
 
-**Next steps**:
-- [ ] Curate 50-80 protocols with introduced errors
-- [ ] Agent evaluation runs across 2-3 frontier models
-- [ ] Judge validation (F1 against expert grades on 50-100 leaf nodes)
-- [ ] Analysis report (per-category, per-error-type, judge reliability)
-
-## Relation to Prior Work
-
-- **[PaperBench](https://openai.com/index/paperbench/)** (OpenAI, 2025) — Introduced hierarchical rubric trees for AI evaluation. ProtocolErrorBench applies the same methodology to biological protocol analysis.
-- **[ProtocolQA / LAB-Bench](https://arxiv.org/abs/2407.10362)** (FutureHouse, 2024) — 108 multiple-choice protocol troubleshooting questions. ProtocolErrorBench extends with hierarchical rubrics, agent tools, and three-axis scoring.
-- **[BioProBench](https://github.com/YuyangSunshine/bioprotocolbench)** (Liu et al., 2025) — Large-scale NLP benchmark with 556K task instances. Fundamentally different scope: BioProBench is an NLP corpus; ProtocolErrorBench is an agent environment.
-- **OpenAI GPT-5 System Card** — ProtocolQA Open-Ended (108 questions, 42% expert median) and TroubleshootingBench (52 non-public protocols, 36.4% expert 80th percentile). ProtocolErrorBench is the public, Inspect-based counterpart with richer scoring.
+- [PaperBench](https://openai.com/index/paperbench/) (OpenAI, 2025) — introduced hierarchical rubric trees for AI evaluation.
+- [ProtocolQA / LAB-Bench](https://arxiv.org/abs/2407.10362) (FutureHouse, 2024) — multiple-choice protocol troubleshooting.
+- [BioProBench](https://github.com/YuyangSunshine/bioprotocolbench) (Liu et al., 2025) — large-scale NLP corpus; different scope from this agent environment.
+- [Inspect AI](https://inspect.aisi.org.uk/) (UK AISI) — the evaluation framework this benchmark plugs into.
 
 ## License
 
-MIT
+BioProtocolBench is dual-licensed:
+
+- **Source code** (everything under `src/`, `tests/`, `environments/`, `docs/`, build config) — [Apache License 2.0](LICENSE). Commercial use permitted.
+- **Benchmark content** (everything under `task_data/` and `data/` — rubrics, ground-truth values, parameter distributions, citations, reagent/enzyme/safety databases) — [Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)](LICENSE-DATA). Free for research, teaching, and other non-commercial use with attribution.
+
+For commercial use of the benchmark content (e.g., bundling with a commercial product, or evaluating models in a commercial training pipeline without a separate arrangement), please open an issue to discuss licensing.
+
+See [NOTICE](NOTICE) for details on which files fall under which license.

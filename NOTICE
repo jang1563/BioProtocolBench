@@ -1,0 +1,19 @@
+BioProtocolBench
+Copyright 2026 The BioProtocolBench Authors
+
+This repository is dual-licensed:
+
+1. Source code (everything under `src/`, `tests/`, `environments/`, `docs/`,
+   `pyproject.toml`, and configuration files) is licensed under the
+   Apache License, Version 2.0 — see LICENSE.
+
+2. Benchmark content (everything under `task_data/` and `data/`, including
+   rubrics, ground-truth values, parameter distributions, citations,
+   reagent / enzyme / safety databases, and associated SOURCES files) is
+   licensed under the Creative Commons Attribution-NonCommercial 4.0
+   International License (CC BY-NC 4.0) — see LICENSE-DATA.
+
+For commercial licensing of the benchmark content, please open an issue or
+contact the repository maintainer.
+
+When citing this work, please reference the repository URL and commit SHA.
