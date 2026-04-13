@@ -48,6 +48,8 @@ credentials.json
 # Local planning / status docs (not part of the public repo)
 12_BioProtocolBench_Handoff.md
 reports/
+research/
+archive/
 
 # Inspect eval logs
 logs/
