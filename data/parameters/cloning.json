@@ -1,0 +1,233 @@
+{
+  "task_id": "clone_01",
+  "parameters": [
+    {
+      "parameter_name": "vector_plasmid_length_bp",
+      "description": "Length of the pUC19 cloning vector used as the task substrate in Clone-01.",
+      "units": "base pairs",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 2686
+      },
+      "claim_type": "task_configuration",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "authors": "Yanisch-Perron C, Vieira J, Messing J",
+          "title": "Improved M13 phage cloning vectors and host strains: nucleotide sequences of the M13mp18 and pUC19 vectors",
+          "journal": "Gene",
+          "year": 1985,
+          "doi": "10.1016/0378-1119(85)90120-9",
+          "canonical_url": "https://doi.org/10.1016/0378-1119(85)90120-9",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed paper reporting the pUC19 sequence and its 2686 bp length."
+        }
+      ]
+    },
+    {
+      "parameter_name": "insert_length_bp",
+      "description": "Length of the benign PCR-amplified insert provided as a Clone-01 substrate, with EcoRI and BamHI flanking sites.",
+      "units": "base pairs",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 950
+      },
+      "claim_type": "task_configuration",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "NEB Double-Digest Finder (EcoRI and BamHI)",
+          "canonical_url": "https://www.neb.com/en-us/tools-and-resources/selection-charts/double-digest-finder",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative vendor reference confirming EcoRI + BamHI as a standard directional cloning pair used for routine PCR-insert cloning; the 950 bp insert length is a Clone-01 scenario configuration."
+        }
+      ]
+    },
+    {
+      "parameter_name": "compatible_double_digest_buffers",
+      "description": "Buffers compatible with simultaneous EcoRI and BamHI digestion at high efficiency.",
+      "units": "buffer names",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": ["CutSmart", "rCutSmart", "NEB 3.1"]
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "NEB Double-Digest Finder",
+          "canonical_url": "https://www.neb.com/en-us/tools-and-resources/selection-charts/double-digest-finder",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative vendor chart listing CutSmart / rCutSmart / NEB 3.1 as the recommended buffers for EcoRI + BamHI double digests at 100% activity."
+        }
+      ]
+    },
+    {
+      "parameter_name": "digest_temperature_c",
+      "description": "Incubation temperature for EcoRI and BamHI digestion.",
+      "units": "Celsius",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 37
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "NEB EcoRI-HF product page",
+          "canonical_url": "https://www.neb.com/en-us/products/r3101-ecori-hf",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative vendor product page listing 37 C as the optimal incubation temperature."
+        }
+      ]
+    },
+    {
+      "parameter_name": "digest_minimum_duration_minutes",
+      "description": "Minimum incubation time for complete EcoRI + BamHI double digestion of plasmid substrates.",
+      "units": "minutes",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 60
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "NEB Cloning and Synthetic Biology: Double Digest Protocol",
+          "canonical_url": "https://www.neb.com/en-us/protocols/2012/12/07/optimizing-restriction-endonuclease-reactions",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative NEB protocol recommending at least one hour of incubation for complete plasmid digestion."
+        }
+      ]
+    },
+    {
+      "parameter_name": "digest_heat_inactivation_temperature_c",
+      "description": "Temperature used to heat-inactivate EcoRI and BamHI after digestion.",
+      "units": "Celsius",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 65
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "NEB Heat Inactivation Reference",
+          "canonical_url": "https://www.neb.com/en-us/tools-and-resources/selection-charts/heat-inactivation",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative NEB reference listing 65 C as the heat-inactivation temperature for both EcoRI and BamHI."
+        }
+      ]
+    },
+    {
+      "parameter_name": "preferred_ligase_name",
+      "description": "Ligase required for ATP-dependent cohesive-end ligation of EcoRI and BamHI-digested fragments.",
+      "units": "ligase name",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": "T4 DNA ligase"
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "authors": "Weiss B, Richardson CC",
+          "title": "Enzymatic breakage and joining of deoxyribonucleic acid. I. Repair of single-strand breaks in DNA by an enzyme system from Escherichia coli infected with T4 bacteriophage",
+          "journal": "Proceedings of the National Academy of Sciences",
+          "year": 1967,
+          "doi": "10.1073/pnas.57.4.1021",
+          "canonical_url": "https://doi.org/10.1073/pnas.57.4.1021",
+          "tier": "Silver",
+          "tier_justification": "Foundational peer-reviewed description of T4 DNA ligase activity."
+        }
+      ]
+    },
+    {
+      "parameter_name": "optimal_vector_to_insert_molar_ratio",
+      "description": "Canonical vector:insert molar ratio for sticky-end ligation with T4 DNA ligase.",
+      "units": "ratio (vector:insert, expressed as insert/vector)",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 3.0
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "NEB T4 DNA Ligase Protocol (M0202)",
+          "canonical_url": "https://www.neb.com/en-us/protocols/0001/01/01/dna-ligation-with-t4-dna-ligase-m0202",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative NEB protocol recommending a 1:3 vector:insert molar ratio (insert in threefold excess) for sticky-end ligations."
+        }
+      ]
+    },
+    {
+      "parameter_name": "acceptable_ligation_temperatures_c",
+      "description": "Temperatures at which T4 DNA ligase performs cohesive-end ligation efficiently.",
+      "units": "Celsius",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": [16, 22, 25]
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "NEB T4 DNA Ligase Protocol (M0202)",
+          "canonical_url": "https://www.neb.com/en-us/protocols/0001/01/01/dna-ligation-with-t4-dna-ligase-m0202",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative NEB protocol noting that T4 DNA ligase ligations are typically run overnight at 16 C or at room temperature (22-25 C)."
+        }
+      ]
+    },
+    {
+      "parameter_name": "acceptable_ligation_duration_minutes_min",
+      "description": "Minimum acceptable ligation incubation time before transformation.",
+      "units": "minutes",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 10
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "NEB Quick Ligation Protocol (M2200)",
+          "canonical_url": "https://www.neb.com/en-us/protocols/0001/01/01/dna-ligation-with-t4-dna-ligase-m2200",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative NEB Quick Ligation protocol supporting 10 minutes at 25 C as an acceptable minimum duration."
+        }
+      ]
+    },
+    {
+      "parameter_name": "base_recombinant_fraction_among_white_colonies",
+      "description": "Baseline recombinant fraction among white colonies when Clone-01 is performed with correct chemistry, matching the Screen-01 prior to keep downstream statistics consistent.",
+      "units": "probability",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 0.4
+      },
+      "claim_type": "task_configuration",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "NIST/SEMATECH e-Handbook of Statistical Methods: Binomial Distribution",
+          "canonical_url": "https://www.itl.nist.gov/div898/handbook/eda/section3/eda366i.htm",
+          "tier": "Bronze",
+          "tier_justification": "Official NIST reference for the binomial model used consistently across Screen-01 and Clone-01 to keep downstream confidence calculations comparable."
+        }
+      ]
+    }
+  ]
+}

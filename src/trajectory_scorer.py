@@ -1023,3 +1023,263 @@ def build_screen_trajectory_scorer():
         return score
 
     return _scorer()
+
+
+CLONE_CONFIDENCE_ABSOLUTE_TOLERANCE = 2.0
+
+
+def _extract_reported_clone_summary(final_answer: str) -> Dict[str, Any]:
+    summary: Dict[str, Any] = {}
+
+    enzymes_match = re.search(r"(?im)^Digest enzymes:\s*(.+)$", final_answer)
+    if enzymes_match:
+        parts = re.findall(r"[A-Za-z0-9]+", enzymes_match.group(1))
+        summary["digest_enzymes"] = sorted({p.lower() for p in parts})
+
+    ligase_match = re.search(r"(?im)^Ligase:\s*(.+)$", final_answer)
+    if ligase_match:
+        summary["ligase"] = ligase_match.group(1).strip()
+
+    transformants_match = re.search(r"(?im)^Transformants observed:\s*([0-9]+)\b", final_answer)
+    if transformants_match:
+        summary["transformants_observed"] = int(transformants_match.group(1))
+
+    screened_match = re.search(r"(?im)^White colonies screened:\s*([0-9]+)", final_answer)
+    if screened_match:
+        summary["white_colonies_screened"] = int(screened_match.group(1))
+
+    confirmed_match = re.search(r"(?im)^Confirmed recombinant colonies:\s*(.+)$", final_answer)
+    if confirmed_match:
+        confirmed_value = confirmed_match.group(1).strip()
+        if re.fullmatch(r"none", confirmed_value, flags=re.IGNORECASE):
+            summary["confirmed_recombinant_ids"] = []
+        else:
+            summary["confirmed_recombinant_ids"] = sorted(
+                colony_id.lower() for colony_id in _parse_colony_id_list(confirmed_value)
+            )
+
+    confidence_match = re.search(r"(?im)^Confidence achieved:\s*([0-9]+(?:\.[0-9]+)?)\s*%", final_answer)
+    if confidence_match:
+        summary["confidence_pct"] = float(confidence_match.group(1))
+
+    interpretation_match = re.search(r"(?im)^Interpretation:\s*(.+)$", final_answer)
+    if interpretation_match:
+        summary["interpretation"] = interpretation_match.group(1).strip()
+
+    return summary
+
+
+def _reconstruct_clone_results(tool_calls: List[Dict[str, Any]]) -> Dict[str, Any]:
+    digest_count = 0
+    ligate_count = 0
+    transform_ligation_count = 0
+    digest_statuses: List[str] = []
+    ligate_statuses: List[str] = []
+    any_non_heat_inactivated_digest = False
+    any_blue_screening = False
+    final_screen = {
+        "confirmed_recombinant_ids": [],
+        "cumulative_screened_white_colony_count": 0,
+        "cumulative_confidence_pct": 0.0,
+    }
+    transformants_observed = 0
+
+    for call in tool_calls:
+        name = _normalize_tool_name(call.get("tool_name", ""))
+        observed = _observed_values(call)
+        if name == "restriction_digest":
+            digest_count += 1
+            digest_statuses.append(str(observed.get("status", "")))
+            if observed.get("heat_inactivate_after") is False:
+                any_non_heat_inactivated_digest = True
+        elif name == "ligate":
+            ligate_count += 1
+            ligate_statuses.append(str(observed.get("status", "")))
+        elif name == "transform_ligation":
+            transform_ligation_count += 1
+        elif name == "run_colony_pcr":
+            if observed.get("screening_strategy") == "includes_blue":
+                any_blue_screening = True
+            final_screen = {
+                "confirmed_recombinant_ids": sorted(
+                    colony_id.lower()
+                    for colony_id in observed.get("confirmed_recombinant_ids_cumulative", []) or []
+                ),
+                "cumulative_screened_white_colony_count": _coerce_int(
+                    observed.get("cumulative_screened_white_colony_count")
+                )
+                or 0,
+                "cumulative_confidence_pct": _coerce_float(
+                    observed.get("cumulative_confidence_pct")
+                )
+                or 0.0,
+            }
+        elif name == "count_colonies":
+            observed_value = _coerce_int(observed.get("observed_colonies"))
+            if observed_value is not None and observed_value > transformants_observed:
+                transformants_observed = observed_value
+
+    return {
+        "digest_count": digest_count,
+        "ligate_count": ligate_count,
+        "transform_ligation_count": transform_ligation_count,
+        "digest_statuses": digest_statuses,
+        "ligate_statuses": ligate_statuses,
+        "any_non_heat_inactivated_digest": any_non_heat_inactivated_digest,
+        "any_blue_screening": any_blue_screening,
+        "final_screen": final_screen,
+        "transformants_observed": transformants_observed,
+    }
+
+
+def score_clone_task_success(final_answer: str, tool_calls: List[Dict[str, Any]]) -> float:
+    reported = _extract_reported_clone_summary(final_answer)
+    required = {
+        "digest_enzymes",
+        "ligase",
+        "transformants_observed",
+        "white_colonies_screened",
+        "confirmed_recombinant_ids",
+        "confidence_pct",
+        "interpretation",
+    }
+    if required - set(reported):
+        return 0.0
+    if sorted(reported["digest_enzymes"]) != ["bamhi", "ecori"]:
+        return 0.0
+    if "t4" not in reported["ligase"].lower():
+        return 0.0
+
+    reconstructed = _reconstruct_clone_results(tool_calls)
+    if reconstructed["digest_count"] < 2:
+        return 0.0
+    if reconstructed["ligate_count"] < 1:
+        return 0.0
+    if reconstructed["transform_ligation_count"] < 1:
+        return 0.0
+    if not reconstructed["final_screen"]["confirmed_recombinant_ids"]:
+        return 0.0
+    if (
+        reported["white_colonies_screened"]
+        != reconstructed["final_screen"]["cumulative_screened_white_colony_count"]
+    ):
+        return 0.0
+    if (
+        sorted(reported["confirmed_recombinant_ids"])
+        != reconstructed["final_screen"]["confirmed_recombinant_ids"]
+    ):
+        return 0.0
+    if (
+        abs(
+            reported["confidence_pct"]
+            - reconstructed["final_screen"]["cumulative_confidence_pct"]
+        )
+        > CLONE_CONFIDENCE_ABSOLUTE_TOLERANCE
+    ):
+        return 0.0
+    if "recombinant" not in reported["interpretation"].lower():
+        return 0.0
+    return 1.0
+
+
+def score_clone_troubleshooting(
+    final_answer: str, tool_calls: List[Dict[str, Any]], ground_truth: Dict[str, Any]
+) -> float:
+    reconstructed = _reconstruct_clone_results(tool_calls)
+    failure_markers: List[str] = []
+
+    for status in reconstructed["digest_statuses"]:
+        if status in {"wrong_buffer", "incomplete_digest", "wrong_enzyme_pair"}:
+            failure_markers.append("wrong_digest_buffer")
+            break
+    for status in reconstructed["ligate_statuses"]:
+        if status == "wrong_ligase":
+            failure_markers.append("wrong_ligase")
+        if status == "wrong_ratio":
+            failure_markers.append("extreme_molar_ratio")
+    if reconstructed["any_non_heat_inactivated_digest"]:
+        failure_markers.append("no_heat_inactivation")
+    if reconstructed["any_blue_screening"]:
+        failure_markers.append("screened_blue_background")
+
+    if not failure_markers:
+        return 1.0
+
+    final_answer_lower = final_answer.lower()
+    resolved = 0
+    for marker in failure_markers:
+        diagnosis = ground_truth["failure_diagnosis_map"].get(marker)
+        if diagnosis is None:
+            continue
+        acceptable = [diagnosis["canonical_diagnosis"]] + diagnosis.get("acceptable_variants", [])
+        if any(candidate.lower() in final_answer_lower for candidate in acceptable):
+            resolved += 1
+    return float(resolved) / float(len(failure_markers))
+
+
+def score_clone_trajectory(
+    final_answer: str,
+    transcript: Iterable[Any],
+    ground_truth_path: str,
+) -> Dict[str, Any]:
+    ground_truth = load_ground_truth(ground_truth_path)
+    tool_calls = _extract_tool_calls(transcript)
+    decision_quality = score_decision_quality(tool_calls, ground_truth)
+    task_success = score_clone_task_success(final_answer, tool_calls)
+    troubleshooting = score_clone_troubleshooting(final_answer, tool_calls, ground_truth)
+    efficiency = score_efficiency(tool_calls, ground_truth)
+    overall = (
+        0.4 * task_success
+        + 0.3 * decision_quality["mean"]
+        + 0.2 * troubleshooting
+        + 0.1 * efficiency
+    )
+    return {
+        "overall": overall,
+        "task_success": task_success,
+        "decision_quality": decision_quality["mean"],
+        "troubleshooting": troubleshooting,
+        "efficiency": efficiency,
+        "decision_scores": decision_quality["by_decision"],
+    }
+
+
+def build_clone_trajectory_scorer():
+    from inspect_ai.scorer import Score, Target, mean, scorer
+
+    @scorer(
+        metrics={
+            "overall": [mean()],
+            "task_success": [mean()],
+            "decision_quality": [mean()],
+            "troubleshooting": [mean()],
+            "efficiency": [mean()],
+        }
+    )
+    def _scorer():
+        async def score(state, target: Target):
+            ground_truth_path = target.text
+            final_answer = ""
+            if getattr(state, "output", None) is not None:
+                final_answer = getattr(state.output, "completion", "") or ""
+            values = score_clone_trajectory(
+                final_answer=final_answer,
+                transcript=getattr(state, "messages", []),
+                ground_truth_path=ground_truth_path,
+            )
+            return Score(
+                value={
+                    "overall": values["overall"],
+                    "task_success": values["task_success"],
+                    "decision_quality": values["decision_quality"],
+                    "troubleshooting": values["troubleshooting"],
+                    "efficiency": values["efficiency"],
+                },
+                answer=final_answer[:500],
+                explanation=json.dumps(values["decision_scores"], indent=2, sort_keys=True),
+                metadata=values,
+            )
+
+        return score
+
+    return _scorer()

@@ -1,0 +1,146 @@
+{
+  "task_id": "clone_01",
+  "task_title": "Restriction cloning of a benign 950 bp insert into pUC19 with EcoRI + BamHI",
+  "source": "LabCraft Clone-01",
+  "num_errors_introduced": 0,
+  "total_leaf_nodes": 13,
+  "rubric": {
+    "name": "Task Evaluation",
+    "weight": 1.0,
+    "is_leaf": false,
+    "children": [
+      {
+        "name": "Task Success",
+        "weight": 0.4,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Reports digest/ligation conditions, transformants, screened colonies, confirmed recombinants, confidence, and interpretation",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "task_success",
+            "requirement": "The final answer uses the required fields (Digest enzymes, Digest buffer, Ligase, Vector:insert molar ratio, Ligation temperature, Transformants observed, White colonies screened, Confirmed recombinant colonies, Confidence achieved, Interpretation), the digest enzymes are EcoRI + BamHI, the ligase is T4 DNA ligase, at least two digests and one ligation occurred, at least one transform_ligation was performed, the screened count and confirmed IDs match the trajectory, confidence matches the trajectory within tolerance, at least one recombinant colony was confirmed, and the interpretation mentions 'recombinant'.",
+            "grading_notes": "Measured by score_clone_task_success against the reconstructed trajectory."
+          }
+        ]
+      },
+      {
+        "name": "Decision Quality",
+        "weight": 0.3,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Uses EcoRI + BamHI for every digest",
+            "weight": 0.1,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Every restriction_digest call uses the EcoRI + BamHI pair.",
+            "grading_notes": "Measured from restriction_digest.enzymes_key."
+          },
+          {
+            "name": "Uses a CutSmart-compatible digest buffer",
+            "weight": 0.1,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Every digest uses CutSmart, rCutSmart, or NEB 3.1.",
+            "grading_notes": "Measured from restriction_digest.buffer_normalized."
+          },
+          {
+            "name": "Digests for at least 60 minutes",
+            "weight": 0.1,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Every digest incubates for at least 60 minutes.",
+            "grading_notes": "Measured from restriction_digest.duration_minutes."
+          },
+          {
+            "name": "Heat-inactivates every digest",
+            "weight": 0.1,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Every digest uses heat_inactivate_after=true.",
+            "grading_notes": "Measured from restriction_digest.heat_inactivate_after."
+          },
+          {
+            "name": "Uses T4 DNA ligase for ligation",
+            "weight": 0.1,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Every ligate call uses T4 DNA ligase.",
+            "grading_notes": "Measured from ligate.ligase_normalized."
+          },
+          {
+            "name": "Uses a reasonable vector:insert molar ratio",
+            "weight": 0.1,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Ligation vector:insert molar ratio is within 0.1-10.",
+            "grading_notes": "Measured from ligate.vector_to_insert_molar_ratio."
+          },
+          {
+            "name": "Uses a standard T4 ligation temperature",
+            "weight": 0.1,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Ligation temperature is within 15-26 C.",
+            "grading_notes": "Measured from ligate.temperature_c."
+          },
+          {
+            "name": "Uses 100 ug/mL ampicillin for selection",
+            "weight": 0.1,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Selection plates use 100 ug/mL ampicillin.",
+            "grading_notes": "Measured from prepare_media arguments."
+          },
+          {
+            "name": "Screens only white colonies",
+            "weight": 0.1,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Every run_colony_pcr call uses only white colonies.",
+            "grading_notes": "Measured from run_colony_pcr.screening_strategy."
+          },
+          {
+            "name": "Reaches the 95% confidence threshold",
+            "weight": 0.1,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Final cumulative_confidence_pct is at least 95.",
+            "grading_notes": "Measured from the last run_colony_pcr observation."
+          }
+        ]
+      },
+      {
+        "name": "Troubleshooting",
+        "weight": 0.2,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Diagnoses digest/ligation failures when triggered",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "troubleshooting",
+            "requirement": "If any digest reports a buffer/enzyme issue, the ligase is wrong, the molar ratio is extreme, digests were not heat-inactivated, or blue colonies were screened, the final answer explains the corresponding failure mode.",
+            "grading_notes": "Defaults to full credit when no troubleshooting trigger occurs."
+          }
+        ]
+      },
+      {
+        "name": "Efficiency",
+        "weight": 0.1,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Uses a reasonable number of tool calls",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "efficiency",
+            "requirement": "The trajectory stays within the reference tool-call budget for a competent run.",
+            "grading_notes": "Full credit at or under optimal_tool_calls, partial credit within max_reasonable_tool_calls."
+          }
+        ]
+      }
+    ]
+  }
+}

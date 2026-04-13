@@ -13,13 +13,17 @@ from src.environment.operations import (
     incubate,
     inspect_screening_plate,
     inoculate_growth,
+    ligate,
+    list_cloning_substrates,
     measure_od600,
     plate,
     prepare_media,
+    restriction_digest,
     run_colony_pcr,
     run_gel,
     run_pcr,
     transform,
+    transform_ligation,
 )
 from src.environment.state import reset_lab_state
 
@@ -184,6 +188,81 @@ async def run_colony_pcr_call(
             state=state,
             colony_ids=colony_ids,
             primer_pair=primer_pair,
+        )
+    )
+
+
+async def list_cloning_substrates_call() -> str:
+    state = _current_state()
+    return render_observation(list_cloning_substrates(state=state))
+
+
+async def restriction_digest_call(
+    fragment_id: str,
+    enzyme_names: list[str],
+    buffer: str,
+    temperature_c: float,
+    duration_minutes: int,
+    heat_inactivate_after: bool,
+    heat_inactivation_temperature_c: float = 65.0,
+) -> str:
+    state = _current_state()
+    return render_observation(
+        restriction_digest(
+            state=state,
+            fragment_id=fragment_id,
+            enzyme_names=enzyme_names,
+            buffer=buffer,
+            temperature_c=temperature_c,
+            duration_minutes=duration_minutes,
+            heat_inactivate_after=heat_inactivate_after,
+            heat_inactivation_temperature_c=heat_inactivation_temperature_c,
+        )
+    )
+
+
+async def ligate_call(
+    vector_fragment_id: str,
+    insert_fragment_ids: list[str],
+    ligase_name: str,
+    vector_to_insert_molar_ratio: float,
+    temperature_c: float,
+    duration_minutes: int,
+    buffer: str = "T4 DNA ligase buffer",
+) -> str:
+    state = _current_state()
+    return render_observation(
+        ligate(
+            state=state,
+            vector_fragment_id=vector_fragment_id,
+            insert_fragment_ids=insert_fragment_ids,
+            ligase_name=ligase_name,
+            vector_to_insert_molar_ratio=vector_to_insert_molar_ratio,
+            temperature_c=temperature_c,
+            duration_minutes=duration_minutes,
+            buffer=buffer,
+        )
+    )
+
+
+async def transform_ligation_call(
+    ligation_id: str,
+    heat_shock_seconds: int = 30,
+    recovery_minutes: int = 60,
+    outgrowth_media: str = "SOC",
+    shaking: bool = True,
+    ice_incubation_minutes: int = 30,
+) -> str:
+    state = _current_state()
+    return render_observation(
+        transform_ligation(
+            state=state,
+            ligation_id=ligation_id,
+            heat_shock_seconds=heat_shock_seconds,
+            recovery_minutes=recovery_minutes,
+            outgrowth_media=outgrowth_media,
+            shaking=shaking,
+            ice_incubation_minutes=ice_incubation_minutes,
         )
     )
 
@@ -505,3 +584,142 @@ def run_colony_pcr_tool():
         return execute
 
     return run_colony_pcr_tool_impl()
+
+
+def list_cloning_substrates_tool():
+    from inspect_ai.tool import tool
+
+    @tool(name="list_cloning_substrates")
+    def list_cloning_substrates_tool_impl():
+        """List the starting DNA fragments available for Clone-01."""
+
+        async def execute() -> str:
+            """Return the vector and insert fragments provided for the cloning task."""
+            return await list_cloning_substrates_call()
+
+        return execute
+
+    return list_cloning_substrates_tool_impl()
+
+
+def restriction_digest_tool():
+    from inspect_ai.tool import tool
+
+    @tool(name="restriction_digest")
+    def restriction_digest_tool_impl():
+        """Run a restriction digest on a DNA fragment for cloning."""
+
+        async def execute(
+            fragment_id: str,
+            enzyme_names: list[str],
+            buffer: str,
+            temperature_c: float,
+            duration_minutes: int,
+            heat_inactivate_after: bool,
+            heat_inactivation_temperature_c: float = 65.0,
+        ) -> str:
+            """Digest a DNA fragment with one or more restriction enzymes.
+
+            Args:
+                fragment_id: Fragment to digest, as returned by list_cloning_substrates.
+                enzyme_names: Restriction enzymes (e.g., ["EcoRI", "BamHI"]).
+                buffer: Reaction buffer (e.g., "CutSmart").
+                temperature_c: Incubation temperature in Celsius.
+                duration_minutes: Incubation time in minutes.
+                heat_inactivate_after: Whether to heat-inactivate the enzymes after digestion.
+                heat_inactivation_temperature_c: Temperature used for heat inactivation if enabled.
+            """
+            return await restriction_digest_call(
+                fragment_id=fragment_id,
+                enzyme_names=enzyme_names,
+                buffer=buffer,
+                temperature_c=temperature_c,
+                duration_minutes=duration_minutes,
+                heat_inactivate_after=heat_inactivate_after,
+                heat_inactivation_temperature_c=heat_inactivation_temperature_c,
+            )
+
+        return execute
+
+    return restriction_digest_tool_impl()
+
+
+def ligate_tool():
+    from inspect_ai.tool import tool
+
+    @tool(name="ligate")
+    def ligate_tool_impl():
+        """Set up a ligation reaction from a digested vector and one or more inserts."""
+
+        async def execute(
+            vector_fragment_id: str,
+            insert_fragment_ids: list[str],
+            ligase_name: str,
+            vector_to_insert_molar_ratio: float,
+            temperature_c: float,
+            duration_minutes: int,
+            buffer: str = "T4 DNA ligase buffer",
+        ) -> str:
+            """Ligate a digested vector with one or more digested inserts.
+
+            Args:
+                vector_fragment_id: Digested vector fragment id (output of restriction_digest).
+                insert_fragment_ids: Digested insert fragment ids.
+                ligase_name: Ligase name (use "T4 DNA ligase" for cohesive-end ligation).
+                vector_to_insert_molar_ratio: Insert excess over vector (e.g., 3.0 for 1:3 vector:insert).
+                temperature_c: Ligation temperature (16, 22, or 25 C).
+                duration_minutes: Ligation duration in minutes.
+                buffer: Ligation buffer label.
+            """
+            return await ligate_call(
+                vector_fragment_id=vector_fragment_id,
+                insert_fragment_ids=insert_fragment_ids,
+                ligase_name=ligase_name,
+                vector_to_insert_molar_ratio=vector_to_insert_molar_ratio,
+                temperature_c=temperature_c,
+                duration_minutes=duration_minutes,
+                buffer=buffer,
+            )
+
+        return execute
+
+    return ligate_tool_impl()
+
+
+def transform_ligation_tool():
+    from inspect_ai.tool import tool
+
+    @tool(name="transform_ligation")
+    def transform_ligation_tool_impl():
+        """Transform a ligation reaction into competent E. coli and prepare a screening plate."""
+
+        async def execute(
+            ligation_id: str,
+            heat_shock_seconds: int = 30,
+            recovery_minutes: int = 60,
+            outgrowth_media: str = "SOC",
+            shaking: bool = True,
+            ice_incubation_minutes: int = 30,
+        ) -> str:
+            """Transform a ligation into competent cells.
+
+            Args:
+                ligation_id: Ligation identifier (e.g., "ligation_001") from the ligate tool.
+                heat_shock_seconds: Heat shock duration (30 s is standard).
+                recovery_minutes: Post-shock outgrowth duration in minutes.
+                outgrowth_media: Outgrowth medium ("SOC" recommended).
+                shaking: Whether to shake during recovery.
+                ice_incubation_minutes: Pre-shock ice incubation time.
+            """
+            return await transform_ligation_call(
+                ligation_id=ligation_id,
+                heat_shock_seconds=heat_shock_seconds,
+                recovery_minutes=recovery_minutes,
+                outgrowth_media=outgrowth_media,
+                shaking=shaking,
+                ice_incubation_minutes=ice_incubation_minutes,
+            )
+
+        return execute
+
+    return transform_ligation_tool_impl()

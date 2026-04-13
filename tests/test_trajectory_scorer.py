@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 
 from src.trajectory_scorer import (
+    score_clone_task_success,
+    score_clone_trajectory,
     score_growth_task_success,
     score_growth_trajectory,
     score_pcr_task_success,
@@ -21,6 +23,7 @@ TRANSFORM_GROUND_TRUTH_PATH = Path(__file__).resolve().parents[1] / "task_data" 
 GROWTH_GROUND_TRUTH_PATH = Path(__file__).resolve().parents[1] / "task_data" / "growth_01" / "ground_truth.json"
 PCR_GROUND_TRUTH_PATH = Path(__file__).resolve().parents[1] / "task_data" / "pcr_01" / "ground_truth.json"
 SCREEN_GROUND_TRUTH_PATH = Path(__file__).resolve().parents[1] / "task_data" / "screen_01" / "ground_truth.json"
+CLONE_GROUND_TRUTH_PATH = Path(__file__).resolve().parents[1] / "task_data" / "clone_01" / "ground_truth.json"
 TARGET_MASSES = [10, 100, 1000, 10000]
 
 
@@ -603,6 +606,212 @@ def test_screen_blue_colony_without_recombinants_requires_diagnosis_for_credit()
         ground_truth_path=str(SCREEN_GROUND_TRUTH_PATH),
     )
     assert scores_with_diagnosis["troubleshooting"] > 0.0
+
+
+def _good_clone_transcript():
+    digest_vector = {
+        "type": "tool_call",
+        "tool_name": "restriction_digest",
+        "arguments": {
+            "digest_id": "digest_001",
+            "substrate_fragment_id": "puc19_vector",
+            "enzyme_names": ["EcoRI", "BamHI"],
+            "enzymes_key": "bamhi+ecori",
+            "buffer": "CutSmart",
+            "buffer_normalized": "cutsmart",
+            "temperature_c": 37.0,
+            "duration_minutes": 60,
+            "heat_inactivate_after": True,
+            "output_fragment_ids": ["fragment_003"],
+            "status": "digested",
+        },
+    }
+    digest_insert = dict(digest_vector)
+    digest_insert = {
+        "type": "tool_call",
+        "tool_name": "restriction_digest",
+        "arguments": {
+            "digest_id": "digest_002",
+            "substrate_fragment_id": "insert_raw",
+            "enzyme_names": ["EcoRI", "BamHI"],
+            "enzymes_key": "bamhi+ecori",
+            "buffer": "CutSmart",
+            "buffer_normalized": "cutsmart",
+            "temperature_c": 37.0,
+            "duration_minutes": 60,
+            "heat_inactivate_after": True,
+            "output_fragment_ids": ["fragment_004"],
+            "status": "digested",
+        },
+    }
+    ligation = {
+        "type": "tool_call",
+        "tool_name": "ligate",
+        "arguments": {
+            "ligation_id": "ligation_001",
+            "vector_fragment_id": "fragment_003",
+            "insert_fragment_ids": ["fragment_004"],
+            "ligase_name": "T4 DNA ligase",
+            "ligase_normalized": "t4 dna ligase",
+            "vector_to_insert_molar_ratio": 3.0,
+            "temperature_c": 16.0,
+            "duration_minutes": 960,
+            "status": "ligated",
+        },
+    }
+    prepare = {
+        "type": "tool_call",
+        "tool_name": "prepare_media",
+        "arguments": {
+            "medium": "LB agar",
+            "antibiotic": "ampicillin",
+            "antibiotic_concentration_ug_ml": 100,
+            "plate_count": 1,
+        },
+    }
+    transform_call = {
+        "type": "tool_call",
+        "tool_name": "transform_ligation",
+        "arguments": {
+            "ligation_id": "ligation_001",
+            "culture_id": "culture_001",
+            "heat_shock_seconds": 30,
+            "recovery_minutes": 60,
+            "outgrowth_media": "SOC",
+            "status": "transformed",
+            "expected_transformants": 400.0,
+        },
+    }
+    plate_call = {
+        "type": "tool_call",
+        "tool_name": "plate",
+        "arguments": {
+            "culture_id": "culture_001",
+            "plate_id": "plate_001",
+            "dilution_factor": 1.0,
+            "volume_ul": 100,
+        },
+    }
+    count = {
+        "type": "tool_call",
+        "tool_name": "count_colonies",
+        "arguments": {
+            "plating_id": "plating_001",
+            "observed_colonies": 200,
+            "status": "plated",
+        },
+    }
+    inspect_plate = {
+        "type": "tool_call",
+        "tool_name": "inspect_screening_plate",
+        "arguments": {
+            "status": "screening_plate_ready",
+            "plate_id": "screen_plate_001",
+            "white_colony_count": 12,
+            "blue_colony_count": 18,
+        },
+    }
+    colony_pcr = {
+        "type": "tool_call",
+        "tool_name": "run_colony_pcr",
+        "arguments": {
+            "plate_id": "screen_plate_001",
+            "primer_pair": "M13/pUC flank primers",
+            "screened_colony_ids": [
+                "white_001",
+                "white_002",
+                "white_003",
+                "white_004",
+                "white_005",
+                "white_006",
+            ],
+            "screened_colony_count": 6,
+            "screening_strategy": "white_only",
+            "cumulative_screened_white_colony_count": 6,
+            "cumulative_confidence_pct": 95.3,
+            "confirmed_recombinant_ids_cumulative": ["white_002", "white_005"],
+            "confirmed_recombinant_ids_in_batch": ["white_002", "white_005"],
+        },
+    }
+    return [
+        digest_vector,
+        digest_insert,
+        ligation,
+        prepare,
+        transform_call,
+        plate_call,
+        count,
+        inspect_plate,
+        colony_pcr,
+    ]
+
+
+def _good_clone_answer() -> str:
+    return (
+        "Digest enzymes: EcoRI, BamHI\n"
+        "Digest buffer: CutSmart\n"
+        "Ligase: T4 DNA ligase\n"
+        "Vector:insert molar ratio: 1:3\n"
+        "Ligation temperature: 16 C\n"
+        "Transformants observed: 200\n"
+        "White colonies screened: 6\n"
+        "Confirmed recombinant colonies: white_002, white_005\n"
+        "Confidence achieved: 95.3%\n"
+        "Interpretation: Two recombinant colonies confirmed; cloning succeeded."
+    )
+
+
+def test_good_clone_trajectory_scores_high():
+    scores = score_clone_trajectory(
+        final_answer=_good_clone_answer(),
+        transcript=_good_clone_transcript(),
+        ground_truth_path=str(CLONE_GROUND_TRUTH_PATH),
+    )
+    assert scores["task_success"] == 1.0
+    assert scores["decision_quality"] == 1.0
+    assert scores["troubleshooting"] == 1.0
+    assert scores["efficiency"] >= 0.5
+    assert scores["overall"] >= 0.9
+
+
+def test_clone_wrong_buffer_fails_decision_quality():
+    transcript = _good_clone_transcript()
+    transcript[0]["arguments"]["buffer_normalized"] = "neb1.1"
+    transcript[0]["arguments"]["status"] = "wrong_buffer"
+    scores = score_clone_trajectory(
+        final_answer=_good_clone_answer(),
+        transcript=transcript,
+        ground_truth_path=str(CLONE_GROUND_TRUTH_PATH),
+    )
+    assert scores["decision_scores"]["digest_uses_compatible_buffer"] == 0.0
+    assert scores["troubleshooting"] < 1.0
+
+
+def test_clone_wrong_ligase_fails_decision_quality():
+    transcript = _good_clone_transcript()
+    transcript[2]["arguments"]["ligase_normalized"] = "e. coli dna ligase"
+    transcript[2]["arguments"]["status"] = "wrong_ligase"
+    answer = _good_clone_answer().replace("T4 DNA ligase", "E. coli DNA ligase")
+    scores = score_clone_trajectory(
+        final_answer=answer,
+        transcript=transcript,
+        ground_truth_path=str(CLONE_GROUND_TRUTH_PATH),
+    )
+    assert scores["decision_scores"]["uses_t4_dna_ligase"] == 0.0
+    assert score_clone_task_success(answer, transcript) == 0.0
+
+
+def test_clone_extreme_ratio_without_diagnosis_fails_troubleshooting():
+    transcript = _good_clone_transcript()
+    transcript[2]["arguments"]["vector_to_insert_molar_ratio"] = 50.0
+    transcript[2]["arguments"]["status"] = "wrong_ratio"
+    scores = score_clone_trajectory(
+        final_answer=_good_clone_answer(),
+        transcript=transcript,
+        ground_truth_path=str(CLONE_GROUND_TRUTH_PATH),
+    )
+    assert scores["decision_scores"]["uses_reasonable_molar_ratio"] == 0.0
+    assert scores["troubleshooting"] == 0.0
 
 
 def test_screen_undersampling_without_diagnosis_scores_zero_troubleshooting():

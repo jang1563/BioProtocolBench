@@ -174,3 +174,59 @@ def configure_screen_sample():
         return state
 
     return solve
+
+
+def build_clone_solver():
+    """Build the Clone-01 solver chain with cloning and downstream screening tools."""
+    from inspect_ai.agent import AgentPrompt, react
+
+    from .tools.lab_tools import (
+        count_colonies_tool,
+        inspect_screening_plate_tool,
+        ligate_tool,
+        list_cloning_substrates_tool,
+        plate_tool,
+        prepare_media_tool,
+        restriction_digest_tool,
+        run_colony_pcr_tool,
+        transform_ligation_tool,
+    )
+    from .tools.reference import check_safety_tool, lookup_enzyme_tool, lookup_reagent_tool
+
+    return react(
+        prompt=AgentPrompt(
+            instructions=LABCRAFT_SYSTEM_PROMPT,
+            assistant_prompt=(
+                "\nBe concise between tool calls. Digest vector and insert with the "
+                "EcoRI + BamHI pair in a compatible NEB buffer, heat-inactivate, "
+                "ligate with T4 DNA ligase at a standard molar ratio, transform the "
+                "ligation, plate on LB + ampicillin, then inspect the plate and run "
+                "colony PCR on enough white colonies to meet the confidence target.\n"
+            ),
+        ),
+        tools=[
+            lookup_reagent_tool(),
+            lookup_enzyme_tool(),
+            check_safety_tool(),
+            list_cloning_substrates_tool(),
+            restriction_digest_tool(),
+            ligate_tool(),
+            prepare_media_tool(),
+            transform_ligation_tool(),
+            plate_tool(),
+            count_colonies_tool(),
+            inspect_screening_plate_tool(),
+            run_colony_pcr_tool(),
+        ],
+    )
+
+
+@solver
+def configure_clone_sample():
+    """Initialize per-sample LabCraft state before the cloning solver runs."""
+
+    async def solve(state, generate):
+        set_active_sample(state.sample_id)
+        return state
+
+    return solve

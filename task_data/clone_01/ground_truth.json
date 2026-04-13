@@ -1,0 +1,357 @@
+{
+  "task_id": "clone_01",
+  "decision_points": [
+    {
+      "id": "double_digest_with_ecori_bamhi",
+      "description": "Every digest uses the EcoRI + BamHI pair for directional cloning into pUC19.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "restriction_digest",
+        "argument": "enzymes_key",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": "bamhi+ecori"
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "NEB Double-Digest Finder (EcoRI and BamHI)",
+          "canonical_url": "https://www.neb.com/en-us/tools-and-resources/selection-charts/double-digest-finder",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative vendor tool confirming EcoRI + BamHI as a standard directional double-digest pair."
+        }
+      ]
+    },
+    {
+      "id": "digest_uses_compatible_buffer",
+      "description": "Digest uses a buffer that supports simultaneous EcoRI + BamHI activity at 100% efficiency.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "restriction_digest",
+        "argument": "buffer_normalized",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "one_of",
+        "values": ["cutsmart", "rcutsmart", "neb3.1"]
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "NEB Double-Digest Finder",
+          "canonical_url": "https://www.neb.com/en-us/tools-and-resources/selection-charts/double-digest-finder",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative vendor chart listing CutSmart / rCutSmart / NEB 3.1 as the recommended buffers for EcoRI + BamHI double digests."
+        }
+      ]
+    },
+    {
+      "id": "digest_sufficient_duration",
+      "description": "Digest incubation is at least 60 minutes to achieve complete plasmid digestion.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "restriction_digest",
+        "argument": "duration_minutes",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "range",
+        "min": 60,
+        "max": 1440
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "NEB Optimizing Restriction Endonuclease Reactions",
+          "canonical_url": "https://www.neb.com/en-us/protocols/2012/12/07/optimizing-restriction-endonuclease-reactions",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative NEB protocol recommending at least one hour of incubation for complete plasmid digestion."
+        }
+      ]
+    },
+    {
+      "id": "digest_heat_inactivated",
+      "description": "Digest is heat-inactivated to remove residual nuclease activity before ligation.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "restriction_digest",
+        "argument": "heat_inactivate_after",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": true
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "NEB Heat Inactivation Reference",
+          "canonical_url": "https://www.neb.com/en-us/tools-and-resources/selection-charts/heat-inactivation",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative NEB reference supporting heat inactivation of EcoRI and BamHI at 65 C."
+        }
+      ]
+    },
+    {
+      "id": "uses_t4_dna_ligase",
+      "description": "Ligation uses T4 DNA ligase, the canonical cohesive-end ligase for this workflow.",
+      "minimum_tier_required": "Silver",
+      "matcher": {
+        "tool_name": "ligate",
+        "argument": "ligase_normalized",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": "t4 dna ligase"
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "authors": "Weiss B, Richardson CC",
+          "title": "Enzymatic breakage and joining of deoxyribonucleic acid. I.",
+          "journal": "Proceedings of the National Academy of Sciences",
+          "year": 1967,
+          "doi": "10.1073/pnas.57.4.1021",
+          "canonical_url": "https://doi.org/10.1073/pnas.57.4.1021",
+          "tier": "Silver",
+          "tier_justification": "Foundational peer-reviewed description of T4 DNA ligase."
+        }
+      ]
+    },
+    {
+      "id": "uses_reasonable_molar_ratio",
+      "description": "Ligation vector-to-insert molar ratio is within the 1:10 - 10:1 range.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "ligate",
+        "argument": "vector_to_insert_molar_ratio",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "range",
+        "min": 0.1,
+        "max": 10.0
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "NEB T4 DNA Ligase Protocol (M0202)",
+          "canonical_url": "https://www.neb.com/en-us/protocols/0001/01/01/dna-ligation-with-t4-dna-ligase-m0202",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative NEB protocol recommending a 1:3 vector:insert molar ratio and flagging the 1:10 - 10:1 range as the acceptable envelope."
+        }
+      ]
+    },
+    {
+      "id": "uses_standard_ligation_temperature",
+      "description": "Ligation temperature is within the standard T4 ligase range (16-25 C).",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "ligate",
+        "argument": "temperature_c",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "range",
+        "min": 15.0,
+        "max": 26.0
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "NEB T4 DNA Ligase Protocol (M0202)",
+          "canonical_url": "https://www.neb.com/en-us/protocols/0001/01/01/dna-ligation-with-t4-dna-ligase-m0202",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative NEB protocol noting that T4 ligase ligations are typically run at 16 C overnight or at 22-25 C for shorter durations."
+        }
+      ]
+    },
+    {
+      "id": "ampicillin_selection_100",
+      "description": "Selection plates use the vendor-recommended 100 ug/mL ampicillin concentration.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "prepare_media",
+        "argument": "antibiotic_concentration_ug_ml",
+        "filters": {
+          "antibiotic": "ampicillin"
+        },
+        "occurrence": "first"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": 100
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "NEB 5-alpha Competent E. coli",
+          "canonical_url": "https://www.neb.com/en-us/products/c2987-neb-5-alpha-competent-e-coli-high-efficiency",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative vendor product page listing 100 ug/mL ampicillin for selection."
+        }
+      ]
+    },
+    {
+      "id": "screens_only_white_colonies",
+      "description": "Colony PCR is run only on white colonies (blue colonies are vector-only background).",
+      "minimum_tier_required": "Silver",
+      "matcher": {
+        "tool_name": "run_colony_pcr",
+        "argument": "screening_strategy",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": "white_only"
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "authors": "Vieira J, Messing J",
+          "title": "The pUC plasmids, an M13mp7-derived system for insertion mutagenesis and sequencing with synthetic universal primers",
+          "journal": "Gene",
+          "year": 1982,
+          "doi": "10.1016/0378-1119(82)90015-4",
+          "canonical_url": "https://doi.org/10.1016/0378-1119(82)90015-4",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed canonical pUC blue-white screening paper establishing that blue colonies carry empty vector."
+        }
+      ]
+    },
+    {
+      "id": "reaches_confidence_threshold",
+      "description": "Colony-PCR screening reaches at least 95% cumulative confidence before stopping.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "run_colony_pcr",
+        "argument": "cumulative_confidence_pct",
+        "occurrence": "last"
+      },
+      "acceptable_values": {
+        "type": "range",
+        "min": 95.0,
+        "max": 100.0
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "NIST/SEMATECH e-Handbook of Statistical Methods: Binomial Distribution",
+          "canonical_url": "https://www.itl.nist.gov/div898/handbook/eda/section3/eda366i.htm",
+          "tier": "Bronze",
+          "tier_justification": "Official NIST reference for the binomial cumulative distribution used to derive the 95% screening-confidence stopping rule."
+        }
+      ]
+    }
+  ],
+  "failure_diagnosis_map": {
+    "wrong_digest_buffer": {
+      "canonical_diagnosis": "The digest buffer was incompatible with simultaneous EcoRI + BamHI activity.",
+      "acceptable_variants": [
+        "CutSmart, rCutSmart, or NEB 3.1 should have been used for the EcoRI + BamHI double digest.",
+        "The chosen buffer did not support both enzymes at full activity.",
+        "The digest did not use the EcoRI + BamHI pair required for this directional cloning workflow."
+      ],
+      "judge_strategy": "substring_any",
+      "minimum_tier_required": "Bronze",
+      "citations": [
+        {
+          "title": "NEB Double-Digest Finder",
+          "canonical_url": "https://www.neb.com/en-us/tools-and-resources/selection-charts/double-digest-finder",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative NEB buffer-compatibility reference."
+        }
+      ]
+    },
+    "wrong_ligase": {
+      "canonical_diagnosis": "A non-T4 ligase was used; T4 DNA ligase is required for ATP-dependent cohesive-end ligation in this workflow.",
+      "acceptable_variants": [
+        "Only T4 DNA ligase can ligate EcoRI/BamHI cohesive ends under these conditions.",
+        "The ligase chosen cannot ligate cohesive ends with ATP in this format."
+      ],
+      "judge_strategy": "substring_any",
+      "minimum_tier_required": "Silver",
+      "citations": [
+        {
+          "authors": "Weiss B, Richardson CC",
+          "title": "Enzymatic breakage and joining of deoxyribonucleic acid. I.",
+          "journal": "Proceedings of the National Academy of Sciences",
+          "year": 1967,
+          "doi": "10.1073/pnas.57.4.1021",
+          "canonical_url": "https://doi.org/10.1073/pnas.57.4.1021",
+          "tier": "Silver",
+          "tier_justification": "Foundational peer-reviewed description of T4 DNA ligase."
+        }
+      ]
+    },
+    "extreme_molar_ratio": {
+      "canonical_diagnosis": "Vector:insert molar ratio was outside the standard 1:10 - 10:1 range, so productive ligation was unlikely.",
+      "acceptable_variants": [
+        "The molar ratio used was outside the recommended 1:10 - 10:1 envelope.",
+        "Vector:insert molar ratio was extreme relative to the 1:3 NEB recommendation."
+      ],
+      "judge_strategy": "substring_any",
+      "minimum_tier_required": "Bronze",
+      "citations": [
+        {
+          "title": "NEB T4 DNA Ligase Protocol (M0202)",
+          "canonical_url": "https://www.neb.com/en-us/protocols/0001/01/01/dna-ligation-with-t4-dna-ligase-m0202",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative NEB protocol setting the recommended molar-ratio envelope."
+        }
+      ]
+    },
+    "no_heat_inactivation": {
+      "canonical_diagnosis": "Restriction enzymes were not heat-inactivated, leaving active nuclease that degraded the ligation.",
+      "acceptable_variants": [
+        "Digests were not heat-inactivated, so residual nuclease activity likely degraded the ligation.",
+        "Heat inactivation was skipped, which compromises downstream ligation."
+      ],
+      "judge_strategy": "substring_any",
+      "minimum_tier_required": "Bronze",
+      "citations": [
+        {
+          "title": "NEB Heat Inactivation Reference",
+          "canonical_url": "https://www.neb.com/en-us/tools-and-resources/selection-charts/heat-inactivation",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative NEB reference for heat-inactivation conditions."
+        }
+      ]
+    },
+    "screened_blue_background": {
+      "canonical_diagnosis": "Blue colonies were submitted to colony PCR even though they represent vector-only background in this screen.",
+      "acceptable_variants": [
+        "Blue colonies should not have been screened because they are empty-vector background.",
+        "Screening blue colonies wastes reagents because blue colonies retain lacZ alpha and do not contain the insert."
+      ],
+      "judge_strategy": "substring_any",
+      "minimum_tier_required": "Silver",
+      "citations": [
+        {
+          "authors": "Vieira J, Messing J",
+          "title": "The pUC plasmids, an M13mp7-derived system for insertion mutagenesis and sequencing with synthetic universal primers",
+          "journal": "Gene",
+          "year": 1982,
+          "doi": "10.1016/0378-1119(82)90015-4",
+          "canonical_url": "https://doi.org/10.1016/0378-1119(82)90015-4",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed canonical pUC blue-white screening paper establishing blue colonies as vector-only background."
+        }
+      ]
+    }
+  },
+  "efficiency_reference": {
+    "optimal_tool_calls": 10,
+    "max_reasonable_tool_calls": 20,
+    "reagent_budget": {
+      "digest_reactions": 2,
+      "ligation_reactions": 1,
+      "selection_plates": 1,
+      "colony_pcr_reactions_min": 6,
+      "colony_pcr_reactions_max": 12
+    }
+  }
+}

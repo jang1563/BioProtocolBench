@@ -15,16 +15,23 @@ from src.environment.operations import (
     incubate,
     inoculate_growth,
     inspect_screening_plate,
+    ligate,
+    list_cloning_substrates,
     measure_od600,
     plate,
     prepare_media,
+    restriction_digest,
     run_colony_pcr,
     run_gel,
     run_pcr,
     transform,
+    transform_ligation,
 )
 from src.environment.state import create_lab_state
-from src.environment.stochastic import load_screening_parameters
+from src.environment.stochastic import (
+    load_cloning_parameters,
+    load_screening_parameters,
+)
 from src.tools.lab_tools import (
     cleanup_sample,
     count_colonies_call,
@@ -447,3 +454,135 @@ def test_screen_tool_wrapper_concurrent_sample_isolation():
     sequential_b = asyncio.run(_run_screen_tool_sequence("screen-tool-sequential-b", 82))
     assert concurrent_a == sequential_a
     assert concurrent_b == sequential_b
+
+
+CLONING_PARAMETERS_PATH = (
+    Path(__file__).resolve().parents[1] / "data" / "parameters" / "cloning.json"
+)
+
+
+def test_cloning_parameter_bundle_exposes_required_values():
+    bundle = load_cloning_parameters(CLONING_PARAMETERS_PATH)
+    assert bundle.integer("vector_plasmid_length_bp") == 2686
+    assert bundle.integer("insert_length_bp") == 950
+    assert bundle.value("optimal_vector_to_insert_molar_ratio") == pytest.approx(3.0)
+    assert "CutSmart" in bundle.choices("compatible_double_digest_buffers")
+    assert bundle.text("preferred_ligase_name") == "T4 DNA ligase"
+    assert bundle.integer("digest_minimum_duration_minutes") == 60
+    assert 16.0 in [float(t) for t in bundle.choices("acceptable_ligation_temperatures_c")]
+
+
+def test_list_cloning_substrates_creates_vector_and_insert():
+    state = create_lab_state(sample_id="clone-substrates", seed=1)
+    observation = list_cloning_substrates(state=state)
+    fragment_ids = {f["fragment_id"] for f in observation["fragments"]}
+    assert {"puc19_vector", "insert_raw"} <= fragment_ids
+    assert observation["status"] == "cloning_substrates_ready"
+
+
+def _run_good_clone_core(sample_id: str, seed: int):
+    state = create_lab_state(sample_id=sample_id, seed=seed)
+    list_cloning_substrates(state=state)
+    vector_digest = restriction_digest(
+        state=state,
+        fragment_id="puc19_vector",
+        enzyme_names=["EcoRI", "BamHI"],
+        buffer="CutSmart",
+        temperature_c=37.0,
+        duration_minutes=60,
+        heat_inactivate_after=True,
+    )
+    insert_digest = restriction_digest(
+        state=state,
+        fragment_id="insert_raw",
+        enzyme_names=["EcoRI", "BamHI"],
+        buffer="CutSmart",
+        temperature_c=37.0,
+        duration_minutes=60,
+        heat_inactivate_after=True,
+    )
+    ligation = ligate(
+        state=state,
+        vector_fragment_id=vector_digest["output_fragment_ids"][0],
+        insert_fragment_ids=[insert_digest["output_fragment_ids"][0]],
+        ligase_name="T4 DNA ligase",
+        vector_to_insert_molar_ratio=3.0,
+        temperature_c=16.0,
+        duration_minutes=960,
+    )
+    transform_result = transform_ligation(
+        state=state,
+        ligation_id=ligation["ligation_id"],
+    )
+    return state, vector_digest, insert_digest, ligation, transform_result
+
+
+def test_restriction_digest_ecori_bamhi_linearizes_vector():
+    state, vector_digest, _, _, _ = _run_good_clone_core("clone-good-digest", 1)
+    assert vector_digest["status"] == "digested"
+    assert vector_digest["enzymes_key"] == "bamhi+ecori"
+    assert vector_digest["buffer_normalized"] == "cutsmart"
+    assert vector_digest["output_fragment_ids"]
+
+
+def test_restriction_digest_wrong_buffer_is_flagged():
+    state = create_lab_state(sample_id="clone-wrong-buffer", seed=1)
+    list_cloning_substrates(state=state)
+    result = restriction_digest(
+        state=state,
+        fragment_id="puc19_vector",
+        enzyme_names=["EcoRI", "BamHI"],
+        buffer="NEB 1.1",
+        temperature_c=37.0,
+        duration_minutes=60,
+        heat_inactivate_after=True,
+    )
+    assert result["status"] == "wrong_buffer"
+
+
+def test_ligate_with_t4_yields_ligated_status():
+    _, _, _, ligation, _ = _run_good_clone_core("clone-good-ligate", 1)
+    assert ligation["status"] == "ligated"
+    assert ligation["ligase_normalized"] == "t4 dna ligase"
+
+
+def test_ligate_with_wrong_ligase_reports_wrong_ligase():
+    state, vector_digest, insert_digest, _, _ = _run_good_clone_core("clone-wrong-ligase", 1)
+    bad_ligation = ligate(
+        state=state,
+        vector_fragment_id=vector_digest["output_fragment_ids"][0],
+        insert_fragment_ids=[insert_digest["output_fragment_ids"][0]],
+        ligase_name="E. coli DNA ligase",
+        vector_to_insert_molar_ratio=3.0,
+        temperature_c=16.0,
+        duration_minutes=960,
+    )
+    assert bad_ligation["status"] == "wrong_ligase"
+
+
+def test_transform_ligation_produces_culture_and_screening_plate():
+    state, _, _, ligation, transform_result = _run_good_clone_core("clone-good-transform", 1)
+    assert transform_result["status"] == "transformed"
+    assert transform_result["ligation_id"] == ligation["ligation_id"]
+    assert state.screening_plates
+    plate_id = next(iter(state.screening_plates))
+    plate = state.screening_plates[plate_id]
+    assert len([c for c in plate.colonies.values() if c.color == "white"]) == 12
+    assert len([c for c in plate.colonies.values() if c.color == "blue"]) == 18
+
+
+def test_clone_workflow_is_deterministic_on_same_seed():
+    state_a, _, _, ligation_a, transform_a = _run_good_clone_core("clone-det-a", 42)
+    state_b, _, _, ligation_b, transform_b = _run_good_clone_core("clone-det-b", 42)
+    assert transform_a == transform_b
+    recombinants_a = sorted(
+        c.colony_id
+        for c in next(iter(state_a.screening_plates.values())).colonies.values()
+        if c.is_recombinant
+    )
+    recombinants_b = sorted(
+        c.colony_id
+        for c in next(iter(state_b.screening_plates.values())).colonies.values()
+        if c.is_recombinant
+    )
+    assert recombinants_a == recombinants_b

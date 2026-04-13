@@ -122,6 +122,49 @@ class ScreeningPlate:
 
 
 @dataclass
+class DnaFragment:
+    fragment_id: str
+    name: str
+    length_bp: int
+    concentration_ng_ul: float
+    is_circular: bool
+    end_5_prime: str
+    end_3_prime: str
+    recognition_sites: List[str] = field(default_factory=list)
+    parent_fragment_id: Optional[str] = None
+    notes: List[str] = field(default_factory=list)
+
+
+@dataclass
+class DigestReaction:
+    digest_id: str
+    substrate_fragment_id: str
+    enzyme_names: List[str]
+    buffer: str
+    temperature_c: float
+    duration_minutes: int
+    heat_inactivate_after: bool
+    status: str
+    output_fragment_ids: List[str] = field(default_factory=list)
+    notes: List[str] = field(default_factory=list)
+
+
+@dataclass
+class LigationReaction:
+    ligation_id: str
+    vector_fragment_id: str
+    insert_fragment_ids: List[str]
+    ligase_name: str
+    vector_to_insert_molar_ratio: float
+    temperature_c: float
+    duration_minutes: int
+    status: str
+    effective_recombinant_fraction: float
+    expected_transformant_yield: float
+    notes: List[str] = field(default_factory=list)
+
+
+@dataclass
 class LabState:
     sample_id: str
     seed: int
@@ -135,6 +178,9 @@ class LabState:
     pcr_reactions: Dict[str, PcrReaction] = field(default_factory=dict)
     gel_runs: Dict[str, GelRun] = field(default_factory=dict)
     screening_plates: Dict[str, ScreeningPlate] = field(default_factory=dict)
+    dna_fragments: Dict[str, DnaFragment] = field(default_factory=dict)
+    digest_reactions: Dict[str, DigestReaction] = field(default_factory=dict)
+    ligation_reactions: Dict[str, LigationReaction] = field(default_factory=dict)
     event_log: List[Dict[str, Any]] = field(default_factory=list)
     plate_counter: int = 0
     culture_counter: int = 0
@@ -143,6 +189,10 @@ class LabState:
     pcr_counter: int = 0
     gel_counter: int = 0
     screening_plate_counter: int = 0
+    fragment_counter: int = 0
+    digest_counter: int = 0
+    ligation_counter: int = 0
+    cloning_substrates_initialized: bool = False
 
     def next_plate_id(self) -> str:
         self.plate_counter += 1
@@ -171,6 +221,18 @@ class LabState:
     def next_screening_plate_id(self) -> str:
         self.screening_plate_counter += 1
         return "screen_plate_{:03d}".format(self.screening_plate_counter)
+
+    def next_fragment_id(self) -> str:
+        self.fragment_counter += 1
+        return "fragment_{:03d}".format(self.fragment_counter)
+
+    def next_digest_id(self) -> str:
+        self.digest_counter += 1
+        return "digest_{:03d}".format(self.digest_counter)
+
+    def next_ligation_id(self) -> str:
+        self.ligation_counter += 1
+        return "ligation_{:03d}".format(self.ligation_counter)
 
     def log_event(self, kind: str, payload: Dict[str, Any]) -> None:
         self.event_log.append({"kind": kind, "payload": payload})

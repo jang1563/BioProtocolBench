@@ -23,6 +23,8 @@ The agent must plan the experiment, call tools in the right order, interpret obs
 | `transform_01` | Chemical transformation of *E. coli* | Measure CFU/µg across four DNA masses (10 pg → 10 ng) |
 | `growth_01` | Liquid-culture growth characterization | Determine growth parameters from OD600 time-course |
 | `pcr_01` | PCR optimization | Choose conditions that yield specific amplification |
+| `screen_01` | pUC blue-white colony screening | Confirm recombinants by colony PCR with ≥95% confidence |
+| `clone_01` | Restriction cloning end-to-end | Digest + ligate 950 bp insert into pUC19 with EcoRI/BamHI, transform, and confirm recombinants |
 
 Each task directory (`task_data/<task_id>/`) contains `rubric.json` (hierarchical scoring tree), `ground_truth.json` (expected values with citation metadata), and `SOURCES.md` (citations).
 
@@ -53,6 +55,8 @@ pip install -e ".[dev]"
 inspect eval src.inspect_task:transform_01 --model openai/gpt-4o
 inspect eval src.inspect_task:growth_01   --model anthropic/claude-sonnet-4-5
 inspect eval src.inspect_task:pcr_01      --model openai/gpt-4o
+inspect eval src.inspect_task:screen_01   --model openai/gpt-4o-mini
+inspect eval src.inspect_task:clone_01    --model openai/gpt-4o-mini
 
 # With a different grader model (trajectory scorer uses LLM-as-judge for some rubric leaves)
 inspect eval src.inspect_task:transform_01 \

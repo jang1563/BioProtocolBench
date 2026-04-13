@@ -9,10 +9,13 @@ from typing import Dict, List
 
 from .observations import render_observation
 from .state import (
+    DigestReaction,
+    DnaFragment,
     GelRun,
     GrowthCulture,
     GrowthMeasurement,
     LabState,
+    LigationReaction,
     PcrReaction,
     PlatedSample,
     PreparedPlate,
@@ -21,6 +24,7 @@ from .state import (
     TransformationCulture,
 )
 from .stochastic import (
+    load_cloning_parameters,
     load_growth_parameters,
     load_pcr_parameters,
     load_screening_parameters,
@@ -33,6 +37,8 @@ _PCR_PARAMETERS_PATH = Path(__file__).resolve().parents[2] / "data" / "parameter
 _PCR_BUNDLE = None
 _SCREENING_PARAMETERS_PATH = Path(__file__).resolve().parents[2] / "data" / "parameters" / "screening.json"
 _SCREENING_BUNDLE = None
+_CLONING_PARAMETERS_PATH = Path(__file__).resolve().parents[2] / "data" / "parameters" / "cloning.json"
+_CLONING_BUNDLE = None
 
 
 def _growth_bundle():
@@ -54,6 +60,13 @@ def _screening_bundle():
     if _SCREENING_BUNDLE is None:
         _SCREENING_BUNDLE = load_screening_parameters(_SCREENING_PARAMETERS_PATH)
     return _SCREENING_BUNDLE
+
+
+def _cloning_bundle():
+    global _CLONING_BUNDLE
+    if _CLONING_BUNDLE is None:
+        _CLONING_BUNDLE = load_cloning_parameters(_CLONING_PARAMETERS_PATH)
+    return _CLONING_BUNDLE
 
 
 def _normalize_choice(value: str) -> str:
@@ -744,4 +757,427 @@ def run_colony_pcr(
         "empty_vector_band_bp": int(plate.empty_vector_band_bp),
     }
     state.log_event("run_colony_pcr", payload)
+    return payload
+
+
+def _normalize_enzyme_pair(enzyme_names: List[str]) -> List[str]:
+    return sorted(_normalize_choice(name).replace(" ", "").lower() for name in enzyme_names)
+
+
+def _ensure_cloning_substrates(state: LabState) -> None:
+    if state.cloning_substrates_initialized:
+        return
+    bundle = _cloning_bundle()
+    vector = DnaFragment(
+        fragment_id="puc19_vector",
+        name="pUC19 vector",
+        length_bp=bundle.integer("vector_plasmid_length_bp"),
+        concentration_ng_ul=50.0,
+        is_circular=True,
+        end_5_prime="circular",
+        end_3_prime="circular",
+        recognition_sites=["EcoRI", "BamHI", "HindIII"],
+        notes=["Circular pUC19 cloning vector with EcoRI, BamHI, and HindIII sites in the MCS."],
+    )
+    insert = DnaFragment(
+        fragment_id="insert_raw",
+        name="Benign 950 bp PCR insert",
+        length_bp=bundle.integer("insert_length_bp"),
+        concentration_ng_ul=20.0,
+        is_circular=False,
+        end_5_prime="flanking_EcoRI_site",
+        end_3_prime="flanking_BamHI_site",
+        recognition_sites=["EcoRI", "BamHI"],
+        notes=[
+            "Linear PCR product with EcoRI and BamHI recognition sequences in the flanking primers."
+        ],
+    )
+    state.dna_fragments[vector.fragment_id] = vector
+    state.dna_fragments[insert.fragment_id] = insert
+    state.cloning_substrates_initialized = True
+
+
+def list_cloning_substrates(state: LabState) -> Dict[str, object]:
+    _ensure_cloning_substrates(state)
+    fragments = [
+        {
+            "fragment_id": fragment.fragment_id,
+            "name": fragment.name,
+            "length_bp": int(fragment.length_bp),
+            "concentration_ng_ul": float(fragment.concentration_ng_ul),
+            "is_circular": bool(fragment.is_circular),
+            "end_5_prime": fragment.end_5_prime,
+            "end_3_prime": fragment.end_3_prime,
+            "recognition_sites": list(fragment.recognition_sites),
+        }
+        for fragment in state.dna_fragments.values()
+    ]
+    payload = {
+        "status": "cloning_substrates_ready",
+        "fragments": fragments,
+    }
+    state.log_event("list_cloning_substrates", payload)
+    return payload
+
+
+def restriction_digest(
+    state: LabState,
+    fragment_id: str,
+    enzyme_names: List[str],
+    buffer: str,
+    temperature_c: float,
+    duration_minutes: int,
+    heat_inactivate_after: bool,
+    heat_inactivation_temperature_c: float = 65.0,
+) -> Dict[str, object]:
+    """Simulate a restriction digest on a DNA fragment."""
+    _ensure_cloning_substrates(state)
+    if fragment_id not in state.dna_fragments:
+        raise ValueError(
+            "Unknown fragment_id '{:s}'. Available fragment IDs: {:s}".format(
+                fragment_id, ", ".join(sorted(state.dna_fragments))
+            )
+        )
+    bundle = _cloning_bundle()
+    substrate = state.dna_fragments[fragment_id]
+    compatible_buffers = {b.lower() for b in bundle.choices("compatible_double_digest_buffers")}
+    normalized_enzymes = _normalize_enzyme_pair(enzyme_names)
+    optimal_duration = bundle.integer("digest_minimum_duration_minutes")
+    optimal_temperature = bundle.value("digest_temperature_c")
+    heat_inactivation_target = bundle.value("digest_heat_inactivation_temperature_c")
+
+    notes: List[str] = []
+    status = "digested"
+
+    if len(enzyme_names) != 2 or normalized_enzymes != ["bamhi", "ecori"]:
+        status = "wrong_enzyme_pair"
+        notes.append(
+            "Digest did not use the EcoRI + BamHI pair required for this directional cloning workflow."
+        )
+    if buffer.lower() not in compatible_buffers:
+        status = "wrong_buffer"
+        notes.append("Digest buffer is not compatible with simultaneous EcoRI + BamHI activity.")
+    if abs(float(temperature_c) - optimal_temperature) > 2.0:
+        notes.append("Digest temperature deviated from the 37 C optimum.")
+    if int(duration_minutes) < optimal_duration:
+        notes.append(
+            "Digest duration was shorter than the {} min minimum recommended for complete plasmid digestion.".format(
+                optimal_duration
+            )
+        )
+        if status == "digested":
+            status = "incomplete_digest"
+
+    if heat_inactivate_after and abs(float(heat_inactivation_temperature_c) - heat_inactivation_target) > 2.0:
+        notes.append(
+            "Heat inactivation temperature deviated from the {:.0f} C recommendation.".format(
+                heat_inactivation_target
+            )
+        )
+
+    digest_id = state.next_digest_id()
+    output_fragment_ids: List[str] = []
+    if status in {"digested", "incomplete_digest"}:
+        output_id = state.next_fragment_id()
+        is_vector = substrate.is_circular
+        end_5 = "EcoRI_overhang"
+        end_3 = "BamHI_overhang"
+        length_bp = substrate.length_bp
+        if is_vector:
+            length_bp = substrate.length_bp
+        output_fragment = DnaFragment(
+            fragment_id=output_id,
+            name="{} (EcoRI+BamHI digested)".format(substrate.name),
+            length_bp=int(length_bp),
+            concentration_ng_ul=float(substrate.concentration_ng_ul) * 0.9,
+            is_circular=False,
+            end_5_prime=end_5,
+            end_3_prime=end_3,
+            recognition_sites=["EcoRI", "BamHI"],
+            parent_fragment_id=substrate.fragment_id,
+            notes=[
+                "Linearized fragment with compatible EcoRI (5' overhang: AATT) and BamHI (5' overhang: GATC) ends."
+            ],
+        )
+        state.dna_fragments[output_id] = output_fragment
+        output_fragment_ids.append(output_id)
+
+    reaction = DigestReaction(
+        digest_id=digest_id,
+        substrate_fragment_id=fragment_id,
+        enzyme_names=list(enzyme_names),
+        buffer=buffer,
+        temperature_c=float(temperature_c),
+        duration_minutes=int(duration_minutes),
+        heat_inactivate_after=bool(heat_inactivate_after),
+        status=status,
+        output_fragment_ids=list(output_fragment_ids),
+        notes=list(notes),
+    )
+    state.digest_reactions[digest_id] = reaction
+    enzymes_key = "+".join(normalized_enzymes)
+    payload = {
+        "status": status,
+        "digest_id": digest_id,
+        "substrate_fragment_id": fragment_id,
+        "enzyme_names": list(enzyme_names),
+        "enzymes_key": enzymes_key,
+        "buffer": buffer,
+        "buffer_normalized": _normalize_choice(buffer).replace(" ", "").lower(),
+        "temperature_c": float(temperature_c),
+        "duration_minutes": int(duration_minutes),
+        "heat_inactivate_after": bool(heat_inactivate_after),
+        "output_fragment_ids": list(output_fragment_ids),
+        "notes": list(notes),
+    }
+    state.log_event("restriction_digest", payload)
+    return payload
+
+
+def ligate(
+    state: LabState,
+    vector_fragment_id: str,
+    insert_fragment_ids: List[str],
+    ligase_name: str,
+    vector_to_insert_molar_ratio: float,
+    temperature_c: float,
+    duration_minutes: int,
+    buffer: str = "T4 DNA ligase buffer",
+) -> Dict[str, object]:
+    """Simulate a ligation reaction and return a ligation id."""
+    _ensure_cloning_substrates(state)
+    if vector_fragment_id not in state.dna_fragments:
+        raise ValueError("Unknown vector_fragment_id '{:s}'.".format(vector_fragment_id))
+    for insert_id in insert_fragment_ids:
+        if insert_id not in state.dna_fragments:
+            raise ValueError("Unknown insert fragment_id '{:s}'.".format(insert_id))
+
+    bundle = _cloning_bundle()
+    required_ligase = bundle.text("preferred_ligase_name")
+    acceptable_temps = [float(t) for t in bundle.choices("acceptable_ligation_temperatures_c")]
+    minimum_duration = bundle.integer("acceptable_ligation_duration_minutes_min")
+    base_fraction = bundle.value("base_recombinant_fraction_among_white_colonies")
+
+    vector = state.dna_fragments[vector_fragment_id]
+    inserts = [state.dna_fragments[i] for i in insert_fragment_ids]
+
+    notes: List[str] = []
+    status = "ligated"
+    effective_fraction = base_fraction
+
+    if _normalize_choice(ligase_name) != _normalize_choice(required_ligase):
+        status = "wrong_ligase"
+        notes.append(
+            "Non-T4 ligase used; T4 DNA ligase is required for ATP-dependent cohesive-end ligation in this workflow."
+        )
+        effective_fraction *= 0.10
+
+    if vector.end_5_prime == "circular" or vector.end_3_prime == "circular":
+        notes.append("Vector appears to be an uncut circular plasmid; digest it before ligation.")
+        if status == "ligated":
+            status = "incompatible_ends"
+        effective_fraction *= 0.05
+
+    for insert in inserts:
+        if insert.end_5_prime in {"flanking_EcoRI_site", "flanking_BamHI_site", "blunt", "circular"}:
+            notes.append(
+                "Insert {} has unprocessed ends and may not ligate efficiently without digestion.".format(
+                    insert.fragment_id
+                )
+            )
+            if status == "ligated":
+                status = "incompatible_ends"
+            effective_fraction *= 0.10
+
+    ratio = float(vector_to_insert_molar_ratio)
+    if ratio <= 0:
+        notes.append("Vector:insert molar ratio must be positive.")
+        status = "wrong_ratio"
+        effective_fraction *= 0.0
+    elif ratio < 0.1 or ratio > 10.0:
+        notes.append("Vector:insert molar ratio is outside the standard 1:10 - 10:1 range.")
+        if status == "ligated":
+            status = "wrong_ratio"
+        effective_fraction *= 0.5
+
+    if not any(abs(float(temperature_c) - t) <= 1.0 for t in acceptable_temps):
+        notes.append(
+            "Ligation temperature {:.1f} C is outside the acceptable set {}.".format(
+                float(temperature_c), acceptable_temps
+            )
+        )
+        effective_fraction *= 0.5
+
+    if int(duration_minutes) < minimum_duration:
+        notes.append(
+            "Ligation duration was shorter than the {} min minimum.".format(minimum_duration)
+        )
+        effective_fraction *= 0.5
+
+    parent_digests = [
+        state.dna_fragments[fragment_id].parent_fragment_id
+        for fragment_id in [vector_fragment_id] + list(insert_fragment_ids)
+        if state.dna_fragments[fragment_id].parent_fragment_id
+    ]
+    if not any(
+        any(
+            reaction.heat_inactivate_after
+            for reaction in state.digest_reactions.values()
+            if reaction.substrate_fragment_id == parent_id
+        )
+        for parent_id in parent_digests
+    ) and parent_digests:
+        notes.append(
+            "Digests feeding this ligation were not heat-inactivated; residual nuclease may degrade the ligation."
+        )
+        effective_fraction *= 0.30
+
+    effective_fraction = max(0.0, min(1.0, float(effective_fraction)))
+
+    yield_multiplier = 1.0 if status == "ligated" else 0.25
+    expected_transformant_yield = 400.0 * yield_multiplier * (effective_fraction / base_fraction + 0.1)
+
+    ligation_id = state.next_ligation_id()
+    reaction = LigationReaction(
+        ligation_id=ligation_id,
+        vector_fragment_id=vector_fragment_id,
+        insert_fragment_ids=list(insert_fragment_ids),
+        ligase_name=ligase_name,
+        vector_to_insert_molar_ratio=float(ratio),
+        temperature_c=float(temperature_c),
+        duration_minutes=int(duration_minutes),
+        status=status,
+        effective_recombinant_fraction=float(effective_fraction),
+        expected_transformant_yield=float(expected_transformant_yield),
+        notes=list(notes),
+    )
+    state.ligation_reactions[ligation_id] = reaction
+    payload = {
+        "status": status,
+        "ligation_id": ligation_id,
+        "vector_fragment_id": vector_fragment_id,
+        "insert_fragment_ids": list(insert_fragment_ids),
+        "ligase_name": ligase_name,
+        "ligase_normalized": _normalize_choice(ligase_name),
+        "vector_to_insert_molar_ratio": float(ratio),
+        "temperature_c": float(temperature_c),
+        "duration_minutes": int(duration_minutes),
+        "buffer": buffer,
+        "notes": list(notes),
+    }
+    state.log_event("ligate", payload)
+    return payload
+
+
+def _resolve_ligation_id(state: LabState, ligation_id: str) -> str:
+    requested = str(ligation_id).strip()
+    if requested in state.ligation_reactions:
+        return requested
+    suffix_match = re.search(r"(\d+)$", requested)
+    if suffix_match:
+        canonical = "ligation_{:03d}".format(int(suffix_match.group(1)))
+        if canonical in state.ligation_reactions:
+            return canonical
+    available = sorted(state.ligation_reactions)
+    raise ValueError(
+        "Unknown ligation_id '{:s}'. Available ligation IDs: {:s}".format(
+            requested, ", ".join(available) if available else "none"
+        )
+    )
+
+
+def transform_ligation(
+    state: LabState,
+    ligation_id: str,
+    heat_shock_seconds: int = 30,
+    recovery_minutes: int = 60,
+    outgrowth_media: str = "SOC",
+    shaking: bool = True,
+    ice_incubation_minutes: int = 30,
+) -> Dict[str, object]:
+    """Transform a ligation reaction into competent E. coli and prepare a screening plate."""
+    resolved_id = _resolve_ligation_id(state, ligation_id)
+    ligation = state.ligation_reactions[resolved_id]
+    screening_bundle = _screening_bundle()
+
+    expected_yield = float(ligation.expected_transformant_yield)
+    if int(heat_shock_seconds) != int(
+        state.parameters.get("heat_shock_duration_seconds")["parameters"]["optimal"]
+    ):
+        expected_yield *= 0.5
+    if outgrowth_media.upper() != "SOC":
+        expected_yield *= 0.5
+    if not shaking:
+        expected_yield *= 0.7
+
+    culture_id = state.next_culture_id()
+    notes = list(ligation.notes)
+    culture = TransformationCulture(
+        culture_id=culture_id,
+        plasmid_mass_pg=float(expected_yield * 1000.0),
+        base_efficiency_cfu_per_ug=state.base_efficiency_cfu_per_ug,
+        adjusted_efficiency_cfu_per_ug=state.base_efficiency_cfu_per_ug,
+        recovery_minutes=int(recovery_minutes),
+        outgrowth_media=outgrowth_media,
+        shaking=bool(shaking),
+        heat_shock_seconds=int(heat_shock_seconds),
+        ice_incubation_minutes=int(ice_incubation_minutes),
+        expected_total_transformants=expected_yield,
+        notes=notes,
+    )
+    state.cultures[culture_id] = culture
+
+    if not state.screening_plates:
+        plate_id = state.next_screening_plate_id()
+        recombinant_band_bp = screening_bundle.integer("screening_recombinant_colony_pcr_band_bp")
+        empty_vector_band_bp = screening_bundle.integer("screening_empty_vector_colony_pcr_band_bp")
+        plate = ScreeningPlate(
+            plate_id=plate_id,
+            historical_positive_rate_among_white=float(ligation.effective_recombinant_fraction),
+            target_confidence=screening_bundle.value("screening_target_confidence"),
+            recombinant_band_bp=recombinant_band_bp,
+            empty_vector_band_bp=empty_vector_band_bp,
+        )
+        recombinant_whites: set = set()
+        for idx in range(1, 13):
+            if state.rng.random() < ligation.effective_recombinant_fraction:
+                recombinant_whites.add("white_{:03d}".format(idx))
+        for idx in range(1, 13):
+            colony_id = "white_{:03d}".format(idx)
+            is_recombinant = colony_id in recombinant_whites
+            plate.colonies[colony_id] = ScreeningColony(
+                colony_id=colony_id,
+                color="white",
+                is_recombinant=is_recombinant,
+                expected_band_bp=recombinant_band_bp if is_recombinant else empty_vector_band_bp,
+                notes=[
+                    "White colony from Clone-01 transformation.",
+                    "Expected insert-positive band near {:d} bp.".format(recombinant_band_bp)
+                    if is_recombinant
+                    else "White false positive with empty-vector-like colony PCR band.",
+                ],
+            )
+        for idx in range(1, 19):
+            colony_id = "blue_{:03d}".format(idx)
+            plate.colonies[colony_id] = ScreeningColony(
+                colony_id=colony_id,
+                color="blue",
+                is_recombinant=False,
+                expected_band_bp=empty_vector_band_bp,
+                notes=["Blue colony retaining lacZ alpha activity; treat as vector-only background."],
+            )
+        state.screening_plates[plate_id] = plate
+
+    payload = {
+        "status": "transformed",
+        "culture_id": culture_id,
+        "ligation_id": resolved_id,
+        "ligation_status": ligation.status,
+        "expected_transformants": float(expected_yield),
+        "heat_shock_seconds": int(heat_shock_seconds),
+        "recovery_minutes": int(recovery_minutes),
+        "outgrowth_media": outgrowth_media,
+        "notes": notes,
+    }
+    state.log_event("transform_ligation", payload)
     return payload
