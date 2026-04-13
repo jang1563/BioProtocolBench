@@ -1,0 +1,1731 @@
+[
+  {
+    "name": "Tris-HCl",
+    "type": "buffer",
+    "category": "general buffer",
+    "working_concentration": "10-50 mM",
+    "stock_concentration": "1 M",
+    "storage_temperature_c": "4-25",
+    "storage_conditions": "Room temperature or 4\u00b0C; autoclavable",
+    "preparation_notes": "Adjust pH at room temperature; pH decreases ~0.03 units per \u00b0C increase. pH 7.4 at 25\u00b0C will be ~7.7 at 4\u00b0C. Use HCl to adjust pH of Tris base.",
+    "shelf_life": "12 months",
+    "incompatible_with": [
+      "EDTA at high concentrations can chelate essential metal cofactors",
+      "strong oxidizers"
+    ],
+    "safety_notes": "Low toxicity; mild irritant",
+    "common_uses": [
+      "DNA/RNA extraction buffers",
+      "protein purification",
+      "enzyme reaction buffers",
+      "gel electrophoresis buffers"
+    ]
+  },
+  {
+    "name": "PBS (Phosphate-Buffered Saline)",
+    "type": "buffer",
+    "category": "general buffer",
+    "working_concentration": "1x (137 mM NaCl, 2.7 mM KCl, 10 mM Na2HPO4, 1.8 mM KH2PO4, pH 7.4)",
+    "stock_concentration": "10x",
+    "storage_temperature_c": "4-25",
+    "storage_conditions": "Room temperature; autoclavable; protect from contamination",
+    "preparation_notes": "pH is relatively temperature-insensitive unlike Tris. Do not autoclave with calcium or magnesium salts as they will precipitate.",
+    "shelf_life": "12 months",
+    "incompatible_with": [
+      "divalent cations at high concentrations (precipitate as phosphate salts)",
+      "calcium chloride",
+      "magnesium chloride"
+    ],
+    "safety_notes": "Non-toxic",
+    "common_uses": [
+      "cell washing",
+      "immunohistochemistry",
+      "ELISA",
+      "dilution buffer",
+      "tissue rinsing"
+    ]
+  },
+  {
+    "name": "TAE Buffer (Tris-Acetate-EDTA)",
+    "type": "buffer",
+    "category": "DNA electrophoresis",
+    "working_concentration": "1x (40 mM Tris, 20 mM acetic acid, 1 mM EDTA, pH 8.0)",
+    "stock_concentration": "50x",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; check for precipitates before use",
+    "preparation_notes": "Lower buffering capacity than TBE; not recommended for extended runs. Better resolution of large DNA fragments (>2 kb). Can be reused but buffering capacity declines.",
+    "shelf_life": "12 months",
+    "incompatible_with": [
+      "borate-containing buffers"
+    ],
+    "safety_notes": "Low toxicity",
+    "common_uses": [
+      "agarose gel electrophoresis of DNA",
+      "gel extraction of DNA fragments",
+      "cloning workflows"
+    ]
+  },
+  {
+    "name": "TBE Buffer (Tris-Borate-EDTA)",
+    "type": "buffer",
+    "category": "DNA electrophoresis",
+    "working_concentration": "0.5x or 1x (89 mM Tris, 89 mM boric acid, 2 mM EDTA, pH 8.3)",
+    "stock_concentration": "5x or 10x",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; discard if crystals form",
+    "preparation_notes": "Higher buffering capacity than TAE; preferred for long electrophoresis runs. Better for small DNA fragments (<1 kb) and polyacrylamide gels. Borate inhibits many enzymes, so DNA must be purified from gel before enzymatic reactions.",
+    "shelf_life": "12 months",
+    "incompatible_with": [
+      "downstream enzymatic reactions (borate inhibits ligase and other enzymes)"
+    ],
+    "safety_notes": "Boric acid is a reproductive toxin at high doses",
+    "common_uses": [
+      "polyacrylamide gel electrophoresis of DNA",
+      "small fragment resolution",
+      "SSCP analysis",
+      "sequencing gels"
+    ]
+  },
+  {
+    "name": "TE Buffer (Tris-EDTA)",
+    "type": "buffer",
+    "category": "nucleic acid storage",
+    "working_concentration": "1x (10 mM Tris-HCl pH 8.0, 1 mM EDTA)",
+    "stock_concentration": "10x or 100x",
+    "storage_temperature_c": "4-25",
+    "storage_conditions": "Room temperature or 4\u00b0C; autoclave to sterilize",
+    "preparation_notes": "EDTA chelates divalent cations and inhibits DNases. Use low-EDTA TE (10 mM Tris, 0.1 mM EDTA) for DNA intended for enzymatic reactions, as EDTA can inhibit enzymes requiring Mg2+.",
+    "shelf_life": "12 months",
+    "incompatible_with": [
+      "Mg2+-dependent enzymatic reactions at high EDTA concentrations"
+    ],
+    "safety_notes": "Non-toxic",
+    "common_uses": [
+      "DNA storage",
+      "RNA storage",
+      "resuspension of nucleic acid pellets"
+    ]
+  },
+  {
+    "name": "RIPA Buffer",
+    "type": "buffer",
+    "category": "protein extraction",
+    "working_concentration": "1x (50 mM Tris-HCl pH 7.4, 150 mM NaCl, 1% NP-40, 0.5% sodium deoxycholate, 0.1% SDS)",
+    "stock_concentration": "1x (typically not concentrated)",
+    "storage_temperature_c": "4",
+    "storage_conditions": "Store at 4\u00b0C; add protease and phosphatase inhibitors fresh before use",
+    "preparation_notes": "Add protease inhibitor cocktail and PMSF immediately before use. SDS may precipitate at 4\u00b0C; warm briefly to redissolve. Strong lysis buffer that disrupts most protein-protein interactions.",
+    "shelf_life": "6 months without inhibitors; use within hours after adding inhibitors",
+    "incompatible_with": [
+      "protein-protein interaction studies (too stringent)",
+      "co-immunoprecipitation (use milder lysis buffer)"
+    ],
+    "safety_notes": "Contains SDS and detergents; avoid ingestion and skin contact",
+    "common_uses": [
+      "total protein extraction",
+      "western blot sample preparation",
+      "immunoprecipitation of robust interactions"
+    ]
+  },
+  {
+    "name": "Laemmli Sample Buffer (SDS-PAGE Loading Buffer)",
+    "type": "buffer",
+    "category": "protein analysis",
+    "working_concentration": "1x",
+    "stock_concentration": "2x, 4x, or 6x",
+    "storage_temperature_c": "-20",
+    "storage_conditions": "Store at -20\u00b0C; aliquot to avoid freeze-thaw cycles",
+    "preparation_notes": "Contains 62.5 mM Tris-HCl pH 6.8, 2% SDS, 25% glycerol, 0.01% bromophenol blue. Add reducing agent (5% beta-mercaptoethanol or 100 mM DTT) fresh before use. Heat samples at 95\u00b0C for 5 minutes to denature proteins.",
+    "shelf_life": "6 months at -20\u00b0C",
+    "incompatible_with": [
+      "non-denaturing/native PAGE"
+    ],
+    "safety_notes": "Contains SDS; reducing agent is toxic (beta-mercaptoethanol) and pungent",
+    "common_uses": [
+      "SDS-PAGE sample preparation",
+      "western blot sample preparation"
+    ]
+  },
+  {
+    "name": "6x DNA Loading Dye",
+    "type": "buffer",
+    "category": "DNA electrophoresis",
+    "working_concentration": "1x",
+    "stock_concentration": "6x",
+    "storage_temperature_c": "4",
+    "storage_conditions": "Store at 4\u00b0C; protect from light",
+    "preparation_notes": "Typical composition: 30% glycerol, 0.25% bromophenol blue, 0.25% xylene cyanol, 10 mM EDTA. Bromophenol blue migrates at ~300 bp in 1% agarose; xylene cyanol at ~4 kb.",
+    "shelf_life": "12 months",
+    "incompatible_with": [],
+    "safety_notes": "Non-toxic",
+    "common_uses": [
+      "loading DNA samples onto agarose gels",
+      "monitoring electrophoresis progress"
+    ]
+  },
+  {
+    "name": "Western Blot Transfer Buffer",
+    "type": "buffer",
+    "category": "protein analysis",
+    "working_concentration": "1x (25 mM Tris, 192 mM glycine, 20% methanol, pH 8.3)",
+    "stock_concentration": "10x (without methanol)",
+    "storage_temperature_c": "4",
+    "storage_conditions": "Store at 4\u00b0C; add methanol fresh before use",
+    "preparation_notes": "Methanol aids protein binding to membrane but can cause gel shrinkage and reduce transfer of high-MW proteins. Reduce methanol to 10% or omit for proteins >100 kDa. Add 0.1% SDS for large proteins. Do not adjust pH with acid/base.",
+    "shelf_life": "1 month at 4\u00b0C",
+    "incompatible_with": [
+      "PVDF membranes require pre-wetting in methanol before assembly"
+    ],
+    "safety_notes": "Contains methanol which is toxic; use in a well-ventilated area",
+    "common_uses": [
+      "wet/tank western blot transfer",
+      "semi-dry western blot transfer"
+    ]
+  },
+  {
+    "name": "Blocking Buffer (5% non-fat dry milk in TBST)",
+    "type": "buffer",
+    "category": "protein analysis",
+    "working_concentration": "5% w/v non-fat dry milk in TBST",
+    "stock_concentration": null,
+    "storage_temperature_c": "4",
+    "storage_conditions": "Prepare fresh or store at 4\u00b0C for up to 1 week",
+    "preparation_notes": "Do NOT use milk-based blocking for phospho-specific antibodies as milk contains casein (a phosphoprotein) which causes high background. Use BSA (3-5%) for phospho-antibodies instead.",
+    "shelf_life": "1 week at 4\u00b0C; prepare fresh for best results",
+    "incompatible_with": [
+      "phospho-specific antibodies (use BSA instead)",
+      "biotin/streptavidin detection systems (milk contains biotin)"
+    ],
+    "safety_notes": "Non-toxic",
+    "common_uses": [
+      "western blot membrane blocking",
+      "antibody dilution"
+    ]
+  },
+  {
+    "name": "TBST (Tris-Buffered Saline with Tween-20)",
+    "type": "buffer",
+    "category": "protein analysis",
+    "working_concentration": "1x (20 mM Tris-HCl pH 7.6, 150 mM NaCl, 0.1% Tween-20)",
+    "stock_concentration": "10x (without Tween-20)",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; add Tween-20 to 1x solution",
+    "preparation_notes": "Use 0.05-0.1% Tween-20. Higher Tween-20 can strip weakly bound antibodies. Do not use with alkaline phosphatase-conjugated antibodies if Tween-20 concentration is too high.",
+    "shelf_life": "1 month",
+    "incompatible_with": [],
+    "safety_notes": "Non-toxic",
+    "common_uses": [
+      "western blot washing",
+      "ELISA washing",
+      "antibody dilution"
+    ]
+  },
+  {
+    "name": "SSC Buffer (Saline-Sodium Citrate)",
+    "type": "buffer",
+    "category": "hybridization",
+    "working_concentration": "0.1x to 6x depending on application",
+    "stock_concentration": "20x (3 M NaCl, 300 mM sodium citrate, pH 7.0)",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; autoclavable",
+    "preparation_notes": "Higher SSC concentrations allow more mismatched hybridization (lower stringency). Lower SSC = higher stringency washes.",
+    "shelf_life": "12 months",
+    "incompatible_with": [],
+    "safety_notes": "Non-toxic",
+    "common_uses": [
+      "Northern blot hybridization",
+      "Southern blot hybridization",
+      "in situ hybridization",
+      "microarray washing"
+    ]
+  },
+  {
+    "name": "Formamide (deionized)",
+    "type": "chemical",
+    "category": "hybridization",
+    "working_concentration": "25-50% in hybridization buffers",
+    "stock_concentration": "100%",
+    "storage_temperature_c": "-20",
+    "storage_conditions": "Store at -20\u00b0C in aliquots; deionize with mixed-bed resin before use; protect from light",
+    "preparation_notes": "Deionize before use as formamide degrades to formic acid and ammonium over time. Lowers the melting temperature of nucleic acid duplexes by ~0.72\u00b0C per 1% formamide. Must be molecular biology grade.",
+    "shelf_life": "6 months at -20\u00b0C (deionized); check pH before use",
+    "incompatible_with": [
+      "strong oxidizers",
+      "strong acids"
+    ],
+    "safety_notes": "Teratogenic; reproductive toxin; avoid skin contact and inhalation; use in fume hood",
+    "common_uses": [
+      "in situ hybridization",
+      "Northern blot hybridization",
+      "RNA denaturation",
+      "FISH"
+    ]
+  },
+  {
+    "name": "MOPS Buffer",
+    "type": "buffer",
+    "category": "RNA electrophoresis",
+    "working_concentration": "1x (20 mM MOPS, 5 mM sodium acetate, 1 mM EDTA, pH 7.0)",
+    "stock_concentration": "10x",
+    "storage_temperature_c": "4",
+    "storage_conditions": "Store at 4\u00b0C; protect from light; discard if solution turns yellow",
+    "preparation_notes": "Autoclaving can cause yellowing; filter-sterilize preferred. MOPS is light-sensitive. pH range 6.5-7.9. Used with formaldehyde for denaturing RNA gels.",
+    "shelf_life": "3-6 months; discard if yellow",
+    "incompatible_with": [
+      "autoclaving (may cause degradation and yellowing)"
+    ],
+    "safety_notes": "Low toxicity; mild irritant",
+    "common_uses": [
+      "denaturing RNA agarose gel electrophoresis",
+      "Northern blotting",
+      "cell culture buffer"
+    ]
+  },
+  {
+    "name": "HEPES Buffer",
+    "type": "buffer",
+    "category": "cell culture buffer",
+    "working_concentration": "10-25 mM",
+    "stock_concentration": "1 M, pH 7.2-7.6",
+    "storage_temperature_c": "4-25",
+    "storage_conditions": "Room temperature or 4\u00b0C; filter-sterilize for cell culture",
+    "preparation_notes": "pH relatively temperature-insensitive (dpH/dT = -0.014/\u00b0C). Provides buffering in pH range 6.8-8.2. Do not autoclave for cell culture use; filter-sterilize. Can generate cytotoxic reactive oxygen species when exposed to ambient light.",
+    "shelf_life": "12 months",
+    "incompatible_with": [
+      "prolonged light exposure in cell culture (generates ROS and hydrogen peroxide)"
+    ],
+    "safety_notes": "Low toxicity; avoid prolonged light exposure in cell culture media containing HEPES",
+    "common_uses": [
+      "cell culture media supplementation",
+      "maintaining pH during CO2 fluctuations",
+      "flow cytometry buffers",
+      "protein purification"
+    ]
+  },
+  {
+    "name": "Sodium Acetate (3 M, pH 5.2)",
+    "type": "buffer",
+    "category": "nucleic acid precipitation",
+    "working_concentration": "0.3 M (1/10 volume of 3 M stock)",
+    "stock_concentration": "3 M, pH 5.2",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; autoclavable",
+    "preparation_notes": "pH 5.2 is optimal for DNA and RNA precipitation with ethanol. Use pH 7.0 for precipitation of dNTPs and small oligonucleotides.",
+    "shelf_life": "12 months",
+    "incompatible_with": [],
+    "safety_notes": "Non-toxic",
+    "common_uses": [
+      "ethanol precipitation of DNA/RNA",
+      "adjusting ionic strength",
+      "Northern blot gel preparation"
+    ]
+  },
+  {
+    "name": "Ammonium Acetate (7.5 M or 10 M)",
+    "type": "buffer",
+    "category": "nucleic acid precipitation",
+    "working_concentration": "2-2.5 M final concentration",
+    "stock_concentration": "7.5 M or 10 M",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; filter-sterilize",
+    "preparation_notes": "Does not co-precipitate dNTPs or salt as efficiently, leaving cleaner DNA. Isopropanol precipitation with ammonium acetate reduces salt carryover. Not suitable for RNA precipitation (inhibits T4 polynucleotide kinase and some other enzymes).",
+    "shelf_life": "12 months",
+    "incompatible_with": [
+      "downstream kinase reactions"
+    ],
+    "safety_notes": "Low toxicity",
+    "common_uses": [
+      "ethanol precipitation of DNA (removes free nucleotides)",
+      "isopropanol precipitation",
+      "PCR product cleanup"
+    ]
+  },
+  {
+    "name": "Lithium Chloride (8 M)",
+    "type": "chemical",
+    "category": "nucleic acid precipitation",
+    "working_concentration": "2-2.5 M final concentration",
+    "stock_concentration": "8 M",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; filter-sterilize or autoclave",
+    "preparation_notes": "Selectively precipitates RNA; does not efficiently precipitate DNA, proteins, or carbohydrates. Preferred for RNA precipitation from in vitro transcription reactions.",
+    "shelf_life": "12 months",
+    "incompatible_with": [],
+    "safety_notes": "Harmful if ingested in large quantities",
+    "common_uses": [
+      "selective RNA precipitation",
+      "in vitro transcription cleanup",
+      "removal of free nucleotides from RNA samples"
+    ]
+  },
+  {
+    "name": "Glycerol",
+    "type": "chemical",
+    "category": "cryoprotectant",
+    "working_concentration": "10-50% depending on application",
+    "stock_concentration": "100%",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; autoclavable; hygroscopic",
+    "preparation_notes": "Viscous; use positive-displacement pipettes or cut pipette tips for accurate measurement. 50% glycerol does not freeze at -20\u00b0C, making it useful for enzyme storage.",
+    "shelf_life": "24 months",
+    "incompatible_with": [
+      "strong oxidizing agents"
+    ],
+    "safety_notes": "Non-toxic; GRAS (Generally Recognized As Safe)",
+    "common_uses": [
+      "enzyme storage buffer component",
+      "bacterial glycerol stocks (15-25%)",
+      "gel loading dye component",
+      "cryopreservation",
+      "protein stabilization"
+    ]
+  },
+  {
+    "name": "DMSO (Dimethyl Sulfoxide)",
+    "type": "chemical",
+    "category": "solvent",
+    "working_concentration": "1-10% for most applications",
+    "stock_concentration": "100%",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; hygroscopic; use molecular biology grade; freezing point 18.5\u00b0C",
+    "preparation_notes": "Freezes at 18.5\u00b0C; warm to room temperature before opening. Cell culture grade DMSO must be used for cryopreservation. Enhances skin penetration of dissolved compounds.",
+    "shelf_life": "24 months",
+    "incompatible_with": [
+      "strong oxidizers",
+      "acid chlorides",
+      "some plastics at high concentrations"
+    ],
+    "safety_notes": "Rapidly penetrates skin and carries dissolved substances through skin; wear appropriate gloves; low intrinsic toxicity but can deliver toxic solutes transdermally",
+    "common_uses": [
+      "cryopreservation of cells (5-10%)",
+      "PCR additive to resolve GC-rich templates (2-10%)",
+      "solvent for hydrophobic compounds",
+      "transformation enhancer"
+    ]
+  },
+  {
+    "name": "Ethidium Bromide",
+    "type": "dye",
+    "category": "nucleic acid staining",
+    "working_concentration": "0.5 \u00b5g/mL in gel or staining solution",
+    "stock_concentration": "10 mg/mL",
+    "storage_temperature_c": "4",
+    "storage_conditions": "Store at 4\u00b0C; protect from light; amber bottle or foil-wrapped",
+    "preparation_notes": "Intercalates between base pairs; fluorescence increases ~20-fold when bound to dsDNA. Can be added to gel before casting or used as a post-stain. Excitation 302 nm (UV), emission 590 nm (orange).",
+    "shelf_life": "12 months",
+    "incompatible_with": [],
+    "safety_notes": "Potent mutagen and suspected carcinogen; wear nitrile gloves (latex is permeable); dispose of as hazardous waste; decontaminate with activated charcoal or commercial EtBr destaining bags",
+    "common_uses": [
+      "agarose gel DNA visualization",
+      "CsCl density gradient ultracentrifugation",
+      "fluorescence microscopy of DNA"
+    ]
+  },
+  {
+    "name": "SYBR Green I",
+    "type": "dye",
+    "category": "nucleic acid staining",
+    "working_concentration": "1x (from 10,000x stock)",
+    "stock_concentration": "10,000x in DMSO",
+    "storage_temperature_c": "-20",
+    "storage_conditions": "Store at -20\u00b0C; protect from light; DMSO stock does not freeze",
+    "preparation_notes": "Binds dsDNA minor groove; fluorescence increases >1000-fold upon binding. More sensitive than ethidium bromide (~25-100x). Excitation 497 nm, emission 520 nm (green). Inhibits PCR at high concentrations.",
+    "shelf_life": "12 months at -20\u00b0C protected from light",
+    "incompatible_with": [
+      "high concentrations inhibit PCR"
+    ],
+    "safety_notes": "Less mutagenic than ethidium bromide but still a DNA-binding compound; handle with gloves; dispose as hazardous waste",
+    "common_uses": [
+      "real-time/quantitative PCR (qPCR)",
+      "post-electrophoresis gel staining",
+      "DNA quantification"
+    ]
+  },
+  {
+    "name": "SYBR Safe",
+    "type": "dye",
+    "category": "nucleic acid staining",
+    "working_concentration": "1x (from 10,000x stock)",
+    "stock_concentration": "10,000x in DMSO",
+    "storage_temperature_c": "-20",
+    "storage_conditions": "Store at -20\u00b0C; protect from light",
+    "preparation_notes": "Designed as a safer alternative to ethidium bromide. Can be visualized with blue-light transilluminators (reduces UV-induced DNA damage) or UV. Excitation 280/502 nm, emission 530 nm.",
+    "shelf_life": "12 months",
+    "incompatible_with": [],
+    "safety_notes": "Not classified as hazardous waste in many jurisdictions; negative in Ames test; still use gloves when handling",
+    "common_uses": [
+      "agarose gel DNA visualization",
+      "safer alternative to ethidium bromide for teaching labs"
+    ]
+  },
+  {
+    "name": "DAPI (4',6-Diamidino-2-Phenylindole)",
+    "type": "dye",
+    "category": "nuclear staining",
+    "working_concentration": "0.1-1 \u00b5g/mL (300 nM typical)",
+    "stock_concentration": "1-5 mg/mL in water or DMF",
+    "storage_temperature_c": "-20",
+    "storage_conditions": "Store stock at -20\u00b0C; protect from light; aliquot to avoid freeze-thaw",
+    "preparation_notes": "Binds to AT-rich regions of minor groove of dsDNA. Cell-permeable for live or fixed cells. Excitation 360 nm, emission 460 nm (blue). Can also bind RNA with shifted emission (red).",
+    "shelf_life": "6-12 months at -20\u00b0C",
+    "incompatible_with": [],
+    "safety_notes": "Potential mutagen; avoid skin contact and inhalation; use gloves",
+    "common_uses": [
+      "fluorescence microscopy nuclear counterstain",
+      "flow cytometry cell cycle analysis",
+      "chromosome staining",
+      "mycoplasma detection"
+    ]
+  },
+  {
+    "name": "Coomassie Brilliant Blue (R-250 and G-250)",
+    "type": "dye",
+    "category": "protein staining",
+    "working_concentration": "0.1-0.25% in staining solution",
+    "stock_concentration": "0.1-0.25% in 50% methanol, 10% acetic acid (R-250); or as colloidal for G-250",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; filter before use to remove particulates",
+    "preparation_notes": "R-250: Fix and stain simultaneously in methanol/acetic acid. G-250: Used in colloidal (overnight, more sensitive) or Bradford assay format. Detection limit ~10-50 ng protein (gel), ~1 \u00b5g/mL (Bradford).",
+    "shelf_life": "12 months",
+    "incompatible_with": [
+      "detergents >0.1% SDS interfere with Bradford assay (G-250)"
+    ],
+    "safety_notes": "Stains skin and clothing; low toxicity",
+    "common_uses": [
+      "SDS-PAGE gel staining",
+      "Bradford protein assay (G-250)",
+      "native gel staining"
+    ]
+  },
+  {
+    "name": "Ponceau S",
+    "type": "dye",
+    "category": "protein staining",
+    "working_concentration": "0.1% Ponceau S in 5% acetic acid",
+    "stock_concentration": "0.1-0.2% in 5% acetic acid",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature",
+    "preparation_notes": "Reversible stain; can be completely removed by washing with water or TBST. Stain membrane 1-5 minutes, destain with water. Detection limit ~250 ng protein per band. Used as loading control for western blots.",
+    "shelf_life": "12 months; can be reused multiple times",
+    "incompatible_with": [],
+    "safety_notes": "Low toxicity; stains skin temporarily",
+    "common_uses": [
+      "reversible membrane protein staining after western blot transfer",
+      "verification of protein transfer",
+      "loading control documentation"
+    ]
+  },
+  {
+    "name": "Trypan Blue (0.4%)",
+    "type": "dye",
+    "category": "cell viability",
+    "working_concentration": "0.04% (1:10 dilution of 0.4% stock)",
+    "stock_concentration": "0.4% in PBS",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; filter if precipitates form",
+    "preparation_notes": "Exclusion dye: dead cells with compromised membranes stain blue; viable cells exclude the dye. Count within 3-5 minutes of staining as prolonged exposure kills cells. Use hemocytometer or automated cell counter.",
+    "shelf_life": "12 months",
+    "incompatible_with": [
+      "prolonged incubation times >5 min (increases false positives for dead cells)"
+    ],
+    "safety_notes": "Suspected carcinogen (azo dye); handle with gloves",
+    "common_uses": [
+      "cell viability assessment",
+      "cell counting with hemocytometer",
+      "automated cell counting"
+    ]
+  },
+  {
+    "name": "Crystal Violet",
+    "type": "dye",
+    "category": "cell staining",
+    "working_concentration": "0.1-0.5% in 20% methanol",
+    "stock_concentration": "1% in water or methanol",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; protect from light",
+    "preparation_notes": "Stains DNA in nuclei of adherent cells. Can be solubilized with 10% acetic acid or methanol for quantification by absorbance at 570-590 nm.",
+    "shelf_life": "12 months",
+    "incompatible_with": [],
+    "safety_notes": "Stains skin and clothing; potential irritant; suspected carcinogen with chronic exposure",
+    "common_uses": [
+      "colony formation assays",
+      "biofilm staining",
+      "plaque assays",
+      "Gram staining"
+    ]
+  },
+  {
+    "name": "Propidium Iodide (PI)",
+    "type": "dye",
+    "category": "cell viability and cell cycle",
+    "working_concentration": "1-10 \u00b5g/mL (viability); 50 \u00b5g/mL (cell cycle)",
+    "stock_concentration": "1 mg/mL in water",
+    "storage_temperature_c": "4",
+    "storage_conditions": "Store at 4\u00b0C; protect from light",
+    "preparation_notes": "Membrane-impermeant; only enters dead/permeabilized cells. Intercalates dsDNA and dsRNA (use RNase A to eliminate RNA signal for cell cycle analysis). Excitation 535 nm, emission 617 nm (red).",
+    "shelf_life": "6-12 months at 4\u00b0C",
+    "incompatible_with": [
+      "live cell membrane-intact staining (must be used on fixed/permeabilized cells for intracellular staining)"
+    ],
+    "safety_notes": "Potential mutagen (DNA intercalator); handle with gloves",
+    "common_uses": [
+      "flow cytometry cell cycle analysis",
+      "dead cell discrimination",
+      "apoptosis assays (with Annexin V)",
+      "fluorescence microscopy"
+    ]
+  },
+  {
+    "name": "Acridine Orange",
+    "type": "dye",
+    "category": "nucleic acid staining",
+    "working_concentration": "1-10 \u00b5g/mL",
+    "stock_concentration": "1-10 mg/mL in water",
+    "storage_temperature_c": "4",
+    "storage_conditions": "Store at 4\u00b0C; protect from light",
+    "preparation_notes": "Differentially stains DNA (green fluorescence, 525 nm) and RNA (red/orange fluorescence, 650 nm). Cell-permeable; can be used on live cells. Metachromatic dye.",
+    "shelf_life": "6 months",
+    "incompatible_with": [],
+    "safety_notes": "Potential mutagen; handle with gloves; protect from light",
+    "common_uses": [
+      "differential DNA/RNA staining",
+      "cell viability with DAPI or ethidium bromide",
+      "autophagy detection (lysosomal staining)",
+      "fluorescence microscopy"
+    ]
+  },
+  {
+    "name": "Agarose",
+    "type": "chemical",
+    "category": "DNA electrophoresis",
+    "working_concentration": "0.5-2% w/v depending on DNA fragment size",
+    "stock_concentration": null,
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; keep dry; tightly sealed",
+    "preparation_notes": "0.5% for large fragments (1-30 kb), 1% for 0.5-10 kb, 1.5% for 0.2-3 kb, 2% for 0.1-2 kb. Dissolve in TAE or TBE by microwaving. Low-melting point agarose available for gel extraction. Use molecular biology grade (low EEO) for best resolution.",
+    "shelf_life": "36 months if kept dry",
+    "incompatible_with": [],
+    "safety_notes": "Non-toxic; caution with hot molten agarose (superheating risk in microwave)",
+    "common_uses": [
+      "agarose gel electrophoresis of DNA and RNA",
+      "gel extraction of DNA fragments",
+      "immunodiffusion assays"
+    ]
+  },
+  {
+    "name": "Acrylamide/Bis-acrylamide (30%, 29:1)",
+    "type": "chemical",
+    "category": "protein and nucleic acid electrophoresis",
+    "working_concentration": "4-20% depending on target protein size",
+    "stock_concentration": "30% (29:1 acrylamide:bis ratio) or 40%",
+    "storage_temperature_c": "4",
+    "storage_conditions": "Store at 4\u00b0C; protect from light; use within expiration date",
+    "preparation_notes": "Polymerizes when TEMED and APS are added. Higher percentage gels resolve smaller proteins. 29:1 ratio is standard for proteins; 19:1 for DNA sequencing gels. Degas solution before polymerization for best results.",
+    "shelf_life": "12 months at 4\u00b0C",
+    "incompatible_with": [
+      "UV light (causes spontaneous polymerization)",
+      "oxidizers"
+    ],
+    "safety_notes": "NEUROTOXIN in unpolymerized form; cumulative neurotoxicity; always wear gloves; avoid inhalation of powder; polymerized acrylamide is non-toxic",
+    "common_uses": [
+      "SDS-PAGE",
+      "native PAGE",
+      "Western blotting gels",
+      "DNA sequencing gels",
+      "2D gel electrophoresis"
+    ]
+  },
+  {
+    "name": "SDS (Sodium Dodecyl Sulfate)",
+    "type": "chemical",
+    "category": "protein analysis",
+    "working_concentration": "0.1% (gels), 1-2% (lysis buffers)",
+    "stock_concentration": "10% or 20% w/v",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; precipitates below 15\u00b0C; store powder in dry conditions",
+    "preparation_notes": "Anionic detergent that denatures proteins and confers uniform negative charge (~1.4 g SDS per g protein). Do not autoclave solutions. Stock precipitates at low temperatures; warm to dissolve. Use electrophoresis grade.",
+    "shelf_life": "24 months",
+    "incompatible_with": [
+      "potassium salts (forms insoluble potassium dodecyl sulfate precipitate)",
+      "guanidinium salts",
+      "cationic detergents"
+    ],
+    "safety_notes": "Irritant to eyes, skin, and respiratory tract; wear dust mask when weighing powder",
+    "common_uses": [
+      "SDS-PAGE",
+      "protein denaturation",
+      "cell lysis buffers",
+      "membrane protein solubilization"
+    ]
+  },
+  {
+    "name": "EDTA (Ethylenediaminetetraacetic acid)",
+    "type": "chemical",
+    "category": "chelator",
+    "working_concentration": "0.5-5 mM",
+    "stock_concentration": "0.5 M, pH 8.0",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; autoclavable",
+    "preparation_notes": "Disodium EDTA will not dissolve until pH is adjusted to ~8.0 with NaOH. Chelates divalent cations (Mg2+, Ca2+, Mn2+, Zn2+). Inhibits metalloproteinases and DNases by chelating required metal cofactors.",
+    "shelf_life": "24 months",
+    "incompatible_with": [
+      "enzymes requiring divalent cation cofactors (restriction enzymes, polymerases, ligases need Mg2+)",
+      "metal-dependent assays"
+    ],
+    "safety_notes": "Low toxicity; irritant",
+    "common_uses": [
+      "DNase inhibition in DNA/RNA extraction",
+      "anticoagulant",
+      "metal chelation",
+      "component of TE, TAE, TBE buffers"
+    ]
+  },
+  {
+    "name": "DTT (Dithiothreitol)",
+    "type": "chemical",
+    "category": "reducing agent",
+    "working_concentration": "1-10 mM",
+    "stock_concentration": "1 M in water",
+    "storage_temperature_c": "-20",
+    "storage_conditions": "Store powder at 4\u00b0C desiccated; stock solutions at -20\u00b0C in aliquots",
+    "preparation_notes": "Reduces disulfide bonds in proteins. Less pungent than beta-mercaptoethanol. Oxidizes in solution; prepare fresh or use frozen aliquots. Not compatible with maleimide or iodoacetamide-based labeling (until removed). pKa of thiol groups 9.2 and 10.1.",
+    "shelf_life": "Powder: 12 months; 1 M stock at -20\u00b0C: 6 months",
+    "incompatible_with": [
+      "maleimide conjugation chemistry",
+      "iodoacetamide alkylation (must be quenched first)",
+      "NEM"
+    ],
+    "safety_notes": "Irritant; harmful if inhaled or ingested; wear gloves",
+    "common_uses": [
+      "protein reducing agent in SDS-PAGE",
+      "maintaining reduced cysteines",
+      "enzyme activity preservation",
+      "reverse-transcriptase buffer component"
+    ]
+  },
+  {
+    "name": "Beta-Mercaptoethanol (2-Mercaptoethanol, BME)",
+    "type": "chemical",
+    "category": "reducing agent",
+    "working_concentration": "5% (v/v) in Laemmli buffer; 1-15 mM in other applications",
+    "stock_concentration": "14.3 M (neat liquid)",
+    "storage_temperature_c": "4-25",
+    "storage_conditions": "Store at 4\u00b0C or room temperature; tightly sealed; keep in fume hood when open",
+    "preparation_notes": "Strong reducing agent for disulfide bonds. Add fresh to sample buffers. 5% v/v = ~710 mM in Laemmli buffer. More volatile and pungent than DTT. 1 \u00b5L per 1 mL is typical for RNA work to inhibit RNases.",
+    "shelf_life": "12 months",
+    "incompatible_with": [
+      "oxidizing agents",
+      "maleimide chemistry"
+    ],
+    "safety_notes": "Toxic; strong unpleasant odor; use in fume hood; harmful by inhalation and skin absorption; causes eye and skin burns",
+    "common_uses": [
+      "SDS-PAGE reducing agent",
+      "RNase inactivation in RNA extraction",
+      "protein denaturation",
+      "maintaining reducing conditions"
+    ]
+  },
+  {
+    "name": "TEMED (Tetramethylethylenediamine)",
+    "type": "chemical",
+    "category": "polymerization catalyst",
+    "working_concentration": "0.05-0.1% (v/v)",
+    "stock_concentration": "neat liquid (~6.7 M)",
+    "storage_temperature_c": "4",
+    "storage_conditions": "Store at 4\u00b0C; tightly sealed; moisture-sensitive; nitrogen blanket recommended",
+    "preparation_notes": "Catalyzes APS-initiated free radical polymerization of acrylamide. Add TEMED last when casting gels. More TEMED = faster polymerization. Old or oxidized TEMED results in poor polymerization.",
+    "shelf_life": "12 months; replace if gels fail to polymerize",
+    "incompatible_with": [
+      "should be added last to gel mixture to control polymerization timing"
+    ],
+    "safety_notes": "Flammable; corrosive; toxic by inhalation; use in fume hood; strong amine odor",
+    "common_uses": [
+      "polyacrylamide gel polymerization catalyst (SDS-PAGE, native PAGE, sequencing gels)"
+    ]
+  },
+  {
+    "name": "APS (Ammonium Persulfate)",
+    "type": "chemical",
+    "category": "polymerization initiator",
+    "working_concentration": "0.05-0.1% (w/v)",
+    "stock_concentration": "10% (w/v) in water",
+    "storage_temperature_c": "-20",
+    "storage_conditions": "Powder at room temperature, desiccated. 10% solution at -20\u00b0C in aliquots; do not repeatedly freeze-thaw",
+    "preparation_notes": "Free radical source for acrylamide polymerization with TEMED. 10% solution degrades over time; prepare fresh weekly or freeze aliquots. Old APS causes poor gel polymerization.",
+    "shelf_life": "Powder: 24 months; 10% solution: 2 weeks at 4\u00b0C or 6 months at -20\u00b0C",
+    "incompatible_with": [
+      "reducing agents (consumed by reaction)"
+    ],
+    "safety_notes": "Oxidizer; irritant; may cause allergic sensitization; wear gloves and mask when weighing",
+    "common_uses": [
+      "initiator for polyacrylamide gel polymerization (with TEMED)"
+    ]
+  },
+  {
+    "name": "Phenol (Tris-saturated, pH 8.0)",
+    "type": "chemical",
+    "category": "nucleic acid extraction",
+    "working_concentration": null,
+    "stock_concentration": "Saturated with Tris-HCl buffer, pH 8.0",
+    "storage_temperature_c": "4",
+    "storage_conditions": "Store at 4\u00b0C; protect from light; must be equilibrated to pH >7.6 for DNA extraction; pH <7.0 for RNA",
+    "preparation_notes": "pH 8.0 phenol: DNA partitions to aqueous phase. Acidic phenol (pH 4.5): DNA partitions to organic phase, RNA stays aqueous (basis of TRIzol). Always check pH before use as oxidation lowers pH. Pink/brown color indicates oxidation\u2014discard.",
+    "shelf_life": "6 months at 4\u00b0C; discard if discolored",
+    "incompatible_with": [
+      "polycarbonate and polystyrene plastics (dissolves them)",
+      "oxidized/discolored phenol causes nucleic acid damage"
+    ],
+    "safety_notes": "Highly toxic; causes severe chemical burns; rapidly absorbed through skin; use in fume hood; have PEG 300/400 available for skin decontamination (NOT water first)",
+    "common_uses": [
+      "phenol-chloroform extraction of DNA/RNA",
+      "protein removal from nucleic acid preparations"
+    ]
+  },
+  {
+    "name": "Chloroform",
+    "type": "chemical",
+    "category": "nucleic acid extraction",
+    "working_concentration": null,
+    "stock_concentration": "neat, stabilized with 0.5-1% ethanol",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; amber bottle; well-ventilated area",
+    "preparation_notes": "Used as chloroform:isoamyl alcohol (24:1) mixture. Removes residual phenol from aqueous phase. Denatures proteins at the interface. Isoamyl alcohol reduces foaming and helps separate phases.",
+    "shelf_life": "24 months",
+    "incompatible_with": [
+      "polycarbonate tubes (dissolves them; use polypropylene)",
+      "strong bases",
+      "acetone"
+    ],
+    "safety_notes": "Toxic by inhalation; suspected carcinogen; CNS depressant; use in fume hood; use polypropylene tubes only",
+    "common_uses": [
+      "phenol-chloroform DNA/RNA extraction",
+      "lipid extraction",
+      "phase separation"
+    ]
+  },
+  {
+    "name": "Isoamyl Alcohol (3-Methyl-1-butanol)",
+    "type": "chemical",
+    "category": "nucleic acid extraction",
+    "working_concentration": "1 part in 24 parts chloroform (24:1 chloroform:isoamyl alcohol)",
+    "stock_concentration": "neat",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; flammable; keep away from heat/sparks",
+    "preparation_notes": "Mixed with chloroform at 24:1 ratio. Reduces foaming during extraction and aids phase separation. Phenol:chloroform:isoamyl alcohol (25:24:1) is the standard extraction mixture.",
+    "shelf_life": "24 months",
+    "incompatible_with": [
+      "strong oxidizers"
+    ],
+    "safety_notes": "Flammable; irritant; use in fume hood",
+    "common_uses": [
+      "component of phenol-chloroform extraction mixture",
+      "anti-foaming agent",
+      "phase separation aid"
+    ]
+  },
+  {
+    "name": "Isopropanol (2-Propanol)",
+    "type": "chemical",
+    "category": "nucleic acid precipitation",
+    "working_concentration": "0.6-0.7 volumes relative to sample",
+    "stock_concentration": "100%",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; flammable; molecular biology grade",
+    "preparation_notes": "Use 0.6-0.7 volumes (vs 2-2.5 volumes for ethanol) for DNA precipitation. Precipitates at room temperature (no need for cold). Produces smaller, more compact pellets than ethanol. Coprecipitates more salt than ethanol\u2014follow with 70% ethanol wash.",
+    "shelf_life": "24 months",
+    "incompatible_with": [
+      "strong oxidizers"
+    ],
+    "safety_notes": "Flammable; CNS depressant at high concentrations; use in well-ventilated area",
+    "common_uses": [
+      "DNA and RNA precipitation",
+      "plasmid miniprep protocols",
+      "column-based nucleic acid purification"
+    ]
+  },
+  {
+    "name": "Ethanol (70% and 100%)",
+    "type": "chemical",
+    "category": "nucleic acid precipitation and sterilization",
+    "working_concentration": "70% for washes/sterilization; 100% for precipitation",
+    "stock_concentration": "95-100% (absolute/molecular biology grade)",
+    "storage_temperature_c": "-20 for precipitation use; 25 for sterilization",
+    "storage_conditions": "Room temperature; flammable; keep tightly sealed (hygroscopic); use molecular biology grade for nucleic acid work",
+    "preparation_notes": "Use 2-2.5 volumes 100% ethanol with salt for DNA/RNA precipitation. 70% ethanol wash removes residual salts from nucleic acid pellets. 70% ethanol is more effective as a disinfectant than 100% (water aids protein denaturation).",
+    "shelf_life": "24 months (keep sealed to prevent water absorption)",
+    "incompatible_with": [
+      "strong oxidizers",
+      "concentrated acids"
+    ],
+    "safety_notes": "Highly flammable; keep away from heat/flame; use in ventilated area",
+    "common_uses": [
+      "nucleic acid precipitation",
+      "washing nucleic acid pellets (70%)",
+      "surface disinfection (70%)",
+      "tissue fixation",
+      "dehydration series in histology"
+    ]
+  },
+  {
+    "name": "Sodium Chloride (NaCl)",
+    "type": "chemical",
+    "category": "salt",
+    "working_concentration": "varies: 137 mM (PBS), 150 mM (physiological), 0.1-2 M (buffers)",
+    "stock_concentration": "5 M",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; hygroscopic; keep dry",
+    "preparation_notes": "Essential for adjusting ionic strength. 0.9% NaCl = physiological saline (154 mM). Autoclavable. Higher NaCl increases stringency in hybridization washes.",
+    "shelf_life": "indefinite (dry powder)",
+    "incompatible_with": [],
+    "safety_notes": "Non-toxic at normal concentrations",
+    "common_uses": [
+      "buffer component",
+      "adjusting ionic strength",
+      "protein purification (salting in/out)",
+      "physiological saline",
+      "hybridization stringency washes"
+    ]
+  },
+  {
+    "name": "Magnesium Chloride (MgCl2)",
+    "type": "chemical",
+    "category": "enzyme cofactor",
+    "working_concentration": "1-4 mM (PCR); 5-10 mM (restriction enzymes)",
+    "stock_concentration": "25 mM, 50 mM, or 1 M",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; very hygroscopic; keep tightly sealed",
+    "preparation_notes": "Essential cofactor for DNA polymerases, restriction enzymes, and ligases. Excess Mg2+ decreases PCR specificity; too little reduces yield. Typical PCR range 1.5-3 mM. EDTA chelates Mg2+, so account for EDTA in calculations.",
+    "shelf_life": "24 months",
+    "incompatible_with": [
+      "EDTA (chelates Mg2+)",
+      "phosphate buffers at high concentrations (forms precipitate)"
+    ],
+    "safety_notes": "Low toxicity; irritant at high concentrations",
+    "common_uses": [
+      "PCR optimization",
+      "restriction enzyme reactions",
+      "ligase reactions",
+      "reverse transcription",
+      "cofactor for enzymatic reactions"
+    ]
+  },
+  {
+    "name": "Calcium Chloride (CaCl2)",
+    "type": "chemical",
+    "category": "cell biology reagent",
+    "working_concentration": "50-100 mM for competent cell preparation",
+    "stock_concentration": "1 M or 2 M",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; very hygroscopic; anhydrous form absorbs water readily",
+    "preparation_notes": "Used to make chemically competent E. coli cells. Autoclave or filter-sterilize solutions. Do not mix with phosphate buffers (precipitates calcium phosphate). CaCl2 treatment permeabilizes bacterial cell membranes to DNA uptake.",
+    "shelf_life": "12 months (solution); indefinite (powder, if dry)",
+    "incompatible_with": [
+      "phosphate buffers (precipitates as calcium phosphate)",
+      "sulfate salts"
+    ],
+    "safety_notes": "Irritant; exothermic when dissolving; handle with care",
+    "common_uses": [
+      "preparation of chemically competent bacteria",
+      "calcium phosphate transfection",
+      "cell signaling studies"
+    ]
+  },
+  {
+    "name": "Potassium Chloride (KCl)",
+    "type": "chemical",
+    "category": "salt",
+    "working_concentration": "50 mM (standard PCR buffer)",
+    "stock_concentration": "1 M or 3 M",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; keep dry",
+    "preparation_notes": "Component of standard PCR buffers (50 mM) and physiological buffers. Promotes primer annealing to template DNA. High concentrations (>50 mM) can inhibit Taq polymerase.",
+    "shelf_life": "indefinite (dry powder)",
+    "incompatible_with": [
+      "SDS (potassium dodecyl sulfate is insoluble)"
+    ],
+    "safety_notes": "Non-toxic at normal concentrations",
+    "common_uses": [
+      "PCR buffer component",
+      "physiological buffers",
+      "electrophysiology solutions",
+      "protein crystallography"
+    ]
+  },
+  {
+    "name": "TRIzol / TRI Reagent",
+    "type": "chemical",
+    "category": "RNA extraction",
+    "working_concentration": "1 mL per 50-100 mg tissue or per 5-10 \u00d7 10^6 cells",
+    "stock_concentration": "ready-to-use monophasic solution",
+    "storage_temperature_c": "4",
+    "storage_conditions": "Store at 4\u00b0C; protect from light",
+    "preparation_notes": "Monophasic solution of phenol and guanidinium isothiocyanate. After chloroform addition and centrifugation: aqueous phase (RNA), interphase (DNA), organic phase (protein). RNA should be in the upper aqueous phase. Do NOT vortex after adding chloroform (shear RNA); mix by inversion.",
+    "shelf_life": "12 months at 4\u00b0C",
+    "incompatible_with": [
+      "polycarbonate and polystyrene tubes (use polypropylene)",
+      "DEPC-treated water not required (guanidinium inactivates RNases)"
+    ],
+    "safety_notes": "Contains phenol and guanidinium thiocyanate; toxic and corrosive; use in fume hood; causes chemical burns; avoid skin/eye contact",
+    "common_uses": [
+      "total RNA extraction",
+      "simultaneous extraction of RNA, DNA, and protein",
+      "RNA isolation from tissues and cells"
+    ]
+  },
+  {
+    "name": "Guanidinium Thiocyanate (Guanidine Thiocyanate)",
+    "type": "chemical",
+    "category": "chaotropic agent",
+    "working_concentration": "4 M (lysis buffer)",
+    "stock_concentration": "4-6 M in lysis buffers",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; hygroscopic; protect from light",
+    "preparation_notes": "Powerful chaotrope and protein denaturant. Inactivates RNases immediately\u2014gold standard for RNA preservation. Component of TRIzol and most silica column RNA extraction kits. Solutions may need warming to dissolve.",
+    "shelf_life": "12 months",
+    "incompatible_with": [
+      "bleach/sodium hypochlorite (produces toxic cyanide gas)",
+      "strong acids"
+    ],
+    "safety_notes": "Toxic if ingested; irritant; NEVER mix with bleach\u2014produces lethal cyanide gas; use in fume hood",
+    "common_uses": [
+      "RNA extraction",
+      "protein denaturation",
+      "RNase inactivation",
+      "silica-column nucleic acid binding"
+    ]
+  },
+  {
+    "name": "Formaldehyde (37% solution, formalin)",
+    "type": "chemical",
+    "category": "fixative",
+    "working_concentration": "3.7-4% (often called 10% formalin = 10% of 37% stock = 3.7% formaldehyde)",
+    "stock_concentration": "37% (w/v) aqueous solution, often with 10-15% methanol stabilizer",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; keep tightly sealed; avoid temperatures below 15\u00b0C (polymerizes to paraformaldehyde at low temperatures)",
+    "preparation_notes": "Fixes by cross-linking primary amines (lysine residues) in proteins. 10% neutral buffered formalin is the standard histology fixative. Methanol-free formaldehyde preferred for fluorescence applications. Fix time varies: cells 10-20 min, tissues 24-48 hr.",
+    "shelf_life": "12 months; discard if white precipitate (paraformaldehyde) forms",
+    "incompatible_with": [
+      "oxidizing agents",
+      "strong acids/bases",
+      "do not mix with HCl (produces carcinogenic bis-chloromethyl ether)"
+    ],
+    "safety_notes": "Known human carcinogen (IARC Group 1); toxic by inhalation; sensitizer; use in fume hood; 0.75 ppm OSHA TWA exposure limit",
+    "common_uses": [
+      "tissue fixation for histology",
+      "cell fixation for immunofluorescence",
+      "cross-linking for ChIP",
+      "RNA gel electrophoresis (denaturing)"
+    ]
+  },
+  {
+    "name": "Paraformaldehyde (PFA)",
+    "type": "chemical",
+    "category": "fixative",
+    "working_concentration": "4% w/v in PBS",
+    "stock_concentration": "16% methanol-free ampoules or powder",
+    "storage_temperature_c": "-20",
+    "storage_conditions": "Powder at room temperature; 4% solution at -20\u00b0C in aliquots or at 4\u00b0C for 1-2 weeks; 16% ampoules at room temperature until opened",
+    "preparation_notes": "PFA is polymerized formaldehyde that depolymerizes to formaldehyde in solution. Dissolve powder by heating to 60\u00b0C in water with NaOH, then buffer with PBS. Methanol-free PFA preferred for immunofluorescence. Do not overheat (>68\u00b0C generates formic acid).",
+    "shelf_life": "4% solution: 1-2 weeks at 4\u00b0C, months at -20\u00b0C; 16% ampoules: 12 months sealed",
+    "incompatible_with": [
+      "some epitopes are masked by PFA fixation (require antigen retrieval)"
+    ],
+    "safety_notes": "Releases formaldehyde (carcinogen); toxic by inhalation; use in fume hood; causes skin sensitization",
+    "common_uses": [
+      "immunofluorescence cell fixation",
+      "immunohistochemistry",
+      "perfusion fixation for neuroscience",
+      "electron microscopy (with glutaraldehyde)"
+    ]
+  },
+  {
+    "name": "Glutaraldehyde",
+    "type": "chemical",
+    "category": "fixative",
+    "working_concentration": "0.1-2.5% for fixation; 2.5% standard for EM",
+    "stock_concentration": "25% or 50% aqueous solution; EM-grade 8% ampoules",
+    "storage_temperature_c": "-20",
+    "storage_conditions": "Store at -20\u00b0C; EM-grade in sealed ampoules at 4\u00b0C; discard if yellow",
+    "preparation_notes": "Stronger cross-linker than formaldehyde; preserves ultrastructure better. Causes high autofluorescence\u2014NOT suitable for fluorescence microscopy unless quenched (NaBH4 or glycine). Often combined with PFA (2% PFA + 2.5% glutaraldehyde) for EM.",
+    "shelf_life": "6-12 months at -20\u00b0C; EM-grade ampoules: per manufacturer",
+    "incompatible_with": [
+      "fluorescence microscopy (strong autofluorescence at 450-550 nm)",
+      "Tris buffers (reacts with primary amines; use phosphate or cacodylate buffer)"
+    ],
+    "safety_notes": "Toxic; severe irritant; potent sensitizer; use in fume hood; wear gloves",
+    "common_uses": [
+      "electron microscopy fixation",
+      "tissue cross-linking",
+      "glutaraldehyde-based surface sterilization"
+    ]
+  },
+  {
+    "name": "Triton X-100",
+    "type": "chemical",
+    "category": "detergent",
+    "working_concentration": "0.1-1%",
+    "stock_concentration": "10% or neat (viscous liquid)",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; viscous liquid; cut pipette tip for accurate dispensing of neat solution",
+    "preparation_notes": "Non-ionic detergent. CMC (critical micelle concentration) ~0.2 mM (~0.01%). Solubilizes membrane proteins while often preserving protein activity. Permeabilizes cell membranes for intracellular staining in immunofluorescence.",
+    "shelf_life": "24 months; old Triton X-100 may contain peroxides",
+    "incompatible_with": [
+      "Bradford protein assay (interferes above 0.01%)",
+      "BCA assay tolerates up to ~5%"
+    ],
+    "safety_notes": "Irritant; environmentally persistent (being phased out in EU; replaced by Triton X-100 reduced or other detergents)",
+    "common_uses": [
+      "cell permeabilization for immunofluorescence",
+      "protein extraction (mild lysis)",
+      "membrane protein solubilization",
+      "component of lysis buffers"
+    ]
+  },
+  {
+    "name": "Tween-20 (Polysorbate 20)",
+    "type": "chemical",
+    "category": "detergent",
+    "working_concentration": "0.05-0.1%",
+    "stock_concentration": "10% or neat (viscous liquid)",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; viscous liquid; protect from light",
+    "preparation_notes": "Mild non-ionic detergent. CMC ~0.06 mM (~0.007%). Does not typically lyse cells or denature proteins. Used as a blocking/washing agent to reduce non-specific binding in immunoassays.",
+    "shelf_life": "24 months; old Tween may contain peroxides",
+    "incompatible_with": [
+      "some protein-protein interaction assays at high concentration"
+    ],
+    "safety_notes": "Very low toxicity; mild irritant",
+    "common_uses": [
+      "TBST and PBST wash buffer component",
+      "ELISA wash buffer",
+      "reducing non-specific binding in western blots",
+      "IHC wash buffer"
+    ]
+  },
+  {
+    "name": "NP-40 (Nonidet P-40) / IGEPAL CA-630",
+    "type": "chemical",
+    "category": "detergent",
+    "working_concentration": "0.1-1%",
+    "stock_concentration": "10% or neat liquid",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; note: original NP-40 is discontinued; IGEPAL CA-630 is the replacement with identical properties",
+    "preparation_notes": "Non-ionic detergent similar to Triton X-100. Disrupts cell membranes but generally does not solubilize nuclear membranes at low concentrations (useful for cytoplasmic extracts). Component of RIPA buffer.",
+    "shelf_life": "24 months",
+    "incompatible_with": [
+      "Bradford assay at high concentrations"
+    ],
+    "safety_notes": "Irritant; similar safety profile to Triton X-100",
+    "common_uses": [
+      "cell lysis buffers",
+      "nuclear/cytoplasmic fractionation",
+      "immunoprecipitation buffers",
+      "RIPA buffer component"
+    ]
+  },
+  {
+    "name": "LB Broth (Lysogeny Broth / Luria-Bertani)",
+    "type": "medium",
+    "category": "bacterial culture",
+    "working_concentration": "1x (10 g/L tryptone, 5 g/L yeast extract, 10 g/L NaCl)",
+    "stock_concentration": null,
+    "storage_temperature_c": "25",
+    "storage_conditions": "Autoclave (121\u00b0C, 15 psi, 15-20 minutes); store at room temperature; add antibiotics after cooling to <55\u00b0C",
+    "preparation_notes": "The most common E. coli growth medium. Miller formulation (10 g/L NaCl) is standard. Lennox formulation has 5 g/L NaCl (better for salt-sensitive antibiotics like zeocin). Do NOT add glucose unless specifically needed (catabolite repression).",
+    "shelf_life": "3 months autoclaved at room temperature; check for contamination before use",
+    "incompatible_with": [],
+    "safety_notes": "Non-toxic; use sterile technique",
+    "common_uses": [
+      "E. coli routine growth",
+      "plasmid propagation",
+      "protein expression",
+      "cloning"
+    ]
+  },
+  {
+    "name": "LB Agar",
+    "type": "medium",
+    "category": "bacterial culture",
+    "working_concentration": "LB broth + 1.5% (w/v) agar",
+    "stock_concentration": null,
+    "storage_temperature_c": "4",
+    "storage_conditions": "Store poured plates inverted at 4\u00b0C; pre-warm to 37\u00b0C before use",
+    "preparation_notes": "Autoclave LB with agar. Cool to 55\u00b0C before adding antibiotics or supplements (higher temp destroys antibiotics). Pour ~25 mL per 100 mm plate. Store inverted to prevent condensation dripping on agar surface.",
+    "shelf_life": "1-2 months at 4\u00b0C (plates without antibiotics); 2-4 weeks with antibiotics",
+    "incompatible_with": [],
+    "safety_notes": "Non-toxic; use sterile technique; hot agar causes burns",
+    "common_uses": [
+      "bacterial colony isolation",
+      "transformation plating",
+      "antibiotic selection",
+      "blue-white screening"
+    ]
+  },
+  {
+    "name": "SOC Medium",
+    "type": "medium",
+    "category": "bacterial culture",
+    "working_concentration": "1x (2% tryptone, 0.5% yeast extract, 10 mM NaCl, 2.5 mM KCl, 10 mM MgCl2, 10 mM MgSO4, 20 mM glucose)",
+    "stock_concentration": null,
+    "storage_temperature_c": "-20",
+    "storage_conditions": "Store at -20\u00b0C in aliquots; or prepare fresh; filter-sterilize the glucose and Mg2+ separately and add after autoclaving",
+    "preparation_notes": "SOC is SOB medium plus 20 mM glucose. Used for recovery after transformation to maximize transformation efficiency. Glucose and magnesium are critical; omitting them significantly reduces transformation efficiency. Pre-warm to 37\u00b0C before use.",
+    "shelf_life": "6 months at -20\u00b0C; 2 weeks at 4\u00b0C",
+    "incompatible_with": [],
+    "safety_notes": "Non-toxic; use sterile technique",
+    "common_uses": [
+      "post-transformation recovery of E. coli",
+      "maximizing transformation efficiency",
+      "electroporation recovery"
+    ]
+  },
+  {
+    "name": "DMEM (Dulbecco's Modified Eagle Medium)",
+    "type": "medium",
+    "category": "cell culture",
+    "working_concentration": "1x, supplemented with 10% FBS and antibiotics",
+    "stock_concentration": "1x (liquid) or 10x (powder reconstitution)",
+    "storage_temperature_c": "4",
+    "storage_conditions": "Store at 4\u00b0C; protect from light; pre-warm to 37\u00b0C before use",
+    "preparation_notes": "Contains high glucose (4.5 g/L) or low glucose (1 g/L). Supplement with L-glutamine (2 mM) or use GlutaMAX. Requires 5-10% CO2 incubator for bicarbonate buffering system. Phenol red pH indicator: red = pH 7.4; yellow = acidic; pink/purple = basic.",
+    "shelf_life": "12 months unopened; 4-6 weeks opened at 4\u00b0C; L-glutamine degrades over weeks",
+    "incompatible_with": [],
+    "safety_notes": "Non-toxic; use aseptic technique in biosafety cabinet",
+    "common_uses": [
+      "culture of HEK293, HeLa, NIH/3T3, COS-7, and many adherent cell lines",
+      "viral production",
+      "transfection experiments"
+    ]
+  },
+  {
+    "name": "RPMI-1640",
+    "type": "medium",
+    "category": "cell culture",
+    "working_concentration": "1x, supplemented with 10% FBS and antibiotics",
+    "stock_concentration": "1x (liquid)",
+    "storage_temperature_c": "4",
+    "storage_conditions": "Store at 4\u00b0C; protect from light; pre-warm to 37\u00b0C before use",
+    "preparation_notes": "Originally developed for culture of human lymphoid cells. Contains biotin, vitamin B12, and PABA not found in DMEM. Lower glucose (2 g/L) than DMEM. Requires glutamine supplementation. Requires 5% CO2.",
+    "shelf_life": "12 months unopened; 4-6 weeks opened at 4\u00b0C",
+    "incompatible_with": [],
+    "safety_notes": "Non-toxic; use aseptic technique",
+    "common_uses": [
+      "culture of suspension cells (Jurkat, K562, HL-60)",
+      "lymphocyte culture",
+      "PBMC culture",
+      "hybridoma culture"
+    ]
+  },
+  {
+    "name": "FBS (Fetal Bovine Serum)",
+    "type": "supplement",
+    "category": "cell culture",
+    "working_concentration": "5-20% (10% most common)",
+    "stock_concentration": "100%",
+    "storage_temperature_c": "-20",
+    "storage_conditions": "Store at -20\u00b0C; thaw at 4\u00b0C overnight or in 37\u00b0C water bath; aliquot to avoid repeated freeze-thaw",
+    "preparation_notes": "Heat-inactivate at 56\u00b0C for 30 min to destroy complement (required for some applications). Lot-to-lot variability is significant\u2014test lots for your specific cell lines. Aliquot into 50 mL tubes. Maximum 3 freeze-thaw cycles.",
+    "shelf_life": "5 years at -20\u00b0C; 4-6 weeks after thawing at 4\u00b0C",
+    "incompatible_with": [
+      "serum-free experiments",
+      "defined media conditions"
+    ],
+    "safety_notes": "Potential biohazard (animal-derived); handle with BSL-2 precautions; may contain endotoxins, mycoplasma, or viral contaminants",
+    "common_uses": [
+      "cell culture supplement",
+      "growth factor source",
+      "attachment factor",
+      "buffering"
+    ]
+  },
+  {
+    "name": "Penicillin-Streptomycin (Pen-Strep)",
+    "type": "supplement",
+    "category": "cell culture",
+    "working_concentration": "1x (100 U/mL penicillin, 100 \u00b5g/mL streptomycin)",
+    "stock_concentration": "100x (10,000 U/mL penicillin, 10,000 \u00b5g/mL streptomycin)",
+    "storage_temperature_c": "-20",
+    "storage_conditions": "Store at -20\u00b0C; thaw and aliquot; stable at 4\u00b0C in medium for 4 weeks",
+    "preparation_notes": "Penicillin inhibits gram-positive bacteria (cell wall synthesis); streptomycin inhibits gram-negative bacteria (protein synthesis). Not a substitute for aseptic technique. May mask low-level contamination. Some cell types are sensitive to streptomycin.",
+    "shelf_life": "24 months at -20\u00b0C; 4 weeks in complete medium at 4\u00b0C",
+    "incompatible_with": [
+      "primary cell cultures and stem cells may be affected by antibiotics",
+      "antibiotic sensitivity assays"
+    ],
+    "safety_notes": "Penicillin may cause allergic reactions in sensitized individuals; avoid skin contact if penicillin-allergic",
+    "common_uses": [
+      "routine cell culture bacterial contamination prevention",
+      "medium supplementation"
+    ]
+  },
+  {
+    "name": "Trypsin-EDTA (0.05% or 0.25%)",
+    "type": "supplement",
+    "category": "cell culture",
+    "working_concentration": "0.05% trypsin / 0.53 mM EDTA (standard); 0.25% for difficult-to-detach cells",
+    "stock_concentration": "0.05% or 0.25% (ready-to-use); 10x (2.5% trypsin)",
+    "storage_temperature_c": "-20",
+    "storage_conditions": "Store at -20\u00b0C; working aliquots at 4\u00b0C for up to 2 weeks; pre-warm to 37\u00b0C before use",
+    "preparation_notes": "EDTA chelates Ca2+/Mg2+ required for cadherin-mediated cell adhesion. Trypsin cleaves extracellular proteins. Neutralize with serum-containing medium (serum protease inhibitors inactivate trypsin). Over-trypsinization damages cell surface proteins and reduces viability.",
+    "shelf_life": "24 months at -20\u00b0C; 2 weeks at 4\u00b0C",
+    "incompatible_with": [
+      "serum (inactivates trypsin; must wash cells with PBS before adding trypsin)"
+    ],
+    "safety_notes": "Protease; avoid skin contact; may cause irritation",
+    "common_uses": [
+      "detaching adherent cells for passaging",
+      "cell harvesting",
+      "single-cell suspension preparation"
+    ]
+  },
+  {
+    "name": "PBS (Cell Culture Grade, Sterile)",
+    "type": "buffer",
+    "category": "cell culture",
+    "working_concentration": "1x (Ca2+/Mg2+-free for cell dissociation; with Ca2+/Mg2+ for cell washing)",
+    "stock_concentration": "1x or 10x",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; sterile; endotoxin-tested for cell culture",
+    "preparation_notes": "Ca2+/Mg2+-free PBS is used before trypsinization (divalent cations inhibit trypsin and maintain cell adhesion). PBS with Ca2+/Mg2+ is used when cell detachment is not desired. Must be sterile and endotoxin-free for cell culture.",
+    "shelf_life": "12 months",
+    "incompatible_with": [],
+    "safety_notes": "Non-toxic",
+    "common_uses": [
+      "cell washing before trypsinization",
+      "dilution of cell culture reagents",
+      "cell resuspension",
+      "immunostaining washes"
+    ]
+  },
+  {
+    "name": "Ampicillin",
+    "type": "supplement",
+    "category": "antibiotic selection",
+    "working_concentration": "100 \u00b5g/mL",
+    "stock_concentration": "100 mg/mL in water (1000x)",
+    "storage_temperature_c": "-20",
+    "storage_conditions": "Store powder at 4\u00b0C; stock solution at -20\u00b0C in aliquots; filter-sterilize stock",
+    "preparation_notes": "Dissolve in water; filter-sterilize (0.22 \u00b5m); do NOT autoclave (heat-labile). Add to agar/media at <55\u00b0C. Ampicillin is bactericidal (kills growing cells) but degrades in media (beta-lactam ring hydrolysis). Plates lose effectiveness after 2-4 weeks. Satellite colonies appear if plates are old or inoculum is too dense.",
+    "shelf_life": "Stock: 6 months at -20\u00b0C; plates: 2-4 weeks at 4\u00b0C",
+    "incompatible_with": [
+      "autoclaving (destroys the antibiotic)",
+      "beta-lactamase producing bacteria (resistant)"
+    ],
+    "safety_notes": "Potential allergen; avoid exposure if penicillin-allergic; beta-lactam antibiotic",
+    "common_uses": [
+      "selection of bacteria carrying ampicillin-resistance plasmids (bla/AmpR)",
+      "cloning selection"
+    ]
+  },
+  {
+    "name": "Kanamycin",
+    "type": "supplement",
+    "category": "antibiotic selection",
+    "working_concentration": "50 \u00b5g/mL (E. coli); 25 \u00b5g/mL (some vectors)",
+    "stock_concentration": "50 mg/mL in water (1000x)",
+    "storage_temperature_c": "-20",
+    "storage_conditions": "Store powder at 4\u00b0C; stock solution at -20\u00b0C in aliquots; filter-sterilize stock",
+    "preparation_notes": "Aminoglycoside antibiotic; more stable than ampicillin in media. Does not produce satellite colonies (a common problem with ampicillin). Can be autoclaved in solution (heat-stable), though filter-sterilization is preferred. Bactericidal.",
+    "shelf_life": "Stock: 12 months at -20\u00b0C; plates: 4-8 weeks at 4\u00b0C",
+    "incompatible_with": [],
+    "safety_notes": "Potential ototoxicity and nephrotoxicity at therapeutic doses (not relevant at selection concentrations); handle with gloves",
+    "common_uses": [
+      "selection of bacteria carrying kanamycin-resistance plasmids (kanR/nptII)",
+      "plant transformation selection"
+    ]
+  },
+  {
+    "name": "1 kb DNA Ladder",
+    "type": "standard",
+    "category": "DNA electrophoresis",
+    "working_concentration": "0.5 \u00b5g per lane (typical)",
+    "stock_concentration": "0.5 mg/mL or 1 mg/mL",
+    "storage_temperature_c": "-20",
+    "storage_conditions": "Store at -20\u00b0C; stable at 4\u00b0C for months after thawing",
+    "preparation_notes": "Load 0.5 \u00b5g per lane for ethidium bromide visualization. Typical bands: 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10 kb (varies by manufacturer). The brightest reference band (often 1 kb or 3 kb) is used for mass estimation. Mix gently; do not vortex.",
+    "shelf_life": "24 months at -20\u00b0C",
+    "incompatible_with": [],
+    "safety_notes": "Non-toxic",
+    "common_uses": [
+      "DNA size estimation on agarose gels",
+      "approximate mass quantification of DNA bands"
+    ]
+  },
+  {
+    "name": "100 bp DNA Ladder",
+    "type": "standard",
+    "category": "DNA electrophoresis",
+    "working_concentration": "0.5 \u00b5g per lane (typical)",
+    "stock_concentration": "0.5 mg/mL or 1 mg/mL",
+    "storage_temperature_c": "-20",
+    "storage_conditions": "Store at -20\u00b0C; stable at 4\u00b0C for months after thawing",
+    "preparation_notes": "Bands typically at 100 bp intervals from 100 to 1000-1500 bp plus additional larger bands. Bright reference band at 500 or 600 bp (manufacturer-dependent). Use 1.5-2% agarose for best resolution of small fragments.",
+    "shelf_life": "24 months at -20\u00b0C",
+    "incompatible_with": [],
+    "safety_notes": "Non-toxic",
+    "common_uses": [
+      "PCR product size verification",
+      "small DNA fragment sizing",
+      "restriction digest analysis"
+    ]
+  },
+  {
+    "name": "Pre-stained Protein Ladder (Protein Molecular Weight Marker)",
+    "type": "standard",
+    "category": "protein analysis",
+    "working_concentration": "5 \u00b5L per lane (typical)",
+    "stock_concentration": "ready-to-use",
+    "storage_temperature_c": "-20",
+    "storage_conditions": "Store at -20\u00b0C; do not boil (pre-stained markers are already denatured); aliquot to avoid freeze-thaw",
+    "preparation_notes": "Load directly onto gel without heating. Pre-stained markers allow monitoring of electrophoresis and transfer. Molecular weights may differ slightly from actual MW due to dye binding. Typical range: 10-250 kDa. Some brands include color-coded bands at key MWs.",
+    "shelf_life": "24 months at -20\u00b0C",
+    "incompatible_with": [],
+    "safety_notes": "Non-toxic",
+    "common_uses": [
+      "SDS-PAGE molecular weight estimation",
+      "monitoring electrophoresis progress",
+      "monitoring western blot transfer efficiency"
+    ]
+  },
+  {
+    "name": "Bradford Reagent (Coomassie G-250 Dye Reagent)",
+    "type": "kit",
+    "category": "protein quantification",
+    "working_concentration": "1x (ready-to-use) or 5x concentrate",
+    "stock_concentration": "1x or 5x",
+    "storage_temperature_c": "4",
+    "storage_conditions": "Store at 4\u00b0C; protect from light; bring to room temperature before use",
+    "preparation_notes": "Dye binds protein and shifts absorbance from 465 nm to 595 nm. Linear range: 1-25 \u00b5g/mL (microplate) or 100-1500 \u00b5g/mL (standard assay). Use BSA as standard. Read within 5-60 minutes. Compatible with most reducing agents and EDTA.",
+    "shelf_life": "12 months at 4\u00b0C",
+    "incompatible_with": [
+      "detergents >0.125% SDS (causes high background)",
+      "high concentrations of Triton X-100 or NP-40",
+      "strong alkali"
+    ],
+    "safety_notes": "Contains phosphoric acid and methanol; mild irritant; avoid skin contact",
+    "common_uses": [
+      "total protein quantification",
+      "Bradford protein assay",
+      "monitoring protein purification"
+    ]
+  },
+  {
+    "name": "BCA Protein Assay Reagent",
+    "type": "kit",
+    "category": "protein quantification",
+    "working_concentration": "Working reagent: 50:1 ratio Reagent A:Reagent B",
+    "stock_concentration": "Reagent A (bicinchoninic acid) and Reagent B (4% CuSO4\u00b75H2O)",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; Reagent B at room temperature; working reagent should be prepared fresh",
+    "preparation_notes": "Cu2+ reduced to Cu+ by protein in alkaline conditions; Cu+ chelated by BCA producing purple color (562 nm). Linear range: 20-2000 \u00b5g/mL (standard), 0.5-20 \u00b5g/mL (micro). Incubate 30 min at 37\u00b0C. More tolerant of detergents than Bradford but affected by reducing agents.",
+    "shelf_life": "24 months (individual reagents)",
+    "incompatible_with": [
+      "reducing agents (DTT, BME) cause high background",
+      "EDTA >10 mM",
+      "high concentrations of lipids"
+    ],
+    "safety_notes": "Contains sodium hydroxide and copper sulfate; mild irritant",
+    "common_uses": [
+      "protein quantification compatible with detergent-containing samples",
+      "RIPA buffer lysate quantification"
+    ]
+  },
+  {
+    "name": "Lipofectamine (Lipofectamine 2000/3000)",
+    "type": "kit",
+    "category": "transfection",
+    "working_concentration": "per manufacturer protocol (typically 2-5 \u00b5L per well in 6-well plate)",
+    "stock_concentration": "ready-to-use (1 mg/mL lipid)",
+    "storage_temperature_c": "4",
+    "storage_conditions": "Store at 2-8\u00b0C; do NOT freeze; gently mix before use; do NOT vortex",
+    "preparation_notes": "Cationic lipid-based transfection reagent. Dilute in Opti-MEM (serum-free medium), NOT in complete medium with serum. DNA:lipofectamine ratio must be optimized for each cell line. Remove after 4-6 hours and replace with complete medium. Lipofectamine 3000 includes P3000 enhancer reagent.",
+    "shelf_life": "12 months at 4\u00b0C",
+    "incompatible_with": [
+      "serum in complexing step (serum inhibits lipoplex formation)",
+      "antibiotics during transfection (increases toxicity)"
+    ],
+    "safety_notes": "Cationic lipid; cytotoxic at high concentrations; minimize exposure time",
+    "common_uses": [
+      "plasmid DNA transfection",
+      "siRNA/miRNA transfection",
+      "CRISPR guide RNA delivery",
+      "mRNA transfection"
+    ]
+  },
+  {
+    "name": "Polyethyleneimine (PEI, Linear 25 kDa)",
+    "type": "chemical",
+    "category": "transfection",
+    "working_concentration": "1-3 \u00b5g PEI per \u00b5g DNA (typical N/P ratio 10-20)",
+    "stock_concentration": "1 mg/mL in water, pH 7.0",
+    "storage_temperature_c": "-20",
+    "storage_conditions": "Store stock at -20\u00b0C or -80\u00b0C; filter-sterilize; aliquot to avoid freeze-thaw",
+    "preparation_notes": "Dissolve in water, adjust pH to 7.0 with HCl, filter-sterilize (0.22 \u00b5m). Linear PEI (25 kDa) is preferred over branched for transfection. Mix PEI and DNA in serum-free medium, incubate 15-20 min to form polyplexes. Much cheaper alternative to Lipofectamine.",
+    "shelf_life": "12 months at -20\u00b0C; 1-2 months at 4\u00b0C",
+    "incompatible_with": [
+      "serum during complexation"
+    ],
+    "safety_notes": "Irritant; cytotoxic at high concentrations; handle with gloves",
+    "common_uses": [
+      "large-scale transient transfection",
+      "viral vector production (HEK293T)",
+      "low-cost transfection alternative"
+    ]
+  },
+  {
+    "name": "Poly-L-Lysine",
+    "type": "coating",
+    "category": "cell culture surface coating",
+    "working_concentration": "0.01% (0.1 mg/mL)",
+    "stock_concentration": "0.01% or 0.1% in water",
+    "storage_temperature_c": "4",
+    "storage_conditions": "Store at 4\u00b0C or -20\u00b0C; sterile",
+    "preparation_notes": "Coat surface for 1 hour at 37\u00b0C or overnight at 4\u00b0C. Aspirate and rinse 2-3x with sterile water (not PBS\u2014salt interferes with coating). Air dry before seeding cells. MW 70-150 kDa most common for cell culture. Enhances cell attachment through electrostatic interaction.",
+    "shelf_life": "12 months",
+    "incompatible_with": [],
+    "safety_notes": "Non-toxic at coating concentrations",
+    "common_uses": [
+      "enhancing cell attachment for neurons and other poorly adherent cells",
+      "coverslip coating for microscopy",
+      "improving cell attachment for transfection"
+    ]
+  },
+  {
+    "name": "Collagen (Type I, Rat Tail)",
+    "type": "coating",
+    "category": "cell culture surface coating",
+    "working_concentration": "5-10 \u00b5g/cm\u00b2 surface",
+    "stock_concentration": "3-4 mg/mL in 0.02 M acetic acid",
+    "storage_temperature_c": "4",
+    "storage_conditions": "Store at 4\u00b0C; do NOT freeze (denatures collagen); keep sterile; acidic solution",
+    "preparation_notes": "Dilute in 0.02 M acetic acid or cold PBS. Coat at room temperature for 1-2 hours or 4\u00b0C overnight. Rinse with PBS before seeding cells. Collagen gels at neutral pH and 37\u00b0C (used for 3D culture). Keep solutions cold to prevent gelation during handling.",
+    "shelf_life": "6-12 months at 4\u00b0C",
+    "incompatible_with": [
+      "temperatures >37\u00b0C (irreversible gelation)",
+      "strong acids/bases"
+    ],
+    "safety_notes": "Animal-derived; handle with BSL-1 precautions; non-toxic",
+    "common_uses": [
+      "hepatocyte culture",
+      "endothelial cell culture",
+      "3D collagen gel culture",
+      "epithelial cell attachment"
+    ]
+  },
+  {
+    "name": "Fibronectin",
+    "type": "coating",
+    "category": "cell culture surface coating",
+    "working_concentration": "1-10 \u00b5g/cm\u00b2",
+    "stock_concentration": "1 mg/mL in water",
+    "storage_temperature_c": "-20",
+    "storage_conditions": "Store at -20\u00b0C; thaw at 4\u00b0C; aliquot to avoid freeze-thaw; do not vortex",
+    "preparation_notes": "Dilute in PBS or serum-free medium. Coat at 37\u00b0C for 1 hour or 4\u00b0C overnight. Fibronectin adsorbs to plastic surfaces from solution. Works synergistically with collagen for some cell types.",
+    "shelf_life": "12 months at -20\u00b0C",
+    "incompatible_with": [
+      "repeated freeze-thaw (denatures protein)",
+      "vortexing (denatures)"
+    ],
+    "safety_notes": "Animal or human-derived; handle appropriately; non-toxic",
+    "common_uses": [
+      "mesenchymal stem cell culture",
+      "fibroblast culture",
+      "endothelial cell culture",
+      "cell migration assays"
+    ]
+  },
+  {
+    "name": "PMSF (Phenylmethylsulfonyl Fluoride)",
+    "type": "chemical",
+    "category": "protease inhibitor",
+    "working_concentration": "0.1-1 mM",
+    "stock_concentration": "100 mM or 200 mM in isopropanol or DMSO",
+    "storage_temperature_c": "-20",
+    "storage_conditions": "Store stock at -20\u00b0C; dissolve in isopropanol or DMSO (insoluble in water); add fresh to buffers immediately before use",
+    "preparation_notes": "Irreversible serine protease inhibitor. Half-life in aqueous solution is ~35 min at pH 8.0 and 25\u00b0C\u2014must add fresh immediately before use. Insoluble in water; dissolve in isopropanol or DMSO first. Inhibits trypsin, chymotrypsin, and thrombin.",
+    "shelf_life": "Stock: 12 months at -20\u00b0C; active in aqueous solution for ~30-60 minutes only",
+    "incompatible_with": [
+      "aqueous solutions (rapidly hydrolyzes; add immediately before use)"
+    ],
+    "safety_notes": "Toxic; cholinesterase inhibitor; extremely destructive to mucous membranes; wear gloves and eye protection",
+    "common_uses": [
+      "serine protease inhibition during protein extraction",
+      "supplementing lysis buffers",
+      "protein purification"
+    ]
+  },
+  {
+    "name": "Proteinase K",
+    "type": "chemical",
+    "category": "protease",
+    "working_concentration": "50-200 \u00b5g/mL",
+    "stock_concentration": "20 mg/mL in water or storage buffer",
+    "storage_temperature_c": "-20",
+    "storage_conditions": "Store at -20\u00b0C; working solution at 4\u00b0C for short-term; self-digestion may occur over time",
+    "preparation_notes": "Broad-spectrum serine protease active in SDS, urea, EDTA. Active over wide pH range (4-12) with optimum at pH 7.5-8.0. Active at 37-65\u00b0C. Inactivate by heating to 95\u00b0C for 10 min or by adding PMSF (5 mM). Degrades nucleases during DNA/RNA extraction.",
+    "shelf_life": "Stock: 12 months at -20\u00b0C",
+    "incompatible_with": [
+      "PMSF (inhibits proteinase K)",
+      "DFP"
+    ],
+    "safety_notes": "Protease; avoid skin contact and inhalation; wear gloves",
+    "common_uses": [
+      "genomic DNA extraction",
+      "tissue lysis",
+      "removal of nucleases from DNA/RNA preparations",
+      "Western blot membrane stripping"
+    ]
+  },
+  {
+    "name": "RNase A",
+    "type": "chemical",
+    "category": "nuclease",
+    "working_concentration": "10-100 \u00b5g/mL",
+    "stock_concentration": "10 mg/mL in 10 mM Tris-HCl pH 7.5, 15 mM NaCl",
+    "storage_temperature_c": "-20",
+    "storage_conditions": "Store at -20\u00b0C; extremely stable enzyme; heat to 100\u00b0C for 15 min to eliminate DNase contamination",
+    "preparation_notes": "Heat stock solution to 100\u00b0C for 15 min to inactivate contaminating DNases. Active over wide pH range. Requires no cofactors. Cleaves ssRNA after pyrimidine residues. Very stable enzyme; difficult to fully inactivate (resists autoclaving and many denaturants).",
+    "shelf_life": "12-24 months at -20\u00b0C",
+    "incompatible_with": [
+      "RNA isolation procedures (will degrade RNA)",
+      "RNase inhibitors (e.g., RNasin, SUPERase-In)"
+    ],
+    "safety_notes": "Non-toxic; extreme caution to avoid contaminating RNA experiments\u2014trace amounts destroy RNA",
+    "common_uses": [
+      "removal of RNA from DNA preparations (plasmid minipreps)",
+      "flow cytometry cell cycle analysis (with PI)",
+      "clearing RNA from protein/DNA samples"
+    ]
+  },
+  {
+    "name": "DNase I (RNase-free)",
+    "type": "chemical",
+    "category": "nuclease",
+    "working_concentration": "1-2 U/\u00b5g DNA",
+    "stock_concentration": "1-2 U/\u00b5L or 1-10 mg/mL",
+    "storage_temperature_c": "-20",
+    "storage_conditions": "Store at -20\u00b0C; requires divalent cations (Mg2+ or Mn2+) for activity; aliquot to avoid freeze-thaw",
+    "preparation_notes": "With Mg2+: nicks dsDNA randomly. With Mn2+: cleaves both strands at approximately the same site (blunt-end cuts). Inactivate with EDTA (chelates required Mg2+) and/or heat (75\u00b0C, 10 min with EDTA). RNase-free grade essential for RNA applications.",
+    "shelf_life": "12 months at -20\u00b0C",
+    "incompatible_with": [
+      "EDTA at >5 mM (chelates required Mg2+)"
+    ],
+    "safety_notes": "Non-toxic; wear gloves to avoid nuclease contamination",
+    "common_uses": [
+      "removal of DNA from RNA preparations",
+      "on-column DNase treatment during RNA extraction",
+      "nick translation labeling",
+      "DNase I footprinting"
+    ]
+  },
+  {
+    "name": "Sodium Hydroxide (NaOH)",
+    "type": "chemical",
+    "category": "base",
+    "working_concentration": "variable (pH adjustment, lysis, cleaning)",
+    "stock_concentration": "1 M, 5 M, or 10 M",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; store in polyethylene/polypropylene (dissolves glass over time); absorbs CO2 from air reducing concentration",
+    "preparation_notes": "Highly exothermic when dissolving; add slowly to water. Used for alkaline lysis in plasmid minipreps (0.2 M NaOH + 1% SDS). Denatures dsDNA. Store in plastic bottles (NaOH etches glass). Titrate fresh for precise pH work.",
+    "shelf_life": "12 months (protect from CO2 absorption)",
+    "incompatible_with": [
+      "acids (violent reaction)",
+      "aluminum",
+      "glass over extended periods"
+    ],
+    "safety_notes": "Corrosive; causes severe burns; wear gloves and eye protection; immediate water rinse for skin contact",
+    "common_uses": [
+      "pH adjustment",
+      "alkaline lysis for plasmid extraction",
+      "denaturing DNA for Southern blots",
+      "cleaning glassware and equipment"
+    ]
+  },
+  {
+    "name": "Hydrochloric Acid (HCl)",
+    "type": "chemical",
+    "category": "acid",
+    "working_concentration": "variable (pH adjustment)",
+    "stock_concentration": "1 M, 6 M, or concentrated (~12 M / 37%)",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; tightly sealed; fume hood for concentrated solutions",
+    "preparation_notes": "Always add acid to water, not water to acid. Used for pH adjustment of Tris buffers. Concentrated HCl fumes in air.",
+    "shelf_life": "24 months",
+    "incompatible_with": [
+      "bases (neutralization)",
+      "metals (generates hydrogen gas)",
+      "concentrated oxidizers"
+    ],
+    "safety_notes": "Corrosive; concentrated solution fumes toxic HCl gas; use in fume hood; wear gloves and eye protection",
+    "common_uses": [
+      "pH adjustment of Tris and other buffers",
+      "acid washing glassware",
+      "tissue decalcification"
+    ]
+  },
+  {
+    "name": "Bovine Serum Albumin (BSA)",
+    "type": "chemical",
+    "category": "blocking and stabilization",
+    "working_concentration": "1-5% for blocking; 0.1-1 mg/mL as enzyme stabilizer",
+    "stock_concentration": "lyophilized powder or 10-30% solution",
+    "storage_temperature_c": "-20",
+    "storage_conditions": "Powder at 4\u00b0C; solutions at -20\u00b0C in aliquots; filter-sterilize for cell culture",
+    "preparation_notes": "Dissolve gently (do not vortex\u2014causes foaming and denaturation). Use BSA (not milk) for blocking with phospho-specific antibodies or biotin-streptavidin systems. Fraction V is standard lab grade. Fatty acid-free BSA for lipid-sensitive assays.",
+    "shelf_life": "Powder: 24 months; solution: 6 months at -20\u00b0C",
+    "incompatible_with": [
+      "some ECL detection systems (background)",
+      "lipid-sensitive assays (use fatty acid-free grade)"
+    ],
+    "safety_notes": "Non-toxic; animal-derived; wear gloves",
+    "common_uses": [
+      "western blot blocking (phospho-antibodies)",
+      "ELISA blocking",
+      "enzyme stabilizer",
+      "protein standard for assays",
+      "BSA standard curve"
+    ]
+  },
+  {
+    "name": "Sodium Deoxycholate",
+    "type": "chemical",
+    "category": "detergent",
+    "working_concentration": "0.5% (in RIPA buffer)",
+    "stock_concentration": "10% w/v in water",
+    "storage_temperature_c": "25",
+    "storage_conditions": "Room temperature; protect from light; hygroscopic",
+    "preparation_notes": "Anionic detergent; bile salt derivative. Component of RIPA buffer. Solubilizes membrane proteins. Precipitates in acidic solutions (pH <6.0). Not compatible with ion-exchange chromatography.",
+    "shelf_life": "12 months",
+    "incompatible_with": [
+      "acidic pH <6.0 (precipitates)",
+      "divalent cations at high concentrations (forms insoluble salts)",
+      "ion-exchange chromatography"
+    ],
+    "safety_notes": "Irritant; avoid inhalation of powder",
+    "common_uses": [
+      "RIPA buffer component",
+      "membrane protein solubilization",
+      "protein extraction"
+    ]
+  },
+  {
+    "name": "Polybrene (Hexadimethrine Bromide)",
+    "type": "chemical",
+    "category": "viral transduction",
+    "working_concentration": "4-8 \u00b5g/mL",
+    "stock_concentration": "10 mg/mL in water",
+    "storage_temperature_c": "-20",
+    "storage_conditions": "Store stock at -20\u00b0C; filter-sterilize; aliquot",
+    "preparation_notes": "Cationic polymer that neutralizes charge repulsion between viral particles and cell surface sialic acid. Increases retroviral/lentiviral transduction efficiency 10-100 fold. Toxic to some cell types (especially primary cells)\u2014titrate concentration. Some cells require alternative (e.g., protamine sulfate).",
+    "shelf_life": "12 months at -20\u00b0C",
+    "incompatible_with": [
+      "heparin (anionic polymer neutralizes polybrene)"
+    ],
+    "safety_notes": "Irritant; cytotoxic at high concentrations; handle with gloves",
+    "common_uses": [
+      "enhancing lentiviral transduction efficiency",
+      "retroviral transduction",
+      "stable cell line generation"
+    ]
+  }
+]

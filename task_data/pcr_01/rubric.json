@@ -1,0 +1,98 @@
+{
+  "task_id": "pcr_01",
+  "task_title": "GC-rich PCR optimization for a 2 kb benign E. coli genomic target",
+  "source": "LabCraft PCR-01",
+  "num_errors_introduced": 0,
+  "total_leaf_nodes": 7,
+  "rubric": {
+    "name": "Task Evaluation",
+    "weight": 1.0,
+    "is_leaf": false,
+    "children": [
+      {
+        "name": "Task Success",
+        "weight": 0.4,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Identifies a successful PCR condition",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "task_success",
+            "requirement": "The final answer names a condition that actually produced a single clean 2 kb band on the gel.",
+            "grading_notes": "Requires the exact final-answer fields and transcript-consistent PCR conditions."
+          }
+        ]
+      },
+      {
+        "name": "Decision Quality",
+        "weight": 0.3,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Uses a GC-capable high-fidelity polymerase",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "At least one PCR attempt uses Q5 or Phusion.",
+            "grading_notes": "Measured from normalized run_pcr payload fields."
+          },
+          {
+            "name": "Uses a GC-rich additive",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "At least one PCR attempt uses DMSO or betaine.",
+            "grading_notes": "Measured from normalized run_pcr payload fields."
+          },
+          {
+            "name": "Uses a cited extension-time range",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "At least one PCR attempt uses 40-60 seconds of extension time.",
+            "grading_notes": "Measured from run_pcr tool arguments."
+          },
+          {
+            "name": "Uses a cited cycle-count range",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "At least one PCR attempt uses 30-35 cycles.",
+            "grading_notes": "Measured from run_pcr tool arguments."
+          }
+        ]
+      },
+      {
+        "name": "Troubleshooting",
+        "weight": 0.2,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Diagnoses the PCR failure mode when no clean band is obtained",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "troubleshooting",
+            "requirement": "If no successful gel is produced, the final answer identifies the underlying failure mode using the accepted diagnoses.",
+            "grading_notes": "Defaults to full credit when a clean band is eventually obtained."
+          }
+        ]
+      },
+      {
+        "name": "Efficiency",
+        "weight": 0.1,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Uses a reasonable number of PCR and gel attempts",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "efficiency",
+            "requirement": "The trajectory stays within the PCR-task reference tool-call budget.",
+            "grading_notes": "Full credit at or under the optimal budget, partial credit within the reasonable budget."
+          }
+        ]
+      }
+    ]
+  }
+}

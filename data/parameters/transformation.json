@@ -1,0 +1,193 @@
+{
+  "task_id": "transform_01",
+  "parameters": [
+    {
+      "parameter_name": "base_transformation_efficiency_cfu_per_ug",
+      "description": "Baseline transformation efficiency range for high-efficiency chemically competent E. coli transformed with pUC19-like plasmid DNA.",
+      "units": "CFU per microgram DNA",
+      "distribution": "uniform",
+      "parameters": {
+        "min": 1000000000.0,
+        "max": 3000000000.0
+      },
+      "claim_type": "core_stochastic_parameter",
+      "minimum_tier_required": "Gold",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "authors": "Inoue H, Nojima H, Okayama H",
+          "title": "High efficiency transformation of Escherichia coli with plasmids",
+          "journal": "Gene",
+          "year": 1990,
+          "doi": "10.1016/0378-1119(90)90336-P",
+          "canonical_url": "https://doi.org/10.1016/0378-1119(90)90336-P",
+          "tier": "Gold",
+          "citation_count_approx": 1728,
+          "tier_justification": "Canonical transformation-efficiency paper cited in the LabCraft plan as the foundational Gold source for chemical transformation parameters."
+        },
+        {
+          "authors": "Hanahan D",
+          "title": "Studies on transformation of Escherichia coli with plasmids",
+          "journal": "Journal of Molecular Biology",
+          "year": 1983,
+          "doi": "10.1016/S0022-2836(83)80284-8",
+          "canonical_url": "https://doi.org/10.1016/S0022-2836(83)80284-8",
+          "tier": "Gold",
+          "citation_count_approx": 11300,
+          "tier_justification": "Foundational, heavily cited plasmid transformation methodology paper explicitly named in the LabCraft MVP task list."
+        },
+        {
+          "title": "NEB 5-alpha Competent E. coli",
+          "canonical_url": "https://www.neb.com/en-us/products/c2987-neb-5-alpha-competent-e-coli-high-efficiency",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative vendor specification page reporting the product's validated transformation-efficiency range."
+        }
+      ]
+    },
+    {
+      "parameter_name": "dna_ice_incubation_penalty_per_10_min_shortened",
+      "description": "Efficiency penalty when DNA/cell incubation on ice is shorter than the cited 30-minute protocol recommendation.",
+      "units": "fold multiplier",
+      "distribution": "deterministic",
+      "parameters": {
+        "optimal_minutes": 30,
+        "penalty_factor_per_10_min_shortened": 0.5
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "High Efficiency Transformation Protocol",
+          "canonical_url": "https://www.neb.com/en/protocols/0001/01/01/high-efficiency-transformation-protocol-c2987",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative vendor protocol stating that shortening the 30-minute DNA/cell ice incubation by 10 minutes can halve transformation efficiency."
+        }
+      ]
+    },
+    {
+      "parameter_name": "heat_shock_duration_seconds",
+      "description": "Protocol-optimal heat shock duration for NEB high-efficiency chemical transformation.",
+      "units": "seconds",
+      "distribution": "deterministic",
+      "parameters": {
+        "optimal": 30
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "High Efficiency Transformation Protocol",
+          "canonical_url": "https://www.neb.com/en/protocols/0001/01/01/high-efficiency-transformation-protocol-c2987",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative vendor protocol specifying a 30-second heat shock at 42 C."
+        }
+      ]
+    },
+    {
+      "parameter_name": "recovery_penalty_per_15_min_shortened",
+      "description": "Efficiency penalty when outgrowth is shorter than the cited 60-minute recovery recommendation.",
+      "units": "fold multiplier",
+      "distribution": "deterministic",
+      "parameters": {
+        "optimal_minutes": 60,
+        "penalty_factor_per_15_min_shortened": 0.5
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "High Efficiency Transformation Protocol",
+          "canonical_url": "https://www.neb.com/en/protocols/0001/01/01/high-efficiency-transformation-protocol-c2987",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative vendor protocol stating that each 15-minute reduction from the 60-minute outgrowth can halve transformation efficiency."
+        }
+      ]
+    },
+    {
+      "parameter_name": "soc_vs_lb_efficiency_multiplier",
+      "description": "Relative efficiency improvement from SOC outgrowth versus LB during the recovery step.",
+      "units": "fold multiplier",
+      "distribution": "deterministic",
+      "parameters": {
+        "soc": 2.0,
+        "lb": 1.0
+      },
+      "claim_type": "reagent_spec",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "High Efficiency Transformation Protocol",
+          "canonical_url": "https://www.neb.com/en/protocols/0001/01/01/high-efficiency-transformation-protocol-c2987",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative vendor protocol stating that SOC gives roughly two-fold higher transformation efficiency than LB."
+        }
+      ]
+    },
+    {
+      "parameter_name": "shaking_efficiency_multiplier",
+      "description": "Relative efficiency improvement from shaking during outgrowth.",
+      "units": "fold multiplier",
+      "distribution": "deterministic",
+      "parameters": {
+        "with_shaking": 2.0,
+        "without_shaking": 1.0
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "High Efficiency Transformation Protocol",
+          "canonical_url": "https://www.neb.com/en/protocols/0001/01/01/high-efficiency-transformation-protocol-c2987",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative vendor protocol stating that shaking during outgrowth improves transformation efficiency by roughly two-fold."
+        }
+      ]
+    },
+    {
+      "parameter_name": "ampicillin_selection_working_concentration_ug_per_ml",
+      "description": "Recommended ampicillin concentration for NEB 5-alpha transformation selection plates.",
+      "units": "micrograms per milliliter",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 100
+      },
+      "claim_type": "reagent_spec",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "NEB 5-alpha Competent E. coli",
+          "canonical_url": "https://www.neb.com/en-us/products/c2987-neb-5-alpha-competent-e-coli-high-efficiency",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative vendor product page listing the recommended ampicillin selection concentration."
+        }
+      ]
+    },
+    {
+      "parameter_name": "countable_colony_range_per_plate",
+      "description": "Standard countable colony range for interpreting a plate-based colony enumeration result.",
+      "units": "colonies per plate",
+      "distribution": "deterministic",
+      "parameters": {
+        "min": 25,
+        "max": 250
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "BAM Chapter 3: Aerobic Plate Count",
+          "canonical_url": "https://www.fda.gov/food/laboratory-methods-food/bam-chapter-3-aerobic-plate-count",
+          "tier": "Bronze",
+          "tier_justification": "Official FDA Bacteriological Analytical Manual chapter specifying a countable range of 25-250 colonies per plate for standard plate counts."
+        }
+      ]
+    }
+  ]
+}

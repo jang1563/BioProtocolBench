@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=65", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "labcraft"
+version = "0.1.0"
+description = "Stochastic agentic environment for evaluating frontier models on benign microbiology tasks"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+dependencies = [
+    "inspect-ai>=0.3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+    "ruff>=0.1.0",
+]
+analysis = [
+    "matplotlib>=3.7",
+    "numpy>=1.24",
+    "scikit-learn>=1.3",
+]
+
+[project.entry-points."inspect_ai"]
+labcraft = "src.inspect_task"
+
+[tool.setuptools.packages.find]
+include = ["src*"]
+
+[tool.setuptools.package-data]
+src = ["../task_data/**/*.json", "../task_data/**/*.md", "../data/parameters/*.json", "../data/parameters/*.bib"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

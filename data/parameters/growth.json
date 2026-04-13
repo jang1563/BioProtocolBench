@@ -1,0 +1,181 @@
+{
+  "task_id": "growth_01",
+  "parameters": [
+    {
+      "parameter_name": "growth_model_reference",
+      "description": "Conceptual references for nutrient-dependent bacterial growth modeling and curve fitting used in Growth-01.",
+      "units": "reference only",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": "windowed exponential fit informed by Monod-style nutrient dependence and Zwietering growth-curve analysis"
+      },
+      "claim_type": "modeling_reference",
+      "minimum_tier_required": "Gold",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "authors": "Monod J",
+          "title": "The Growth of Bacterial Cultures",
+          "journal": "Annual Review of Microbiology",
+          "year": 1949,
+          "doi": "10.1146/annurev.mi.03.100149.002011",
+          "canonical_url": "https://doi.org/10.1146/annurev.mi.03.100149.002011",
+          "tier": "Gold",
+          "citation_count_approx": 4001,
+          "tier_justification": "Canonical, heavily cited growth-model review establishing nutrient-dependent bacterial growth as the conceptual basis for this task."
+        },
+        {
+          "authors": "Zwietering MH, Jongenburger I, Rombouts FM, van 't Riet K",
+          "title": "Modeling of the bacterial growth curve",
+          "journal": "Applied and Environmental Microbiology",
+          "year": 1990,
+          "doi": "10.1128/aem.56.6.1875-1881.1990",
+          "canonical_url": "https://doi.org/10.1128/aem.56.6.1875-1881.1990",
+          "tier": "Gold",
+          "citation_count_approx": 3754,
+          "tier_justification": "Foundational, highly cited bacterial growth-curve modeling paper explicitly called out in the LabCraft plan for Growth-01."
+        }
+      ]
+    },
+    {
+      "parameter_name": "lb_doubling_time_minutes",
+      "description": "Representative doubling time for laboratory E. coli in rich LB medium at 37 C.",
+      "units": "minutes",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 20
+      },
+      "claim_type": "core_stochastic_parameter",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "Growth and Maintenance of Escherichia coli Laboratory Strains",
+          "canonical_url": "https://pubmed.ncbi.nlm.nih.gov/33484484/",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed laboratory methods review stating that E. coli can double every ~20 minutes in rich medium under optimal conditions."
+        }
+      ]
+    },
+    {
+      "parameter_name": "m9_glucose_doubling_time_minutes",
+      "description": "Representative doubling time for laboratory E. coli in glucose minimal medium.",
+      "units": "minutes",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 57
+      },
+      "claim_type": "core_stochastic_parameter",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "Cell size and growth rate are major determinants of E. coli mRNA abundance",
+          "canonical_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC103779/",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed study reporting a doubling time of about 57 minutes for E. coli in glucose minimal medium."
+        }
+      ]
+    },
+    {
+      "parameter_name": "chloramphenicol_1_8uM_relative_growth_rate",
+      "description": "Relative exponential growth-rate fraction for E. coli in LB supplemented with 1.8 uM chloramphenicol.",
+      "units": "fraction of rich-medium growth rate",
+      "distribution": "deterministic",
+      "parameters": {
+        "fraction": 0.5
+      },
+      "claim_type": "core_stochastic_parameter",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "Chloramphenicol affects Escherichia coli growth rates and bacterial membrane composition",
+          "canonical_url": "https://pubmed.ncbi.nlm.nih.gov/6992672/",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed study reporting that 1.8 uM chloramphenicol reduces the specific growth rate of E. coli by roughly 50 percent."
+        }
+      ]
+    },
+    {
+      "parameter_name": "growth_curve_starting_od600",
+      "description": "Starting OD600 for each growth-condition inoculation in Growth-01.",
+      "units": "OD600",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 0.05
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "RqcH supports survival in the absence of non-stop ribosome rescue factors",
+          "canonical_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8006063/",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed E. coli growth-curve protocol using a starting OD600 of 0.05 with repeated plate-reader measurements."
+        }
+      ]
+    },
+    {
+      "parameter_name": "growth_measurement_interval_minutes",
+      "description": "Measurement interval for Growth-01 OD600 readings.",
+      "units": "minutes",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 15
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "RqcH supports survival in the absence of non-stop ribosome rescue factors",
+          "canonical_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8006063/",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed E. coli growth-curve protocol collecting OD600 measurements every 15 minutes."
+        }
+      ]
+    },
+    {
+      "parameter_name": "growth_fit_lower_fraction_of_max_observed_od600",
+      "description": "Lower fraction of the maximum observed OD600 retained for windowed exponential-growth fitting.",
+      "units": "fraction",
+      "distribution": "deterministic",
+      "parameters": {
+        "fraction": 0.05
+      },
+      "claim_type": "analysis_threshold",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "The E. coli molecular phenotype under different growth conditions",
+          "canonical_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5394689/",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed E. coli growth study fitting doubling times using OD600 points between 0.05 and 0.75 times the maximum observed OD600."
+        }
+      ]
+    },
+    {
+      "parameter_name": "growth_fit_upper_fraction_of_max_observed_od600",
+      "description": "Upper fraction of the maximum observed OD600 retained for windowed exponential-growth fitting.",
+      "units": "fraction",
+      "distribution": "deterministic",
+      "parameters": {
+        "fraction": 0.75
+      },
+      "claim_type": "analysis_threshold",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "The E. coli molecular phenotype under different growth conditions",
+          "canonical_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5394689/",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed E. coli growth study fitting doubling times using OD600 points between 0.05 and 0.75 times the maximum observed OD600."
+        }
+      ]
+    }
+  ]
+}

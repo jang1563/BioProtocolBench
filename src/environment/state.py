@@ -1,0 +1,187 @@
+"""State management for LabCraft's stochastic lab environment."""
+
+from __future__ import annotations
+
+import hashlib
+import random
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+from .stochastic import TransformationParameterBundle, load_transformation_parameters
+
+_PARAMETERS_PATH = Path(__file__).resolve().parents[2] / "data" / "parameters" / "transformation.json"
+_STATE_REGISTRY: Dict[str, "LabState"] = {}
+
+
+def stable_seed_from_sample(sample_id: str) -> int:
+    """Derive a reproducible seed from the sample identifier."""
+    digest = hashlib.sha256(sample_id.encode("utf-8")).hexdigest()
+    return int(digest[:16], 16)
+
+
+@dataclass
+class PreparedPlate:
+    plate_id: str
+    medium: str
+    antibiotic: Optional[str]
+    antibiotic_concentration_ug_ml: Optional[float]
+
+
+@dataclass
+class TransformationCulture:
+    culture_id: str
+    plasmid_mass_pg: float
+    base_efficiency_cfu_per_ug: float
+    adjusted_efficiency_cfu_per_ug: float
+    recovery_minutes: int
+    outgrowth_media: str
+    shaking: bool
+    heat_shock_seconds: int
+    ice_incubation_minutes: int
+    expected_total_transformants: float
+    notes: List[str] = field(default_factory=list)
+
+
+@dataclass
+class PlatedSample:
+    plating_id: str
+    culture_id: str
+    plate_id: str
+    dilution_factor: float
+    volume_ul: float
+    expected_colonies: Optional[float]
+    observed_colonies: Optional[int]
+    status: str
+    warnings: List[str] = field(default_factory=list)
+
+
+@dataclass
+class GrowthMeasurement:
+    elapsed_minutes: int
+    dilution_factor: float
+    observed_od600: float
+    estimated_undiluted_od600: float
+
+
+@dataclass
+class GrowthCulture:
+    growth_id: str
+    condition: str
+    medium: str
+    starting_od600: float
+    doubling_time_minutes: float
+    current_time_minutes: int = 0
+    measurements: List[GrowthMeasurement] = field(default_factory=list)
+
+
+@dataclass
+class PcrReaction:
+    reaction_id: str
+    polymerase_name: str
+    additive: str
+    extension_seconds: int
+    cycle_count: int
+    target_size_bp: int
+    status: str
+    visible_bands_bp: List[int] = field(default_factory=list)
+    smear_present: bool = False
+    notes: List[str] = field(default_factory=list)
+
+
+@dataclass
+class GelRun:
+    gel_id: str
+    reaction_id: str
+    ladder_name: str
+    agarose_percent: float
+    status: str
+    visible_bands_bp: List[int] = field(default_factory=list)
+    smear_present: bool = False
+    notes: List[str] = field(default_factory=list)
+
+
+@dataclass
+class LabState:
+    sample_id: str
+    seed: int
+    rng: random.Random
+    parameters: TransformationParameterBundle
+    base_efficiency_cfu_per_ug: float
+    prepared_plates: Dict[str, PreparedPlate] = field(default_factory=dict)
+    cultures: Dict[str, TransformationCulture] = field(default_factory=dict)
+    plated_samples: Dict[str, PlatedSample] = field(default_factory=dict)
+    growth_cultures: Dict[str, GrowthCulture] = field(default_factory=dict)
+    pcr_reactions: Dict[str, PcrReaction] = field(default_factory=dict)
+    gel_runs: Dict[str, GelRun] = field(default_factory=dict)
+    event_log: List[Dict[str, Any]] = field(default_factory=list)
+    plate_counter: int = 0
+    culture_counter: int = 0
+    plating_counter: int = 0
+    growth_counter: int = 0
+    pcr_counter: int = 0
+    gel_counter: int = 0
+
+    def next_plate_id(self) -> str:
+        self.plate_counter += 1
+        return "plate_{:03d}".format(self.plate_counter)
+
+    def next_culture_id(self) -> str:
+        self.culture_counter += 1
+        return "culture_{:03d}".format(self.culture_counter)
+
+    def next_plating_id(self) -> str:
+        self.plating_counter += 1
+        return "plating_{:03d}".format(self.plating_counter)
+
+    def next_growth_id(self) -> str:
+        self.growth_counter += 1
+        return "growth_{:03d}".format(self.growth_counter)
+
+    def next_pcr_id(self) -> str:
+        self.pcr_counter += 1
+        return "pcr_{:03d}".format(self.pcr_counter)
+
+    def next_gel_id(self) -> str:
+        self.gel_counter += 1
+        return "gel_{:03d}".format(self.gel_counter)
+
+    def log_event(self, kind: str, payload: Dict[str, Any]) -> None:
+        self.event_log.append({"kind": kind, "payload": payload})
+
+
+def create_lab_state(
+    sample_id: str,
+    seed: Optional[int] = None,
+    parameter_path: Optional[Path] = None,
+) -> LabState:
+    """Create a fresh sample-scoped lab state."""
+    effective_seed = stable_seed_from_sample(sample_id) if seed is None else seed
+    rng = random.Random(effective_seed)
+    bundle = load_transformation_parameters(parameter_path or _PARAMETERS_PATH)
+    base_efficiency = bundle.sample_base_efficiency(rng)
+    return LabState(
+        sample_id=sample_id,
+        seed=effective_seed,
+        rng=rng,
+        parameters=bundle,
+        base_efficiency_cfu_per_ug=base_efficiency,
+    )
+
+
+def get_or_create_lab_state(
+    sample_id: str,
+    seed: Optional[int] = None,
+    parameter_path: Optional[Path] = None,
+) -> LabState:
+    """Fetch a sample state from the fallback registry or create it."""
+    state = _STATE_REGISTRY.get(sample_id)
+    if state is None:
+        state = create_lab_state(sample_id=sample_id, seed=seed, parameter_path=parameter_path)
+        _STATE_REGISTRY[sample_id] = state
+    return state
+
+
+def reset_lab_state(sample_id: str) -> None:
+    """Drop any cached state for a sample id."""
+    _STATE_REGISTRY.pop(sample_id, None)

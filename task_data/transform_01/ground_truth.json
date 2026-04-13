@@ -1,0 +1,175 @@
+{
+  "task_id": "transform_01",
+  "decision_points": [
+    {
+      "id": "selection_plate_ampicillin",
+      "description": "Use the vendor-recommended ampicillin concentration on the selection plates.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "prepare_media",
+        "argument": "antibiotic_concentration_ug_ml",
+        "filters": {
+          "antibiotic": "ampicillin"
+        },
+        "occurrence": "first"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": 100
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "NEB 5-alpha Competent E. coli",
+          "canonical_url": "https://www.neb.com/en-us/products/c2987-neb-5-alpha-competent-e-coli-high-efficiency",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative vendor product page listing 100 ug/ml ampicillin for selection."
+        }
+      ]
+    },
+    {
+      "id": "heat_shock_duration_seconds",
+      "description": "Use the cited 30-second heat shock during each transformation.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "transform",
+        "argument": "heat_shock_seconds",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": 30
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "High Efficiency Transformation Protocol",
+          "canonical_url": "https://www.neb.com/en/protocols/0001/01/01/high-efficiency-transformation-protocol-c2987",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative vendor protocol specifying a 30-second heat shock."
+        }
+      ]
+    },
+    {
+      "id": "recovery_minutes",
+      "description": "Allow a full 60-minute outgrowth before plating.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "transform",
+        "argument": "recovery_minutes",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": 60
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "High Efficiency Transformation Protocol",
+          "canonical_url": "https://www.neb.com/en/protocols/0001/01/01/high-efficiency-transformation-protocol-c2987",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative vendor protocol recommending 60 minutes of outgrowth."
+        }
+      ]
+    },
+    {
+      "id": "soc_outgrowth",
+      "description": "Use SOC as the outgrowth medium rather than LB.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "transform",
+        "argument": "outgrowth_media",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": "SOC"
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "High Efficiency Transformation Protocol",
+          "canonical_url": "https://www.neb.com/en/protocols/0001/01/01/high-efficiency-transformation-protocol-c2987",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative vendor protocol noting that SOC gives roughly two-fold higher efficiency than LB."
+        }
+      ]
+    },
+    {
+      "id": "plate_volume",
+      "description": "Plate a standard 50-100 uL volume onto each selection plate.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "plate",
+        "argument": "volume_ul",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "range",
+        "min": 50,
+        "max": 100
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "5 Minute Transformation Protocol",
+          "canonical_url": "https://www.neb.com/protocols/0001/01/01/5-minute-transformation-protocol-c2987",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative vendor protocol recommending plating 50-100 uL of transformed cells."
+        }
+      ]
+    },
+    {
+      "id": "countable_colony_range",
+      "description": "Choose dilution factors that keep each plate within the cited countable range of 25-250 colonies.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "count_colonies",
+        "argument": "status",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": "plated"
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "BAM Chapter 3: Aerobic Plate Count",
+          "canonical_url": "https://www.fda.gov/food/laboratory-methods-food/bam-chapter-3-aerobic-plate-count",
+          "tier": "Bronze",
+          "tier_justification": "Official FDA Bacteriological Analytical Manual chapter specifying a countable range of 25-250 colonies per plate for standard plate counts."
+        }
+      ]
+    }
+  ],
+  "failure_diagnosis_map": {
+    "wrong_selection_pressure": {
+      "canonical_diagnosis": "Ampicillin selection concentration was incorrect, so the plates are not interpretable.",
+      "acceptable_variants": [
+        "The ampicillin concentration on the plate was wrong.",
+        "Selection pressure was invalid because the ampicillin concentration was not the recommended value."
+      ],
+      "judge_strategy": "substring_any",
+      "minimum_tier_required": "Bronze",
+      "citations": [
+        {
+          "title": "NEB 5-alpha Competent E. coli",
+          "canonical_url": "https://www.neb.com/en-us/products/c2987-neb-5-alpha-competent-e-coli-high-efficiency",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative vendor product page listing the recommended ampicillin concentration for selection."
+        }
+      ]
+    }
+  },
+  "efficiency_reference": {
+    "optimal_tool_calls": 13,
+    "max_reasonable_tool_calls": 20,
+    "reagent_budget": {
+      "selection_plates": 4,
+      "soc_outgrowth_ml": 4.0,
+      "competent_cell_aliquots": 4
+    }
+  }
+}

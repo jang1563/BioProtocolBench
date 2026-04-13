@@ -1,0 +1,135 @@
+{
+  "task_id": "pcr_01",
+  "parameters": [
+    {
+      "parameter_name": "gc_rich_high_fidelity_polymerases",
+      "description": "High-fidelity polymerases treated as acceptable choices for the GC-rich PCR task.",
+      "units": "polymerase names",
+      "distribution": "deterministic",
+      "parameters": {
+        "values": [
+          "Q5 High-Fidelity DNA polymerase",
+          "Phusion High-Fidelity DNA polymerase"
+        ]
+      },
+      "claim_type": "protocol_choice",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "authors": "Cline J, Braman JC, Hogrefe HH",
+          "title": "PCR fidelity of pfu DNA polymerase and other thermostable DNA polymerases",
+          "journal": "Nucleic Acids Research",
+          "year": 1996,
+          "doi": "10.1093/nar/24.18.3546",
+          "canonical_url": "https://doi.org/10.1093/nar/24.18.3546",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed comparison showing the fidelity advantage of proofreading polymerases over Taq for PCR applications."
+        },
+        {
+          "title": "Q5 High-Fidelity DNA Polymerase",
+          "canonical_url": "https://www.neb.com/en-us/products/m0491-q5-high-fidelity-dna-polymerase",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative vendor product page positioning Q5 as a high-fidelity polymerase with dedicated GC-rich support."
+        },
+        {
+          "title": "Phusion High-Fidelity DNA Polymerase",
+          "canonical_url": "https://www.thermofisher.com/order/catalog/product/F530S",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative vendor product page describing Phusion as a high-fidelity polymerase for demanding PCR applications."
+        }
+      ]
+    },
+    {
+      "parameter_name": "gc_rich_additives",
+      "description": "Additives accepted as GC-rich PCR helpers in the LabCraft PCR task.",
+      "units": "additive names",
+      "distribution": "deterministic",
+      "parameters": {
+        "values": [
+          "DMSO",
+          "Betaine"
+        ]
+      },
+      "claim_type": "protocol_choice",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "authors": "Henke W, Herdel K, Jung K, Schnorr D, Loening SA",
+          "title": "Betaine improves the PCR amplification of GC-rich DNA sequences",
+          "journal": "Nucleic Acids Research",
+          "year": 1997,
+          "doi": "10.1093/nar/25.19.3957",
+          "canonical_url": "https://doi.org/10.1093/nar/25.19.3957",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed GC-rich PCR study explicitly showing that betaine improves amplification of GC-rich targets."
+        },
+        {
+          "authors": "Chakrabarti R, Schutt CE",
+          "title": "The enhancement of PCR amplification by low molecular-weight sulfones",
+          "journal": "Nucleic Acids Research",
+          "year": 2001,
+          "doi": "10.1093/nar/29.11.2377",
+          "canonical_url": "https://doi.org/10.1093/nar/29.11.2377",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed study on cosolvent enhancement for difficult PCR templates, supporting additive use for GC-rich amplification."
+        }
+      ]
+    },
+    {
+      "parameter_name": "gc_rich_extension_seconds_for_2kb_amplicon",
+      "description": "Extension-time range accepted for a difficult 2 kb amplicon with modern high-fidelity polymerases.",
+      "units": "seconds",
+      "distribution": "deterministic",
+      "parameters": {
+        "min": 40,
+        "max": 60
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "PCR Using Q5 High-Fidelity DNA Polymerase",
+          "canonical_url": "https://www.neb.com/en-us/protocols/2013/12/13/pcr-using-q5-high-fidelity-dna-polymerase-m0491",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative vendor protocol stating a 20-30 second per kb extension range for Q5, which corresponds to 40-60 seconds for the 2 kb PCR-01 target."
+        },
+        {
+          "title": "Phusion PCR Protocol",
+          "canonical_url": "https://www.thermofisher.com/us/en/home/references/protocols/nucleic-acid-amplification-and-expression-profiling/pcr-protocol/phusion-pcr-protocol.html",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative vendor protocol stating a 15-30 second per kb extension range for Phusion, consistent with a 40-60 second window for a difficult 2 kb target."
+        }
+      ]
+    },
+    {
+      "parameter_name": "genomic_pcr_cycle_count_range",
+      "description": "Recommended cycle-count range for the PCR-01 genomic DNA amplification task.",
+      "units": "cycles",
+      "distribution": "deterministic",
+      "parameters": {
+        "min": 30,
+        "max": 35
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "Protocol for Q5 High-Fidelity 2X Master Mix",
+          "canonical_url": "https://www.neb.com/en-us/protocols/2012/12/07/protocol-for-q5-high-fidelity-2x-master-mix-m0492",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative vendor protocol recommending roughly 25-35 cycles, with genomic amplifications commonly using the upper end of that range."
+        },
+        {
+          "title": "Phusion PCR Protocol",
+          "canonical_url": "https://www.thermofisher.com/us/en/home/references/protocols/nucleic-acid-amplification-and-expression-profiling/pcr-protocol/phusion-pcr-protocol.html",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative vendor protocol using about 30-35 cycles for standard genomic PCR workflows."
+        }
+      ]
+    }
+  ]
+}

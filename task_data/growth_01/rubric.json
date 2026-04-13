@@ -1,0 +1,90 @@
+{
+  "task_id": "growth_01",
+  "task_title": "Early exponential growth characterization across three E. coli conditions",
+  "source": "LabCraft Growth-01",
+  "num_errors_introduced": 0,
+  "total_leaf_nodes": 6,
+  "rubric": {
+    "name": "Task Evaluation",
+    "weight": 1.0,
+    "is_leaf": false,
+    "children": [
+      {
+        "name": "Task Success",
+        "weight": 0.4,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Reports doubling times for all three conditions",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "task_success",
+            "requirement": "The final answer reports doubling times for LB, M9 + glucose, and LB + chloramphenicol (1.8 uM), using the exact labels and values consistent with the fit tool.",
+            "grading_notes": "Requires all three condition labels and transcript-consistent doubling-time values."
+          }
+        ]
+      },
+      {
+        "name": "Decision Quality",
+        "weight": 0.3,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Uses the cited starting OD600",
+            "weight": 0.3333333333,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Each inoculation starts at OD600 0.05.",
+            "grading_notes": "Measured from inoculate_growth tool arguments."
+          },
+          {
+            "name": "Uses the cited measurement interval",
+            "weight": 0.3333333333,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Incubation intervals between OD600 measurements are 15 minutes.",
+            "grading_notes": "Measured from incubate tool arguments."
+          },
+          {
+            "name": "Collects analyzable growth curves",
+            "weight": 0.3333333333,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "The growth-fit tool returns analyzable results for all three conditions.",
+            "grading_notes": "Measured from fit_growth_curve tool output."
+          }
+        ]
+      },
+      {
+        "name": "Troubleshooting",
+        "weight": 0.2,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Explains undersampled growth curves if they occur",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "troubleshooting",
+            "requirement": "If the fit tool reports insufficient points, the final answer explains that the trajectory lacked enough OD600 points in the usable fitting range.",
+            "grading_notes": "Defaults to full credit when no troubleshooting trigger occurs."
+          }
+        ]
+      },
+      {
+        "name": "Efficiency",
+        "weight": 0.1,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Uses a reasonable number of tool calls",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "efficiency",
+            "requirement": "The trajectory stays within the growth-task reference tool-call budget.",
+            "grading_notes": "Full credit at or under the optimal call budget, partial credit within the reasonable budget."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,1918 @@
+[
+  {
+    "name": "Phenol",
+    "cas_number": "108-95-2",
+    "hazard_class": [
+      "toxic",
+      "corrosive"
+    ],
+    "ghs_pictograms": [
+      "GHS05-Corrosive",
+      "GHS06-Toxic"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "inhalation",
+      "skin contact",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "Severe burns to skin and eyes; systemic toxicity including CNS depression, cardiac arrhythmia, and organ damage upon skin absorption; can be fatal",
+    "chronic_effects": "Liver and kidney damage; dermatitis with repeated exposure",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "face shield",
+      "fume hood"
+    ],
+    "engineering_controls": "Use in chemical fume hood. Phenol is readily absorbed through skin; double gloving recommended.",
+    "storage_requirements": "Store in tightly closed container, protected from light, at room temperature. Store in corrosives cabinet.",
+    "incompatible_with": [
+      "strong oxidizers",
+      "strong bases",
+      "aldehydes",
+      "metals"
+    ],
+    "spill_procedure": "Evacuate area. Wear full PPE. Absorb with vermiculite or dry sand. Collect in hazardous waste container. Decontaminate area with PEG 300/400.",
+    "waste_disposal": "Collect as hazardous waste. Do not pour down drain. Label as toxic/corrosive organic waste.",
+    "first_aid": {
+      "inhalation": "Move to fresh air. If breathing is difficult, give oxygen. Seek immediate medical attention.",
+      "skin_contact": "Remove contaminated clothing immediately. Flush with copious amounts of water for at least 15 minutes. Apply PEG 300 or PEG 400 if available. Seek immediate medical attention.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes, lifting upper and lower eyelids. Seek immediate medical attention.",
+      "ingestion": "Do NOT induce vomiting. Rinse mouth with water. Seek immediate medical attention."
+    },
+    "regulatory_notes": "OSHA PEL: 5 ppm TWA (skin). ACGIH TLV: 5 ppm TWA (skin)."
+  },
+  {
+    "name": "Chloroform",
+    "cas_number": "67-66-3",
+    "hazard_class": [
+      "toxic",
+      "irritant",
+      "carcinogen"
+    ],
+    "ghs_pictograms": [
+      "GHS06-Toxic",
+      "GHS08-Health Hazard"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "inhalation",
+      "skin contact",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "CNS depression, dizziness, nausea, headache; liver and kidney damage at high exposure; respiratory irritation",
+    "chronic_effects": "Liver and kidney damage; reasonably anticipated to be a human carcinogen (IARC Group 2B)",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "fume hood"
+    ],
+    "engineering_controls": "Use in chemical fume hood. Chloroform vapors are heavier than air and can accumulate at floor level.",
+    "storage_requirements": "Store in tightly sealed amber glass bottles in a cool, well-ventilated area away from light. Store separately from oxidizers and strong bases.",
+    "incompatible_with": [
+      "strong bases",
+      "strong oxidizers",
+      "acetone",
+      "alkali metals",
+      "aluminum"
+    ],
+    "spill_procedure": "Evacuate area. Ventilate. Absorb with inert material. Collect in sealed container for hazardous waste disposal.",
+    "waste_disposal": "Collect as halogenated organic waste. Do not pour down drain. Do not evaporate in fume hood.",
+    "first_aid": {
+      "inhalation": "Move to fresh air immediately. If breathing has stopped, give artificial respiration. Seek medical attention.",
+      "skin_contact": "Remove contaminated clothing. Wash skin with soap and water for at least 15 minutes.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes. Seek medical attention.",
+      "ingestion": "Do NOT induce vomiting. Seek immediate medical attention."
+    },
+    "regulatory_notes": "OSHA PEL: 50 ppm ceiling. ACGIH TLV: 10 ppm TWA. IARC Group 2B possible carcinogen."
+  },
+  {
+    "name": "Methanol",
+    "cas_number": "67-56-1",
+    "hazard_class": [
+      "toxic",
+      "flammable"
+    ],
+    "ghs_pictograms": [
+      "GHS02-Flammable",
+      "GHS06-Toxic",
+      "GHS08-Health Hazard"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "inhalation",
+      "skin contact",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "CNS depression, headache, nausea, visual disturbances including blindness; metabolic acidosis; potentially fatal",
+    "chronic_effects": "Optic nerve damage; vision impairment; CNS effects",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "fume hood"
+    ],
+    "engineering_controls": "Use in chemical fume hood. Keep away from ignition sources. Ground and bond containers during transfer.",
+    "storage_requirements": "Store in flammable liquids cabinet away from heat and ignition sources. Keep container tightly closed.",
+    "incompatible_with": [
+      "strong oxidizers",
+      "strong acids",
+      "alkali metals",
+      "bromine"
+    ],
+    "spill_procedure": "Remove ignition sources. Ventilate area. Absorb with inert material. Collect for hazardous waste disposal.",
+    "waste_disposal": "Collect as flammable organic waste. May be incinerated. Do not pour down drain.",
+    "first_aid": {
+      "inhalation": "Move to fresh air. Seek medical attention if symptoms persist.",
+      "skin_contact": "Wash with soap and water for at least 15 minutes. Remove contaminated clothing.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes. Seek medical attention.",
+      "ingestion": "Do NOT induce vomiting. Seek immediate medical attention. Ethanol may be administered as antidote by medical personnel."
+    },
+    "regulatory_notes": "OSHA PEL: 200 ppm TWA (skin). ACGIH TLV: 200 ppm TWA (skin)."
+  },
+  {
+    "name": "Ethanol",
+    "cas_number": "64-17-5",
+    "hazard_class": [
+      "flammable",
+      "irritant"
+    ],
+    "ghs_pictograms": [
+      "GHS02-Flammable"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "inhalation",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "CNS depression at high concentrations; eye and respiratory tract irritation",
+    "chronic_effects": "Chronic overexposure may cause liver damage",
+    "ppe_required": [
+      "safety goggles",
+      "lab coat",
+      "nitrile gloves"
+    ],
+    "engineering_controls": "Use in well-ventilated area. Use fume hood when heating or using large quantities. Keep away from ignition sources.",
+    "storage_requirements": "Store in flammable liquids cabinet. Keep away from heat and ignition sources.",
+    "incompatible_with": [
+      "strong oxidizers",
+      "strong acids",
+      "alkali metals",
+      "peroxides"
+    ],
+    "spill_procedure": "Remove ignition sources. Ventilate. Absorb with inert material or flush small spills with water.",
+    "waste_disposal": "Collect as flammable organic waste. Small quantities may be flushed with water per institutional guidelines.",
+    "first_aid": {
+      "inhalation": "Move to fresh air. Seek medical attention if symptoms persist.",
+      "skin_contact": "Wash with soap and water.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes.",
+      "ingestion": "Seek medical attention if large quantity consumed."
+    },
+    "regulatory_notes": "OSHA PEL: 1000 ppm TWA. ACGIH TLV: 1000 ppm STEL."
+  },
+  {
+    "name": "Isopropanol",
+    "cas_number": "67-63-0",
+    "hazard_class": [
+      "flammable",
+      "irritant"
+    ],
+    "ghs_pictograms": [
+      "GHS02-Flammable",
+      "GHS07-Irritant"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "inhalation",
+      "ingestion",
+      "eye contact",
+      "skin contact"
+    ],
+    "acute_effects": "CNS depression; eye and respiratory irritation; nausea, vomiting, headache",
+    "chronic_effects": "Repeated overexposure may cause dermatitis and CNS effects",
+    "ppe_required": [
+      "safety goggles",
+      "lab coat",
+      "nitrile gloves"
+    ],
+    "engineering_controls": "Use in well-ventilated area. Use fume hood when heating. Keep away from ignition sources.",
+    "storage_requirements": "Store in flammable liquids cabinet. Keep container tightly closed.",
+    "incompatible_with": [
+      "strong oxidizers",
+      "strong acids",
+      "aldehydes"
+    ],
+    "spill_procedure": "Remove ignition sources. Ventilate. Absorb with inert material.",
+    "waste_disposal": "Collect as flammable organic waste.",
+    "first_aid": {
+      "inhalation": "Move to fresh air. Seek medical attention if symptoms persist.",
+      "skin_contact": "Wash with soap and water.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes.",
+      "ingestion": "Do not induce vomiting. Seek medical attention."
+    },
+    "regulatory_notes": "OSHA PEL: 400 ppm TWA. ACGIH TLV: 200 ppm TWA, 400 ppm STEL."
+  },
+  {
+    "name": "Acetone",
+    "cas_number": "67-64-1",
+    "hazard_class": [
+      "flammable",
+      "irritant"
+    ],
+    "ghs_pictograms": [
+      "GHS02-Flammable",
+      "GHS07-Irritant"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "inhalation",
+      "ingestion",
+      "eye contact",
+      "skin contact"
+    ],
+    "acute_effects": "Eye, nose, and throat irritation; headache, dizziness, CNS depression at high concentrations",
+    "chronic_effects": "Dermatitis from defatting of skin with repeated exposure",
+    "ppe_required": [
+      "safety goggles",
+      "lab coat",
+      "nitrile gloves",
+      "fume hood"
+    ],
+    "engineering_controls": "Use in well-ventilated area or fume hood. Keep away from ignition sources. Ground containers during transfer.",
+    "storage_requirements": "Store in flammable liquids cabinet. Keep away from heat and ignition sources.",
+    "incompatible_with": [
+      "strong oxidizers",
+      "strong acids",
+      "strong bases",
+      "chloroform",
+      "bromine"
+    ],
+    "spill_procedure": "Remove ignition sources. Ventilate. Absorb with inert material. Collect for hazardous waste.",
+    "waste_disposal": "Collect as flammable organic waste. Do not pour down drain.",
+    "first_aid": {
+      "inhalation": "Move to fresh air. Seek medical attention if symptoms persist.",
+      "skin_contact": "Wash with soap and water.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes.",
+      "ingestion": "Do not induce vomiting. Seek medical attention."
+    },
+    "regulatory_notes": "OSHA PEL: 1000 ppm TWA. ACGIH TLV: 250 ppm TWA, 500 ppm STEL."
+  },
+  {
+    "name": "Dimethyl sulfoxide (DMSO)",
+    "cas_number": "67-68-5",
+    "hazard_class": [
+      "irritant"
+    ],
+    "ghs_pictograms": [
+      "GHS07-Irritant"
+    ],
+    "signal_word": "Warning",
+    "routes_of_exposure": [
+      "skin contact",
+      "eye contact",
+      "inhalation"
+    ],
+    "acute_effects": "Mild skin and eye irritation; rapidly penetrates skin and can carry dissolved substances into the body",
+    "chronic_effects": "May cause lens opacities with chronic high-dose exposure in animal studies",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat"
+    ],
+    "engineering_controls": "Use in well-ventilated area. CRITICAL: DMSO rapidly penetrates skin and carries dissolved chemicals through skin barrier. Never handle toxic solutes dissolved in DMSO without appropriate gloves.",
+    "storage_requirements": "Store at room temperature in tightly closed container. Freezing point is 18.5\u00b0C; store above this temperature for liquid form.",
+    "incompatible_with": [
+      "strong oxidizers",
+      "strong acids",
+      "acid chlorides",
+      "metal halides"
+    ],
+    "spill_procedure": "Absorb with inert material. Wash area with water. Collect for waste disposal.",
+    "waste_disposal": "Collect as organic waste. Small quantities may be disposed per institutional guidelines.",
+    "first_aid": {
+      "inhalation": "Move to fresh air.",
+      "skin_contact": "Wash immediately and thoroughly with soap and water. Ensure no toxic substances were dissolved in DMSO.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes.",
+      "ingestion": "Seek medical attention."
+    },
+    "regulatory_notes": "No OSHA PEL established. Not classified as carcinogenic."
+  },
+  {
+    "name": "Formamide",
+    "cas_number": "75-12-7",
+    "hazard_class": [
+      "toxic",
+      "teratogen"
+    ],
+    "ghs_pictograms": [
+      "GHS08-Health Hazard"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "skin contact",
+      "inhalation",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "Skin and eye irritation; may cause CNS effects at high exposure",
+    "chronic_effects": "Reproductive toxicity; teratogenic in animal studies. Suspected of damaging fertility and the unborn child.",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "fume hood"
+    ],
+    "engineering_controls": "Use in chemical fume hood, especially when heating. Avoid skin contact.",
+    "storage_requirements": "Store in tightly closed container at room temperature. Protect from light.",
+    "incompatible_with": [
+      "strong oxidizers",
+      "strong acids",
+      "iodine",
+      "pyridine"
+    ],
+    "spill_procedure": "Ventilate area. Absorb with inert material. Collect for hazardous waste disposal.",
+    "waste_disposal": "Collect as hazardous organic waste. Do not pour down drain.",
+    "first_aid": {
+      "inhalation": "Move to fresh air. Seek medical attention.",
+      "skin_contact": "Remove contaminated clothing. Wash skin thoroughly with soap and water.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes. Seek medical attention.",
+      "ingestion": "Rinse mouth. Seek medical attention."
+    },
+    "regulatory_notes": "EU CLP: Repr. 1B (H360D). Reproductive toxicant."
+  },
+  {
+    "name": "Xylene",
+    "cas_number": "1330-20-7",
+    "hazard_class": [
+      "flammable",
+      "toxic",
+      "irritant"
+    ],
+    "ghs_pictograms": [
+      "GHS02-Flammable",
+      "GHS07-Irritant",
+      "GHS08-Health Hazard"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "inhalation",
+      "skin contact",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "CNS depression; headache, dizziness, nausea; respiratory and eye irritation",
+    "chronic_effects": "Liver and kidney damage; CNS effects; dermatitis",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "fume hood"
+    ],
+    "engineering_controls": "Use in chemical fume hood. Keep away from ignition sources.",
+    "storage_requirements": "Store in flammable liquids cabinet. Keep container tightly closed.",
+    "incompatible_with": [
+      "strong oxidizers",
+      "strong acids"
+    ],
+    "spill_procedure": "Remove ignition sources. Ventilate. Absorb with inert material. Collect for hazardous waste.",
+    "waste_disposal": "Collect as flammable organic waste. Do not pour down drain.",
+    "first_aid": {
+      "inhalation": "Move to fresh air immediately. Seek medical attention.",
+      "skin_contact": "Remove contaminated clothing. Wash skin with soap and water.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes. Seek medical attention.",
+      "ingestion": "Do NOT induce vomiting (aspiration hazard). Seek immediate medical attention."
+    },
+    "regulatory_notes": "OSHA PEL: 100 ppm TWA. ACGIH TLV: 100 ppm TWA, 150 ppm STEL."
+  },
+  {
+    "name": "Toluene",
+    "cas_number": "108-88-3",
+    "hazard_class": [
+      "flammable",
+      "toxic",
+      "irritant"
+    ],
+    "ghs_pictograms": [
+      "GHS02-Flammable",
+      "GHS07-Irritant",
+      "GHS08-Health Hazard"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "inhalation",
+      "skin contact",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "CNS depression; headache, dizziness, nausea; eye and respiratory irritation",
+    "chronic_effects": "Reproductive toxicity; liver and kidney damage; CNS damage with chronic exposure",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "fume hood"
+    ],
+    "engineering_controls": "Use in chemical fume hood. Keep away from ignition sources.",
+    "storage_requirements": "Store in flammable liquids cabinet. Keep container tightly closed.",
+    "incompatible_with": [
+      "strong oxidizers",
+      "strong acids",
+      "halogens"
+    ],
+    "spill_procedure": "Remove ignition sources. Ventilate. Absorb with inert material. Collect for hazardous waste.",
+    "waste_disposal": "Collect as flammable organic waste. Do not pour down drain.",
+    "first_aid": {
+      "inhalation": "Move to fresh air immediately. Seek medical attention.",
+      "skin_contact": "Remove contaminated clothing. Wash skin with soap and water.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes.",
+      "ingestion": "Do NOT induce vomiting (aspiration hazard). Seek immediate medical attention."
+    },
+    "regulatory_notes": "OSHA PEL: 200 ppm TWA. ACGIH TLV: 20 ppm TWA. Reproductive toxicant."
+  },
+  {
+    "name": "Ethidium bromide",
+    "cas_number": "1239-45-8",
+    "hazard_class": [
+      "toxic",
+      "mutagen"
+    ],
+    "ghs_pictograms": [
+      "GHS06-Toxic",
+      "GHS08-Health Hazard"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "skin contact",
+      "inhalation",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "Irritation of skin, eyes, and respiratory tract; toxic if swallowed",
+    "chronic_effects": "Potent mutagen; DNA intercalator. May cause heritable genetic damage. Suspected reproductive toxicant.",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat"
+    ],
+    "engineering_controls": "Use in designated area. Double-glove when handling concentrated solutions. UV protective eyewear when visualizing gels.",
+    "storage_requirements": "Store in tightly closed container at room temperature, protected from light. Keep in designated mutagen storage area.",
+    "incompatible_with": [
+      "strong oxidizers",
+      "strong acids"
+    ],
+    "spill_procedure": "Wear double gloves. Absorb with wet paper towels. Decontaminate area. EtBr destaining bags may be used for dilute solutions. Collect as hazardous waste.",
+    "waste_disposal": "Collect as hazardous waste. Charcoal filtration or commercial destaining bags may be used for dilute solutions per institutional guidelines. Concentrated solutions must be collected as hazardous waste.",
+    "first_aid": {
+      "inhalation": "Move to fresh air. Seek medical attention.",
+      "skin_contact": "Wash immediately with soap and water for at least 15 minutes. Remove contaminated clothing.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes. Seek medical attention.",
+      "ingestion": "Rinse mouth. Seek immediate medical attention."
+    },
+    "regulatory_notes": "Known mutagen. Handle as potentially carcinogenic. Some institutions are switching to safer alternatives such as SYBR Safe."
+  },
+  {
+    "name": "Acrylamide",
+    "cas_number": "79-06-1",
+    "hazard_class": [
+      "toxic",
+      "carcinogen",
+      "mutagen"
+    ],
+    "ghs_pictograms": [
+      "GHS06-Toxic",
+      "GHS08-Health Hazard"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "skin contact",
+      "inhalation",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "Neurotoxicity; skin irritation and sensitization; eye irritation",
+    "chronic_effects": "Probable human carcinogen (IARC Group 2A); peripheral neuropathy; reproductive toxicity; neurotoxicity cumulative",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "fume hood"
+    ],
+    "engineering_controls": "Weigh powder in chemical fume hood or glove box. Use pre-made solutions when possible to minimize dust exposure. Unpolymerized acrylamide is the primary hazard.",
+    "storage_requirements": "Store in tightly closed container at room temperature in a designated area for carcinogens. Protect from light.",
+    "incompatible_with": [
+      "strong oxidizers",
+      "strong acids",
+      "strong bases",
+      "copper",
+      "iron"
+    ],
+    "spill_procedure": "Wear full PPE. Wet powder spills to prevent dust. Absorb with inert material. Collect as hazardous waste. Decontaminate area.",
+    "waste_disposal": "Unpolymerized: collect as hazardous waste. Polymerized gels: may be disposed as solid waste per institutional guidelines, but check local regulations.",
+    "first_aid": {
+      "inhalation": "Move to fresh air immediately. Seek medical attention.",
+      "skin_contact": "Remove contaminated clothing immediately. Wash skin with soap and water for at least 15 minutes. Seek medical attention.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes. Seek medical attention.",
+      "ingestion": "Rinse mouth. Seek immediate medical attention."
+    },
+    "regulatory_notes": "OSHA PEL: 0.3 mg/m\u00b3 TWA (skin). IARC Group 2A probable carcinogen. Known neurotoxin."
+  },
+  {
+    "name": "Formaldehyde",
+    "cas_number": "50-00-0",
+    "hazard_class": [
+      "toxic",
+      "carcinogen",
+      "flammable",
+      "corrosive"
+    ],
+    "ghs_pictograms": [
+      "GHS02-Flammable",
+      "GHS05-Corrosive",
+      "GHS06-Toxic",
+      "GHS08-Health Hazard"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "inhalation",
+      "skin contact",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "Severe eye, skin, and respiratory tract irritation; pulmonary edema at high concentrations; allergic sensitization",
+    "chronic_effects": "Known human carcinogen (IARC Group 1, nasopharyngeal cancer); respiratory sensitization; contact dermatitis",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "fume hood"
+    ],
+    "engineering_controls": "Use in chemical fume hood at all times. Monitor airborne concentrations. Use formaldehyde-specific exposure monitoring if routine use.",
+    "storage_requirements": "Store in tightly closed container at room temperature. Do not store below 15\u00b0C (may polymerize). Store in ventilated area.",
+    "incompatible_with": [
+      "strong oxidizers",
+      "strong acids",
+      "strong bases",
+      "phenol",
+      "urea"
+    ],
+    "spill_procedure": "Evacuate area. Ventilate. Wear full PPE. Absorb with inert material. Decontaminate with sodium bisulfite solution. Collect as hazardous waste.",
+    "waste_disposal": "Collect as hazardous waste. Do not pour down drain. Label as carcinogenic waste.",
+    "first_aid": {
+      "inhalation": "Move to fresh air immediately. Seek medical attention. Monitor for delayed pulmonary edema.",
+      "skin_contact": "Remove contaminated clothing. Wash skin with soap and water for at least 15 minutes.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes. Seek immediate medical attention.",
+      "ingestion": "Do NOT induce vomiting. Rinse mouth. Seek immediate medical attention."
+    },
+    "regulatory_notes": "OSHA PEL: 0.75 ppm TWA, 2 ppm STEL. IARC Group 1 carcinogen. OSHA Formaldehyde Standard 29 CFR 1910.1048."
+  },
+  {
+    "name": "Paraformaldehyde",
+    "cas_number": "30525-89-4",
+    "hazard_class": [
+      "toxic",
+      "carcinogen",
+      "flammable",
+      "corrosive"
+    ],
+    "ghs_pictograms": [
+      "GHS02-Flammable",
+      "GHS05-Corrosive",
+      "GHS06-Toxic",
+      "GHS08-Health Hazard"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "inhalation",
+      "skin contact",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "Severe eye, skin, and respiratory tract irritation; releases formaldehyde when dissolved; allergic sensitization",
+    "chronic_effects": "Releases formaldehyde; known human carcinogen (IARC Group 1); respiratory sensitization",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "fume hood",
+      "face shield"
+    ],
+    "engineering_controls": "Weigh powder and prepare solutions in chemical fume hood. Releases formaldehyde gas when heated or dissolved. Same precautions as formaldehyde.",
+    "storage_requirements": "Store tightly sealed at room temperature in a dry, well-ventilated area. Store away from oxidizers.",
+    "incompatible_with": [
+      "strong oxidizers",
+      "strong acids",
+      "strong bases",
+      "alkalis"
+    ],
+    "spill_procedure": "Wear full PPE. Carefully sweep up solid and place in sealed container. Wet to prevent dust. Collect as hazardous waste.",
+    "waste_disposal": "Collect as hazardous waste. Label as carcinogenic. Do not pour down drain.",
+    "first_aid": {
+      "inhalation": "Move to fresh air immediately. Seek medical attention.",
+      "skin_contact": "Remove contaminated clothing. Wash skin with soap and water for at least 15 minutes.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes. Seek medical attention.",
+      "ingestion": "Do NOT induce vomiting. Rinse mouth. Seek immediate medical attention."
+    },
+    "regulatory_notes": "Depolymerizes to formaldehyde. Subject to OSHA Formaldehyde Standard 29 CFR 1910.1048. IARC Group 1 carcinogen."
+  },
+  {
+    "name": "Glutaraldehyde",
+    "cas_number": "111-30-8",
+    "hazard_class": [
+      "toxic",
+      "corrosive"
+    ],
+    "ghs_pictograms": [
+      "GHS05-Corrosive",
+      "GHS06-Toxic",
+      "GHS08-Health Hazard"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "inhalation",
+      "skin contact",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "Severe skin and eye burns; respiratory irritation; strong sensitizer",
+    "chronic_effects": "Respiratory sensitization (occupational asthma); skin sensitization (allergic contact dermatitis)",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "fume hood"
+    ],
+    "engineering_controls": "Use in chemical fume hood. Strong respiratory and skin sensitizer.",
+    "storage_requirements": "Store at 2-8\u00b0C in tightly closed container. Protect from light.",
+    "incompatible_with": [
+      "strong oxidizers",
+      "strong acids",
+      "strong bases"
+    ],
+    "spill_procedure": "Ventilate area. Wear full PPE. Absorb with inert material. Collect as hazardous waste.",
+    "waste_disposal": "Collect as hazardous waste. Neutralize with glycine solution before disposal per institutional protocol.",
+    "first_aid": {
+      "inhalation": "Move to fresh air immediately. Seek medical attention.",
+      "skin_contact": "Remove contaminated clothing. Flush with water for at least 15 minutes. Seek medical attention.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes. Seek immediate medical attention.",
+      "ingestion": "Rinse mouth. Do not induce vomiting. Seek immediate medical attention."
+    },
+    "regulatory_notes": "OSHA PEL: 0.2 ppm ceiling. ACGIH TLV: 0.05 ppm ceiling. Strong respiratory sensitizer."
+  },
+  {
+    "name": "Sodium azide",
+    "cas_number": "26628-22-8",
+    "hazard_class": [
+      "toxic",
+      "irritant"
+    ],
+    "ghs_pictograms": [
+      "GHS06-Toxic",
+      "GHS08-Health Hazard",
+      "GHS09-Environment"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "inhalation",
+      "skin contact",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "Highly toxic; hypotension, headache, dizziness, nausea; can be rapidly fatal; inhibits cytochrome c oxidase similar to cyanide",
+    "chronic_effects": "Mutagenic in bacterial assays; chronic low-level exposure may cause headache and hypotension",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "fume hood"
+    ],
+    "engineering_controls": "Use in chemical fume hood. NEVER acidify solutions containing sodium azide (generates toxic hydrazoic acid gas). Do not use with copper, lead, or brass plumbing (forms explosive metal azides).",
+    "storage_requirements": "Store in tightly closed container at room temperature. Keep away from acids and metals. Store separately from acids.",
+    "incompatible_with": [
+      "acids",
+      "copper",
+      "lead",
+      "brass",
+      "silver",
+      "strong oxidizers",
+      "CS2"
+    ],
+    "spill_procedure": "Wear full PPE. Do not acidify. Carefully sweep up solid. Absorb liquid with inert material. Collect as hazardous waste.",
+    "waste_disposal": "Collect as hazardous waste. Do NOT pour down drain (reacts with copper plumbing to form explosive metal azides). Neutralize with ceric ammonium nitrate or nitrous acid per institutional protocol.",
+    "first_aid": {
+      "inhalation": "Move to fresh air immediately. Seek immediate medical attention. Treat as cyanide-type poisoning.",
+      "skin_contact": "Remove contaminated clothing. Wash skin with soap and water for at least 15 minutes. Seek medical attention.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes. Seek medical attention.",
+      "ingestion": "Seek immediate medical attention. Do NOT induce vomiting."
+    },
+    "regulatory_notes": "OSHA PEL: 0.3 mg/m\u00b3 ceiling (as HN3). ACGIH TLV: 0.29 mg/m\u00b3 ceiling. Highly toxic; LD50 (oral, rat) = 27 mg/kg."
+  },
+  {
+    "name": "Diethyl pyrocarbonate (DEPC)",
+    "cas_number": "1609-47-8",
+    "hazard_class": [
+      "toxic",
+      "irritant",
+      "carcinogen"
+    ],
+    "ghs_pictograms": [
+      "GHS06-Toxic",
+      "GHS07-Irritant"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "inhalation",
+      "skin contact",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "Severe eye and skin irritation; lachrymator; respiratory irritation",
+    "chronic_effects": "Suspected carcinogen; reacts with amines in biological systems",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "fume hood"
+    ],
+    "engineering_controls": "Use in chemical fume hood. Decomposes to ethanol and CO2 upon autoclaving, rendering treated water safe. Lachrymator\u2014avoid vapor exposure.",
+    "storage_requirements": "Store at 2-8\u00b0C in tightly sealed container. Moisture-sensitive; keep dry.",
+    "incompatible_with": [
+      "water (reacts slowly)",
+      "amines",
+      "ammonia"
+    ],
+    "spill_procedure": "Ventilate area. Wear full PPE. Absorb with inert material. Collect as hazardous waste.",
+    "waste_disposal": "Collect as hazardous waste. Autoclaved DEPC-treated water is safe and does not require special disposal.",
+    "first_aid": {
+      "inhalation": "Move to fresh air immediately. Seek medical attention.",
+      "skin_contact": "Remove contaminated clothing. Wash skin with soap and water for at least 15 minutes.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes. Seek medical attention.",
+      "ingestion": "Rinse mouth. Seek medical attention."
+    },
+    "regulatory_notes": "Handle as suspected carcinogen. Always autoclave DEPC-treated solutions before use to decompose residual DEPC."
+  },
+  {
+    "name": "N,N'-Methylenebisacrylamide (Bis-acrylamide)",
+    "cas_number": "110-26-9",
+    "hazard_class": [
+      "toxic",
+      "irritant"
+    ],
+    "ghs_pictograms": [
+      "GHS07-Irritant"
+    ],
+    "signal_word": "Warning",
+    "routes_of_exposure": [
+      "inhalation",
+      "skin contact",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "Skin, eye, and respiratory tract irritation",
+    "chronic_effects": "May cause sensitization; handle as potential neurotoxin (similar to acrylamide but less potent)",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "fume hood"
+    ],
+    "engineering_controls": "Weigh powder in chemical fume hood. Use pre-made solutions when possible.",
+    "storage_requirements": "Store in tightly closed container at room temperature. Protect from light and moisture.",
+    "incompatible_with": [
+      "strong oxidizers",
+      "strong acids",
+      "strong bases"
+    ],
+    "spill_procedure": "Wear PPE. Wet powder to prevent dust. Collect with inert absorbent. Dispose as hazardous waste.",
+    "waste_disposal": "Unpolymerized: collect as hazardous waste. Polymerized gels: follow institutional guidelines.",
+    "first_aid": {
+      "inhalation": "Move to fresh air. Seek medical attention if symptoms persist.",
+      "skin_contact": "Wash with soap and water.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes.",
+      "ingestion": "Rinse mouth. Seek medical attention."
+    },
+    "regulatory_notes": "Handle with same precautions as acrylamide. Use pre-made solutions when available."
+  },
+  {
+    "name": "Hydrochloric acid",
+    "cas_number": "7647-01-0",
+    "hazard_class": [
+      "corrosive",
+      "toxic"
+    ],
+    "ghs_pictograms": [
+      "GHS05-Corrosive",
+      "GHS07-Irritant"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "inhalation",
+      "skin contact",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "Severe burns to skin and eyes; respiratory tract irritation and damage; pulmonary edema",
+    "chronic_effects": "Dental erosion; chronic bronchitis; dermatitis",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "fume hood",
+      "face shield"
+    ],
+    "engineering_controls": "Use in chemical fume hood, especially concentrated solutions. Always add acid to water, never water to acid.",
+    "storage_requirements": "Store in corrosives cabinet in acid-resistant secondary containment. Separate from bases and oxidizers.",
+    "incompatible_with": [
+      "strong bases",
+      "strong oxidizers",
+      "metals",
+      "cyanides",
+      "sulfides",
+      "aldehydes"
+    ],
+    "spill_procedure": "Evacuate area. Ventilate. Neutralize carefully with sodium bicarbonate. Absorb with inert material. Collect for waste disposal.",
+    "waste_disposal": "Neutralize to pH 6-8 before disposal per institutional guidelines, or collect as acid waste.",
+    "first_aid": {
+      "inhalation": "Move to fresh air immediately. Seek medical attention.",
+      "skin_contact": "Remove contaminated clothing. Flush with water for at least 20 minutes. Seek medical attention.",
+      "eye_contact": "Flush eyes with water for at least 20 minutes. Seek immediate medical attention.",
+      "ingestion": "Do NOT induce vomiting. Rinse mouth. Give water to drink if conscious. Seek immediate medical attention."
+    },
+    "regulatory_notes": "OSHA PEL: 5 ppm ceiling. ACGIH TLV: 2 ppm ceiling."
+  },
+  {
+    "name": "Sulfuric acid",
+    "cas_number": "7664-93-9",
+    "hazard_class": [
+      "corrosive",
+      "oxidizer"
+    ],
+    "ghs_pictograms": [
+      "GHS05-Corrosive"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "inhalation",
+      "skin contact",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "Severe burns to all tissues; extremely exothermic upon dilution; pulmonary edema",
+    "chronic_effects": "IARC Group 1 carcinogen (strong inorganic acid mists containing sulfuric acid); chronic respiratory effects; dental erosion",
+    "ppe_required": [
+      "acid-resistant gloves",
+      "safety goggles",
+      "lab coat",
+      "fume hood",
+      "face shield"
+    ],
+    "engineering_controls": "Use in chemical fume hood. ALWAYS add acid slowly to water with stirring, never add water to concentrated acid (highly exothermic).",
+    "storage_requirements": "Store in corrosives cabinet in acid-resistant secondary containment. Separate from bases, organic materials, and oxidizers.",
+    "incompatible_with": [
+      "strong bases",
+      "organic materials",
+      "metals",
+      "water (concentrated acid)",
+      "combustible materials",
+      "carbides"
+    ],
+    "spill_procedure": "Evacuate area. Wear full PPE including face shield. Neutralize carefully and slowly with sodium bicarbonate. Absorb with dry sand. Collect as hazardous waste.",
+    "waste_disposal": "Neutralize carefully to pH 6-8 before disposal, or collect as acid waste.",
+    "first_aid": {
+      "inhalation": "Move to fresh air immediately. Seek medical attention.",
+      "skin_contact": "Remove contaminated clothing immediately. Flush with water for at least 20 minutes. Seek immediate medical attention.",
+      "eye_contact": "Flush eyes with water for at least 20 minutes. Seek immediate medical attention.",
+      "ingestion": "Do NOT induce vomiting. Do NOT give anything to drink. Seek immediate medical attention."
+    },
+    "regulatory_notes": "OSHA PEL: 1 mg/m\u00b3 TWA. IARC Group 1 carcinogen (occupational exposure to strong inorganic acid mists)."
+  },
+  {
+    "name": "Sodium hydroxide",
+    "cas_number": "1310-73-2",
+    "hazard_class": [
+      "corrosive"
+    ],
+    "ghs_pictograms": [
+      "GHS05-Corrosive"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "skin contact",
+      "ingestion",
+      "eye contact",
+      "inhalation"
+    ],
+    "acute_effects": "Severe burns to skin, eyes, and mucous membranes; dissolution of concentrated NaOH is highly exothermic",
+    "chronic_effects": "Chronic skin exposure may cause dermatitis",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "face shield"
+    ],
+    "engineering_controls": "Use in well-ventilated area. Use fume hood for concentrated solutions or when generating aerosols. Add pellets slowly to water with stirring (exothermic).",
+    "storage_requirements": "Store in corrosives cabinet, separate from acids. Keep in polyethylene containers (corrodes glass over time). Keep dry.",
+    "incompatible_with": [
+      "strong acids",
+      "aluminum",
+      "tin",
+      "zinc",
+      "flammable liquids",
+      "halogenated solvents"
+    ],
+    "spill_procedure": "Wear full PPE. Neutralize with dilute acid (e.g., dilute HCl or acetic acid). Absorb with inert material.",
+    "waste_disposal": "Neutralize to pH 6-8 before disposal, or collect as base waste.",
+    "first_aid": {
+      "inhalation": "Move to fresh air. Seek medical attention.",
+      "skin_contact": "Remove contaminated clothing. Flush with water for at least 20 minutes. Seek medical attention.",
+      "eye_contact": "Flush eyes with water for at least 20 minutes. Seek immediate medical attention. Alkali burns to eyes are medical emergencies.",
+      "ingestion": "Do NOT induce vomiting. Give water to drink if conscious. Seek immediate medical attention."
+    },
+    "regulatory_notes": "OSHA PEL: 2 mg/m\u00b3 ceiling. ACGIH TLV: 2 mg/m\u00b3 ceiling."
+  },
+  {
+    "name": "Potassium hydroxide",
+    "cas_number": "1310-58-3",
+    "hazard_class": [
+      "corrosive"
+    ],
+    "ghs_pictograms": [
+      "GHS05-Corrosive"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "skin contact",
+      "ingestion",
+      "eye contact",
+      "inhalation"
+    ],
+    "acute_effects": "Severe burns to skin, eyes, and mucous membranes; dissolution is highly exothermic",
+    "chronic_effects": "Chronic skin exposure may cause dermatitis",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "face shield"
+    ],
+    "engineering_controls": "Use in well-ventilated area. Add pellets slowly to water (exothermic).",
+    "storage_requirements": "Store in corrosives cabinet, separate from acids. Keep dry. Use polyethylene containers.",
+    "incompatible_with": [
+      "strong acids",
+      "aluminum",
+      "tin",
+      "zinc",
+      "halogenated solvents"
+    ],
+    "spill_procedure": "Wear full PPE. Neutralize with dilute acid. Absorb with inert material.",
+    "waste_disposal": "Neutralize to pH 6-8 before disposal, or collect as base waste.",
+    "first_aid": {
+      "inhalation": "Move to fresh air. Seek medical attention.",
+      "skin_contact": "Remove contaminated clothing. Flush with water for at least 20 minutes. Seek medical attention.",
+      "eye_contact": "Flush eyes with water for at least 20 minutes. Seek immediate medical attention.",
+      "ingestion": "Do NOT induce vomiting. Give water if conscious. Seek immediate medical attention."
+    },
+    "regulatory_notes": "OSHA PEL: 2 mg/m\u00b3 ceiling. ACGIH TLV: 2 mg/m\u00b3 ceiling."
+  },
+  {
+    "name": "Acetic acid (glacial)",
+    "cas_number": "64-19-7",
+    "hazard_class": [
+      "corrosive",
+      "flammable"
+    ],
+    "ghs_pictograms": [
+      "GHS02-Flammable",
+      "GHS05-Corrosive"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "inhalation",
+      "skin contact",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "Severe burns to skin and eyes (glacial/concentrated); respiratory irritation; pulmonary edema at high concentrations",
+    "chronic_effects": "Dental erosion; chronic bronchitis; skin sensitization",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "fume hood"
+    ],
+    "engineering_controls": "Use glacial acetic acid in chemical fume hood. Dilute solutions may be used on bench with adequate ventilation.",
+    "storage_requirements": "Store in corrosives cabinet. Glacial acetic acid freezes at 16.6\u00b0C. Keep away from ignition sources.",
+    "incompatible_with": [
+      "strong oxidizers",
+      "strong bases",
+      "peroxides",
+      "permanganates",
+      "chromic acid"
+    ],
+    "spill_procedure": "Ventilate. Neutralize with sodium bicarbonate. Absorb with inert material.",
+    "waste_disposal": "Dilute solutions may be neutralized and disposed per institutional guidelines. Concentrated acid: collect as hazardous waste.",
+    "first_aid": {
+      "inhalation": "Move to fresh air. Seek medical attention.",
+      "skin_contact": "Flush with water for at least 15 minutes. Seek medical attention for concentrated acid exposure.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes. Seek medical attention.",
+      "ingestion": "Do NOT induce vomiting. Rinse mouth. Seek medical attention."
+    },
+    "regulatory_notes": "OSHA PEL: 10 ppm TWA. ACGIH TLV: 10 ppm TWA, 15 ppm STEL."
+  },
+  {
+    "name": "Trifluoroacetic acid (TFA)",
+    "cas_number": "76-05-1",
+    "hazard_class": [
+      "corrosive",
+      "toxic"
+    ],
+    "ghs_pictograms": [
+      "GHS05-Corrosive",
+      "GHS06-Toxic"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "inhalation",
+      "skin contact",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "Severe burns to skin and eyes; severe respiratory tract irritation; pulmonary edema",
+    "chronic_effects": "Chronic respiratory effects from repeated exposure",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "fume hood",
+      "face shield"
+    ],
+    "engineering_controls": "Use in chemical fume hood at all times. Highly volatile and corrosive.",
+    "storage_requirements": "Store in corrosives cabinet in tightly sealed fluoropolymer or glass container. Keep cool.",
+    "incompatible_with": [
+      "strong bases",
+      "metals",
+      "strong oxidizers"
+    ],
+    "spill_procedure": "Evacuate area. Ventilate. Wear full PPE. Neutralize carefully with sodium bicarbonate. Absorb with inert material.",
+    "waste_disposal": "Collect as halogenated acid waste. Do not pour down drain.",
+    "first_aid": {
+      "inhalation": "Move to fresh air immediately. Seek immediate medical attention.",
+      "skin_contact": "Remove contaminated clothing immediately. Flush with water for at least 20 minutes. Seek immediate medical attention.",
+      "eye_contact": "Flush eyes with water for at least 20 minutes. Seek immediate medical attention.",
+      "ingestion": "Do NOT induce vomiting. Rinse mouth. Seek immediate medical attention."
+    },
+    "regulatory_notes": "No specific OSHA PEL. Treat as highly corrosive. More corrosive than acetic acid."
+  },
+  {
+    "name": "Perchloric acid",
+    "cas_number": "7601-90-3",
+    "hazard_class": [
+      "corrosive",
+      "oxidizer"
+    ],
+    "ghs_pictograms": [
+      "GHS03-Oxidizer",
+      "GHS05-Corrosive"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "inhalation",
+      "skin contact",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "Severe burns; explosive when concentrated and heated; strong oxidizer",
+    "chronic_effects": "Chronic respiratory irritation",
+    "ppe_required": [
+      "acid-resistant gloves",
+      "safety goggles",
+      "lab coat",
+      "fume hood",
+      "face shield"
+    ],
+    "engineering_controls": "Use ONLY in a dedicated perchloric acid fume hood with wash-down capability. Do NOT use in standard fume hoods (explosive perchlorate salts can accumulate in ductwork).",
+    "storage_requirements": "Store in glass or compatible container in acid cabinet. Separate from organic materials, dehydrating agents, and reducing agents. Keep below 72% concentration.",
+    "incompatible_with": [
+      "organic materials",
+      "reducing agents",
+      "dehydrating agents",
+      "metals",
+      "combustible materials",
+      "acetic anhydride"
+    ],
+    "spill_procedure": "Evacuate area. Wear full PPE. Dilute with large amounts of water. Do NOT use organic absorbents. Collect as hazardous waste.",
+    "waste_disposal": "Collect as oxidizing acid waste. Keep separate from organic waste. Dilute before disposal.",
+    "first_aid": {
+      "inhalation": "Move to fresh air immediately. Seek immediate medical attention.",
+      "skin_contact": "Remove contaminated clothing immediately. Flush with water for at least 20 minutes. Seek immediate medical attention.",
+      "eye_contact": "Flush eyes with water for at least 20 minutes. Seek immediate medical attention.",
+      "ingestion": "Do NOT induce vomiting. Seek immediate medical attention."
+    },
+    "regulatory_notes": "Requires dedicated perchloric acid fume hood. Concentrated (>72%) perchloric acid is a powerful oxidizer and potential explosive."
+  },
+  {
+    "name": "TEMED (N,N,N',N'-Tetramethylethylenediamine)",
+    "cas_number": "110-18-9",
+    "hazard_class": [
+      "flammable",
+      "corrosive",
+      "toxic"
+    ],
+    "ghs_pictograms": [
+      "GHS02-Flammable",
+      "GHS05-Corrosive",
+      "GHS07-Irritant"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "inhalation",
+      "skin contact",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "Corrosive to skin and eyes; respiratory tract irritation; harmful if inhaled",
+    "chronic_effects": "Repeated exposure may cause skin sensitization",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "fume hood"
+    ],
+    "engineering_controls": "Use in chemical fume hood or well-ventilated area. Strong, unpleasant odor at low concentrations.",
+    "storage_requirements": "Store in flammable liquids cabinet. Keep tightly closed under nitrogen. Moisture-sensitive.",
+    "incompatible_with": [
+      "strong oxidizers",
+      "strong acids",
+      "copper alloys"
+    ],
+    "spill_procedure": "Ventilate area. Absorb with inert material. Collect as hazardous waste.",
+    "waste_disposal": "Collect as hazardous organic waste.",
+    "first_aid": {
+      "inhalation": "Move to fresh air. Seek medical attention if symptoms persist.",
+      "skin_contact": "Remove contaminated clothing. Wash with soap and water for at least 15 minutes.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes. Seek medical attention.",
+      "ingestion": "Rinse mouth. Seek medical attention."
+    },
+    "regulatory_notes": "No specific OSHA PEL. Used as a catalyst for acrylamide polymerization in gel electrophoresis."
+  },
+  {
+    "name": "Beta-mercaptoethanol (BME, 2-Mercaptoethanol)",
+    "cas_number": "60-24-2",
+    "hazard_class": [
+      "toxic",
+      "flammable",
+      "irritant"
+    ],
+    "ghs_pictograms": [
+      "GHS02-Flammable",
+      "GHS06-Toxic",
+      "GHS08-Health Hazard",
+      "GHS09-Environment"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "inhalation",
+      "skin contact",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "Toxic by all routes of exposure; severe irritation of eyes, skin, and respiratory tract; nausea, vomiting, headache; pungent, extremely unpleasant odor",
+    "chronic_effects": "Liver and kidney damage with repeated exposure",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "fume hood"
+    ],
+    "engineering_controls": "Use in chemical fume hood at all times. Extremely strong, penetrating odor detectable at very low concentrations.",
+    "storage_requirements": "Store at 2-8\u00b0C in tightly closed container in a well-ventilated area or fume hood. Protect from light and air.",
+    "incompatible_with": [
+      "strong oxidizers",
+      "strong acids",
+      "strong bases",
+      "metals"
+    ],
+    "spill_procedure": "Evacuate area due to odor. Ventilate. Wear full PPE. Absorb with inert material. Collect as hazardous waste.",
+    "waste_disposal": "Collect as hazardous organic waste. Do not pour down drain.",
+    "first_aid": {
+      "inhalation": "Move to fresh air immediately. Seek medical attention.",
+      "skin_contact": "Remove contaminated clothing. Wash skin thoroughly with soap and water. Seek medical attention.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes. Seek medical attention.",
+      "ingestion": "Rinse mouth. Seek immediate medical attention."
+    },
+    "regulatory_notes": "ACGIH TLV: 0.1 ppm TWA (proposed). Environmentally toxic to aquatic organisms."
+  },
+  {
+    "name": "Dithiothreitol (DTT)",
+    "cas_number": "3483-12-3",
+    "hazard_class": [
+      "irritant",
+      "toxic"
+    ],
+    "ghs_pictograms": [
+      "GHS07-Irritant"
+    ],
+    "signal_word": "Warning",
+    "routes_of_exposure": [
+      "skin contact",
+      "ingestion",
+      "eye contact",
+      "inhalation"
+    ],
+    "acute_effects": "Irritation of skin, eyes, and respiratory tract; harmful if swallowed",
+    "chronic_effects": null,
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat"
+    ],
+    "engineering_controls": "Use in well-ventilated area. Fume hood recommended when weighing powder.",
+    "storage_requirements": "Store desiccated at -20\u00b0C. Solutions are unstable and should be prepared fresh. Sensitive to air oxidation.",
+    "incompatible_with": [
+      "strong oxidizers",
+      "strong acids"
+    ],
+    "spill_procedure": "Wear PPE. Absorb with inert material. Collect for waste disposal.",
+    "waste_disposal": "Collect as chemical waste per institutional guidelines.",
+    "first_aid": {
+      "inhalation": "Move to fresh air. Seek medical attention if symptoms persist.",
+      "skin_contact": "Wash with soap and water.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes.",
+      "ingestion": "Rinse mouth. Seek medical attention."
+    },
+    "regulatory_notes": "Less hazardous alternative to beta-mercaptoethanol for many applications."
+  },
+  {
+    "name": "TCEP (Tris(2-carboxyethyl)phosphine)",
+    "cas_number": "51805-45-9",
+    "hazard_class": [
+      "irritant"
+    ],
+    "ghs_pictograms": [
+      "GHS07-Irritant"
+    ],
+    "signal_word": "Warning",
+    "routes_of_exposure": [
+      "skin contact",
+      "ingestion",
+      "eye contact",
+      "inhalation"
+    ],
+    "acute_effects": "Skin and eye irritation; respiratory irritation from powder",
+    "chronic_effects": null,
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat"
+    ],
+    "engineering_controls": "Use in well-ventilated area. Weigh powder in fume hood.",
+    "storage_requirements": "Store desiccated at -20\u00b0C or 4\u00b0C. Solutions are more stable than DTT but should be stored at -20\u00b0C for long-term use.",
+    "incompatible_with": [
+      "strong oxidizers"
+    ],
+    "spill_procedure": "Wear PPE. Sweep up solid. Absorb liquid with inert material. Collect for waste disposal.",
+    "waste_disposal": "Collect as chemical waste per institutional guidelines.",
+    "first_aid": {
+      "inhalation": "Move to fresh air.",
+      "skin_contact": "Wash with soap and water.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes.",
+      "ingestion": "Rinse mouth. Seek medical attention if symptoms persist."
+    },
+    "regulatory_notes": "Considered a safer alternative to BME and DTT. Odorless and more stable."
+  },
+  {
+    "name": "Sodium borohydride",
+    "cas_number": "16940-66-2",
+    "hazard_class": [
+      "toxic",
+      "flammable",
+      "corrosive"
+    ],
+    "ghs_pictograms": [
+      "GHS02-Flammable",
+      "GHS05-Corrosive",
+      "GHS06-Toxic"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "inhalation",
+      "skin contact",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "Corrosive to skin and eyes; generates flammable hydrogen gas upon contact with water and acids; toxic if ingested",
+    "chronic_effects": "Repeated exposure may cause respiratory sensitization",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "fume hood",
+      "face shield"
+    ],
+    "engineering_controls": "Use in chemical fume hood. Generates hydrogen gas in contact with water and protic solvents. Keep away from ignition sources.",
+    "storage_requirements": "Store in cool, dry place. Keep away from water and acids. Store under inert atmosphere if possible.",
+    "incompatible_with": [
+      "water",
+      "acids",
+      "oxidizers",
+      "alcohols",
+      "aldehydes",
+      "ketones"
+    ],
+    "spill_procedure": "Do NOT use water. Sweep up carefully. Cover with dry sand or sodium bicarbonate. Collect as hazardous waste.",
+    "waste_disposal": "Carefully quench small amounts in cold isopropanol (not water). Collect as hazardous waste.",
+    "first_aid": {
+      "inhalation": "Move to fresh air immediately. Seek medical attention.",
+      "skin_contact": "Remove contaminated clothing. Flush with water for at least 15 minutes. Seek medical attention.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes. Seek immediate medical attention.",
+      "ingestion": "Do NOT induce vomiting. Seek immediate medical attention."
+    },
+    "regulatory_notes": "No specific OSHA PEL. Water-reactive solid. DOT hazard class: 4.3 (dangerous when wet)."
+  },
+  {
+    "name": "TRIzol / TRI Reagent",
+    "cas_number": null,
+    "hazard_class": [
+      "toxic",
+      "corrosive"
+    ],
+    "ghs_pictograms": [
+      "GHS05-Corrosive",
+      "GHS06-Toxic",
+      "GHS08-Health Hazard"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "inhalation",
+      "skin contact",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "Severe burns (contains phenol and guanidinium thiocyanate); toxic by inhalation and skin absorption; CNS depression",
+    "chronic_effects": "Contains phenol (liver/kidney damage) and may cause chronic organ damage with repeated exposure",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "fume hood"
+    ],
+    "engineering_controls": "Use in chemical fume hood at all times. Contains phenol and guanidinium thiocyanate. Double-gloving recommended.",
+    "storage_requirements": "Store at 2-8\u00b0C in tightly closed container. Protect from light.",
+    "incompatible_with": [
+      "strong oxidizers",
+      "strong bases",
+      "bleach (sodium hypochlorite)"
+    ],
+    "spill_procedure": "Evacuate area. Wear full PPE. Absorb with inert material. Decontaminate with PEG 300 for phenol component. Collect as hazardous waste.",
+    "waste_disposal": "Collect as hazardous waste. Do NOT pour down drain. Do NOT mix with bleach (releases toxic gas from thiocyanate component).",
+    "first_aid": {
+      "inhalation": "Move to fresh air immediately. Seek immediate medical attention.",
+      "skin_contact": "Remove contaminated clothing immediately. Flush with water for at least 15 minutes. Apply PEG 300 if available. Seek immediate medical attention.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes. Seek immediate medical attention.",
+      "ingestion": "Do NOT induce vomiting. Rinse mouth. Seek immediate medical attention."
+    },
+    "regulatory_notes": "Combination reagent containing phenol and guanidinium thiocyanate. Follow safety guidelines for both components."
+  },
+  {
+    "name": "Guanidinium thiocyanate (guanidine thiocyanate)",
+    "cas_number": "593-84-0",
+    "hazard_class": [
+      "toxic",
+      "irritant"
+    ],
+    "ghs_pictograms": [
+      "GHS06-Toxic",
+      "GHS07-Irritant"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "inhalation",
+      "skin contact",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "Toxic if swallowed or inhaled; irritating to skin, eyes, and respiratory tract; releases toxic gases when mixed with bleach or acids",
+    "chronic_effects": "Repeated exposure may cause organ damage",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "fume hood"
+    ],
+    "engineering_controls": "Use in chemical fume hood when weighing powder. NEVER mix with bleach (generates toxic HCN and COS gases) or acids.",
+    "storage_requirements": "Store at room temperature in tightly closed container. Hygroscopic; keep dry.",
+    "incompatible_with": [
+      "sodium hypochlorite (bleach)",
+      "acids",
+      "strong oxidizers"
+    ],
+    "spill_procedure": "Wear PPE. Sweep up solid carefully. Absorb liquid with inert material. Do NOT use bleach to clean. Collect as hazardous waste.",
+    "waste_disposal": "Collect as hazardous waste. NEVER pour down drain or mix with bleach waste. Thiocyanate reacts with bleach to produce toxic gases.",
+    "first_aid": {
+      "inhalation": "Move to fresh air. Seek medical attention.",
+      "skin_contact": "Wash with soap and water for at least 15 minutes.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes. Seek medical attention.",
+      "ingestion": "Rinse mouth. Seek immediate medical attention."
+    },
+    "regulatory_notes": "Commonly used in RNA extraction. CRITICAL: never mix with bleach or acids due to toxic gas generation."
+  },
+  {
+    "name": "Phenol:Chloroform:Isoamyl Alcohol (PCI, 25:24:1)",
+    "cas_number": null,
+    "hazard_class": [
+      "toxic",
+      "corrosive",
+      "carcinogen"
+    ],
+    "ghs_pictograms": [
+      "GHS05-Corrosive",
+      "GHS06-Toxic",
+      "GHS08-Health Hazard"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "inhalation",
+      "skin contact",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "Severe burns from phenol; toxic vapors from chloroform; CNS depression; phenol rapidly absorbed through skin causing systemic toxicity",
+    "chronic_effects": "Chloroform is IARC Group 2B possible carcinogen; phenol causes liver/kidney damage; chronic organ damage",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "fume hood",
+      "face shield"
+    ],
+    "engineering_controls": "Use in chemical fume hood at all times. Double-gloving strongly recommended. This is one of the most hazardous common lab reagents.",
+    "storage_requirements": "Store at 2-8\u00b0C in tightly closed amber glass bottle. Protect from light.",
+    "incompatible_with": [
+      "strong oxidizers",
+      "strong bases",
+      "alkali metals",
+      "acetone"
+    ],
+    "spill_procedure": "Evacuate area. Wear full PPE including face shield. Absorb with vermiculite. Apply PEG 300 to phenol-contaminated surfaces. Collect as hazardous waste.",
+    "waste_disposal": "Collect as halogenated organic hazardous waste. Do not pour down drain. Do not evaporate in fume hood.",
+    "first_aid": {
+      "inhalation": "Move to fresh air immediately. Seek immediate medical attention.",
+      "skin_contact": "Remove contaminated clothing immediately. Flush with copious water for at least 15 minutes. Apply PEG 300/400 if available. Seek immediate medical attention.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes. Seek immediate medical attention.",
+      "ingestion": "Do NOT induce vomiting. Seek immediate medical attention."
+    },
+    "regulatory_notes": "Contains both phenol (OSHA PEL 5 ppm, skin) and chloroform (OSHA PEL 50 ppm ceiling). Must be used in fume hood."
+  },
+  {
+    "name": "Sodium dodecyl sulfate (SDS)",
+    "cas_number": "151-21-3",
+    "hazard_class": [
+      "irritant",
+      "flammable"
+    ],
+    "ghs_pictograms": [
+      "GHS02-Flammable",
+      "GHS07-Irritant"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "inhalation",
+      "skin contact",
+      "ingestion",
+      "eye contact"
+    ],
+    "acute_effects": "Skin and severe eye irritation; respiratory irritation from powder; harmful if swallowed",
+    "chronic_effects": "Dermatitis with repeated skin exposure",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "dust mask"
+    ],
+    "engineering_controls": "Weigh powder in fume hood or use dust mask to prevent inhalation of fine powder. SDS powder is a significant inhalation hazard.",
+    "storage_requirements": "Store at room temperature in tightly closed container. Keep dry. Powder is flammable.",
+    "incompatible_with": [
+      "strong oxidizers",
+      "strong acids"
+    ],
+    "spill_procedure": "Avoid generating dust. Sweep up carefully. Absorb liquid with inert material.",
+    "waste_disposal": "Dilute solutions may be disposed via drain with water per institutional guidelines. Collect concentrated solutions as waste.",
+    "first_aid": {
+      "inhalation": "Move to fresh air. Seek medical attention if symptoms persist.",
+      "skin_contact": "Wash with soap and water.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes. Seek medical attention.",
+      "ingestion": "Rinse mouth. Drink water. Seek medical attention."
+    },
+    "regulatory_notes": "Fine powder is a dust explosion hazard. Use appropriate precautions when weighing."
+  },
+  {
+    "name": "Triton X-100",
+    "cas_number": "9036-19-5",
+    "hazard_class": [
+      "irritant"
+    ],
+    "ghs_pictograms": [
+      "GHS07-Irritant",
+      "GHS09-Environment"
+    ],
+    "signal_word": "Warning",
+    "routes_of_exposure": [
+      "skin contact",
+      "eye contact",
+      "ingestion"
+    ],
+    "acute_effects": "Eye and skin irritation; harmful if swallowed",
+    "chronic_effects": "Contains ethoxylated octylphenol; environmental endocrine disruptor concerns",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat"
+    ],
+    "engineering_controls": "Use in well-ventilated area. Standard bench work acceptable for dilute solutions.",
+    "storage_requirements": "Store at room temperature in tightly closed container.",
+    "incompatible_with": [
+      "strong oxidizers",
+      "strong acids"
+    ],
+    "spill_procedure": "Absorb with inert material. Wash area with water. Collect for waste disposal. Very slippery when wet.",
+    "waste_disposal": "Collect as chemical waste. Some institutions restrict drain disposal due to environmental concerns (endocrine disruptor).",
+    "first_aid": {
+      "inhalation": "Move to fresh air.",
+      "skin_contact": "Wash with soap and water.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes.",
+      "ingestion": "Rinse mouth. Seek medical attention."
+    },
+    "regulatory_notes": "SVHC (Substance of Very High Concern) under EU REACH due to endocrine-disrupting properties. Some labs are switching to Tween-20 or other alternatives."
+  },
+  {
+    "name": "DAPI (4',6-Diamidino-2-phenylindole)",
+    "cas_number": "28718-90-3",
+    "hazard_class": [
+      "toxic",
+      "mutagen"
+    ],
+    "ghs_pictograms": [
+      "GHS07-Irritant",
+      "GHS08-Health Hazard"
+    ],
+    "signal_word": "Warning",
+    "routes_of_exposure": [
+      "skin contact",
+      "ingestion",
+      "eye contact",
+      "inhalation"
+    ],
+    "acute_effects": "Irritation of skin and eyes; harmful if swallowed or inhaled",
+    "chronic_effects": "DNA-binding fluorescent dye; potential mutagen. Handle as mutagenic substance.",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat"
+    ],
+    "engineering_controls": "Use in well-ventilated area. Weigh powder in fume hood. Protect from light during use.",
+    "storage_requirements": "Store desiccated at -20\u00b0C, protected from light. Stock solutions stored at 2-8\u00b0C protected from light.",
+    "incompatible_with": [
+      "strong oxidizers"
+    ],
+    "spill_procedure": "Wear PPE. Absorb with wet paper towels. Collect as hazardous waste.",
+    "waste_disposal": "Collect as hazardous waste (potential mutagen).",
+    "first_aid": {
+      "inhalation": "Move to fresh air. Seek medical attention if symptoms persist.",
+      "skin_contact": "Wash with soap and water.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes.",
+      "ingestion": "Rinse mouth. Seek medical attention."
+    },
+    "regulatory_notes": "DNA-binding compound. Handle as potential mutagen. Used at very low concentrations (typically 0.1-1 \u00b5g/mL)."
+  },
+  {
+    "name": "Propidium iodide",
+    "cas_number": "25535-16-4",
+    "hazard_class": [
+      "toxic",
+      "mutagen"
+    ],
+    "ghs_pictograms": [
+      "GHS07-Irritant",
+      "GHS08-Health Hazard"
+    ],
+    "signal_word": "Warning",
+    "routes_of_exposure": [
+      "skin contact",
+      "ingestion",
+      "eye contact",
+      "inhalation"
+    ],
+    "acute_effects": "Irritation of skin and eyes; harmful if swallowed",
+    "chronic_effects": "DNA intercalator; potential mutagen and reproductive toxicant. Handle as mutagenic substance.",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat"
+    ],
+    "engineering_controls": "Use in well-ventilated area. Protect from light during use.",
+    "storage_requirements": "Store at 2-8\u00b0C, protected from light in tightly closed container.",
+    "incompatible_with": [
+      "strong oxidizers"
+    ],
+    "spill_procedure": "Wear PPE. Absorb with wet paper towels. Collect as hazardous waste.",
+    "waste_disposal": "Collect as hazardous waste (potential mutagen).",
+    "first_aid": {
+      "inhalation": "Move to fresh air.",
+      "skin_contact": "Wash with soap and water.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes.",
+      "ingestion": "Rinse mouth. Seek medical attention."
+    },
+    "regulatory_notes": "DNA intercalator. Handle as potential mutagen. Commonly used in flow cytometry and cell viability assays."
+  },
+  {
+    "name": "SYBR Green I",
+    "cas_number": null,
+    "hazard_class": [
+      "irritant",
+      "mutagen"
+    ],
+    "ghs_pictograms": [
+      "GHS07-Irritant"
+    ],
+    "signal_word": "Warning",
+    "routes_of_exposure": [
+      "skin contact",
+      "eye contact",
+      "ingestion"
+    ],
+    "acute_effects": "Mild skin and eye irritation",
+    "chronic_effects": "Nucleic acid binding dye; potential mutagen although less mutagenic than ethidium bromide in Ames test",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat"
+    ],
+    "engineering_controls": "Standard bench work. Protect from light during use.",
+    "storage_requirements": "Store at -20\u00b0C, protected from light.",
+    "incompatible_with": [
+      "strong oxidizers"
+    ],
+    "spill_procedure": "Wear gloves. Absorb with paper towels. Collect for waste disposal.",
+    "waste_disposal": "Collect as chemical waste per institutional guidelines. Some institutions allow drain disposal of very dilute solutions.",
+    "first_aid": {
+      "inhalation": "Move to fresh air.",
+      "skin_contact": "Wash with soap and water.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes.",
+      "ingestion": "Rinse mouth. Seek medical attention."
+    },
+    "regulatory_notes": "Considered a safer alternative to ethidium bromide for nucleic acid staining, though still a DNA-binding dye."
+  },
+  {
+    "name": "Crystal violet (Gentian violet)",
+    "cas_number": "548-62-9",
+    "hazard_class": [
+      "toxic",
+      "carcinogen"
+    ],
+    "ghs_pictograms": [
+      "GHS07-Irritant",
+      "GHS08-Health Hazard"
+    ],
+    "signal_word": "Warning",
+    "routes_of_exposure": [
+      "skin contact",
+      "ingestion",
+      "eye contact",
+      "inhalation"
+    ],
+    "acute_effects": "Skin and eye irritation; stains skin and surfaces; harmful if swallowed",
+    "chronic_effects": "IARC Group 2B possible carcinogen; animal carcinogen",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat"
+    ],
+    "engineering_controls": "Use in well-ventilated area. Stains aggressively; protect surfaces.",
+    "storage_requirements": "Store at room temperature in tightly closed container.",
+    "incompatible_with": [
+      "strong oxidizers"
+    ],
+    "spill_procedure": "Wear PPE. Absorb with paper towels. Clean with ethanol or bleach solution. Persistent staining expected.",
+    "waste_disposal": "Collect as hazardous waste.",
+    "first_aid": {
+      "inhalation": "Move to fresh air.",
+      "skin_contact": "Wash with soap and water. Staining will persist for several days.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes. Seek medical attention.",
+      "ingestion": "Rinse mouth. Seek medical attention."
+    },
+    "regulatory_notes": "IARC Group 2B possible carcinogen. Avoid prolonged or repeated exposure."
+  },
+  {
+    "name": "Coomassie Brilliant Blue (G-250/R-250)",
+    "cas_number": "6104-59-2",
+    "hazard_class": [
+      "irritant"
+    ],
+    "ghs_pictograms": [
+      "GHS07-Irritant"
+    ],
+    "signal_word": "Warning",
+    "routes_of_exposure": [
+      "skin contact",
+      "eye contact",
+      "ingestion",
+      "inhalation"
+    ],
+    "acute_effects": "Skin and eye irritation; respiratory irritation from powder; stains skin and surfaces",
+    "chronic_effects": null,
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat"
+    ],
+    "engineering_controls": "Weigh powder in fume hood. Note: Coomassie staining solutions often contain methanol and acetic acid \u2014 follow safety guidelines for those components.",
+    "storage_requirements": "Store at room temperature in tightly closed container.",
+    "incompatible_with": [
+      "strong oxidizers"
+    ],
+    "spill_procedure": "Wear gloves. Absorb with paper towels or inert material. Persistent blue staining expected.",
+    "waste_disposal": "Staining solutions containing methanol and acetic acid: collect as hazardous organic waste. Aqueous destain: per institutional guidelines.",
+    "first_aid": {
+      "inhalation": "Move to fresh air.",
+      "skin_contact": "Wash with soap and water.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes.",
+      "ingestion": "Rinse mouth. Seek medical attention if symptoms persist."
+    },
+    "regulatory_notes": "The dye itself has low toxicity. Main hazards come from solvents (methanol, acetic acid) in staining/destaining solutions."
+  },
+  {
+    "name": "Liquid nitrogen",
+    "cas_number": "7727-37-9",
+    "hazard_class": [
+      "cryogenic"
+    ],
+    "ghs_pictograms": [
+      "GHS04-Compressed Gas"
+    ],
+    "signal_word": "Warning",
+    "routes_of_exposure": [
+      "skin contact",
+      "eye contact",
+      "inhalation"
+    ],
+    "acute_effects": "Severe cryogenic burns/frostbite on contact; asphyxiation in enclosed spaces due to oxygen displacement; cold gas can cause respiratory damage",
+    "chronic_effects": null,
+    "ppe_required": [
+      "cryogenic gloves",
+      "face shield",
+      "safety goggles",
+      "lab coat",
+      "closed-toe shoes",
+      "long pants"
+    ],
+    "engineering_controls": "Use only in well-ventilated areas. Install oxygen monitors in rooms where large quantities are stored or used. Never seal liquid nitrogen in closed containers (explosion risk from gas expansion).",
+    "storage_requirements": "Store in approved cryogenic Dewar vessels only. Never use sealed containers. Ensure adequate ventilation. 1 liter of liquid nitrogen produces approximately 700 liters of gas.",
+    "incompatible_with": [
+      "sealed containers",
+      "organic materials at cryogenic temperatures (may become brittle)"
+    ],
+    "spill_procedure": "Evacuate enclosed areas immediately (asphyxiation risk). Ventilate area. Allow to evaporate. Do not touch with bare skin. Monitor oxygen levels before re-entry.",
+    "waste_disposal": "Allow to evaporate in well-ventilated area. No hazardous waste disposal required.",
+    "first_aid": {
+      "inhalation": "Move to fresh air immediately. If not breathing, give artificial respiration. Seek medical attention.",
+      "skin_contact": "Do NOT rub affected area. Immerse in warm (not hot) water (40-42\u00b0C). Do not apply direct heat. Seek medical attention for frostbite.",
+      "eye_contact": "Flush with lukewarm water. Seek immediate medical attention.",
+      "ingestion": "Not applicable."
+    },
+    "regulatory_notes": "Simple asphyxiant. OSHA requires oxygen monitoring in confined spaces. Expansion ratio ~1:694."
+  },
+  {
+    "name": "Dry ice (Solid carbon dioxide)",
+    "cas_number": "124-38-9",
+    "hazard_class": [
+      "cryogenic"
+    ],
+    "ghs_pictograms": [
+      "GHS04-Compressed Gas"
+    ],
+    "signal_word": "Warning",
+    "routes_of_exposure": [
+      "skin contact",
+      "eye contact",
+      "inhalation"
+    ],
+    "acute_effects": "Cryogenic burns/frostbite on contact (-78.5\u00b0C); CO2 asphyxiation in enclosed spaces; dizziness, headache from elevated CO2",
+    "chronic_effects": null,
+    "ppe_required": [
+      "cryogenic gloves",
+      "safety goggles",
+      "lab coat"
+    ],
+    "engineering_controls": "Use in well-ventilated areas. CO2 is heavier than air and accumulates at floor level. Never store in sealed containers (sublimation pressure can cause explosion). Never transport in closed vehicles.",
+    "storage_requirements": "Store in insulated, ventilated containers. Never store in sealed/airtight containers. Store in well-ventilated areas.",
+    "incompatible_with": [
+      "sealed containers",
+      "strong bases"
+    ],
+    "spill_procedure": "Ventilate area. Allow to sublimate. Do not touch with bare skin. Monitor for CO2 buildup in enclosed areas.",
+    "waste_disposal": "Allow to sublimate in well-ventilated area. No hazardous waste disposal required.",
+    "first_aid": {
+      "inhalation": "Move to fresh air. If not breathing, give artificial respiration. Seek medical attention.",
+      "skin_contact": "Do NOT rub affected area. Immerse in warm (not hot) water. Seek medical attention for frostbite.",
+      "eye_contact": "Flush with lukewarm water. Seek medical attention.",
+      "ingestion": "Seek immediate medical attention. Internal frostbite risk."
+    },
+    "regulatory_notes": "OSHA PEL for CO2: 5000 ppm TWA. CO2 is an asphyxiant at high concentrations. Sublimation temperature: -78.5\u00b0C."
+  },
+  {
+    "name": "Hydrogen peroxide (30%)",
+    "cas_number": "7722-84-1",
+    "hazard_class": [
+      "oxidizer",
+      "corrosive"
+    ],
+    "ghs_pictograms": [
+      "GHS03-Oxidizer",
+      "GHS05-Corrosive",
+      "GHS07-Irritant"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "skin contact",
+      "eye contact",
+      "inhalation",
+      "ingestion"
+    ],
+    "acute_effects": "Burns to skin and eyes at high concentrations; bleaching of skin; respiratory irritation from vapors",
+    "chronic_effects": "Repeated exposure may cause skin irritation and bleaching of hair",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "fume hood"
+    ],
+    "engineering_controls": "Use concentrated solutions (>8%) in fume hood. Strong oxidizer \u2014 keep away from combustible materials.",
+    "storage_requirements": "Store in original vented container at 2-8\u00b0C or room temperature depending on concentration. Keep away from combustible materials, metals, and reducing agents.",
+    "incompatible_with": [
+      "reducing agents",
+      "combustible materials",
+      "metals (iron, copper, manganese)",
+      "strong acids",
+      "organic materials"
+    ],
+    "spill_procedure": "Wear PPE. Dilute with large amounts of water. Keep away from combustible materials. Collect for waste disposal.",
+    "waste_disposal": "Dilute solutions (<3%) may be flushed with water per institutional guidelines. Concentrated: collect as oxidizer waste.",
+    "first_aid": {
+      "inhalation": "Move to fresh air. Seek medical attention.",
+      "skin_contact": "Flush immediately with water for at least 15 minutes. Seek medical attention for concentrated solution burns.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes. Seek immediate medical attention.",
+      "ingestion": "Do NOT induce vomiting. Rinse mouth. Seek immediate medical attention."
+    },
+    "regulatory_notes": "OSHA PEL: 1 ppm TWA. ACGIH TLV: 1 ppm TWA. Concentrations >8% are corrosive."
+  },
+  {
+    "name": "Ammonium persulfate (APS)",
+    "cas_number": "7727-54-0",
+    "hazard_class": [
+      "oxidizer",
+      "irritant",
+      "toxic"
+    ],
+    "ghs_pictograms": [
+      "GHS03-Oxidizer",
+      "GHS07-Irritant",
+      "GHS08-Health Hazard"
+    ],
+    "signal_word": "Danger",
+    "routes_of_exposure": [
+      "inhalation",
+      "skin contact",
+      "eye contact",
+      "ingestion"
+    ],
+    "acute_effects": "Skin and eye irritation; respiratory sensitization; may trigger asthma attacks in sensitized individuals",
+    "chronic_effects": "Respiratory sensitization (occupational asthma); skin sensitization",
+    "ppe_required": [
+      "nitrile gloves",
+      "safety goggles",
+      "lab coat",
+      "dust mask"
+    ],
+    "engineering_controls": "Weigh powder in fume hood. Strong oxidizer; keep away from combustible materials. Respiratory sensitizer \u2014 minimize dust exposure.",
+    "storage_requirements": "Store in cool, dry place in tightly closed container. Keep away from combustible materials and reducing agents.",
+    "incompatible_with": [
+      "reducing agents",
+      "combustible materials",
+      "iron",
+      "alkalis"
+    ],
+    "spill_procedure": "Wear PPE. Sweep up carefully, avoiding dust generation. Keep away from combustible materials. Collect as oxidizer waste.",
+    "waste_disposal": "Collect as oxidizer waste. Do not mix with organic waste.",
+    "first_aid": {
+      "inhalation": "Move to fresh air. Seek medical attention, especially if asthma symptoms develop.",
+      "skin_contact": "Wash with soap and water.",
+      "eye_contact": "Flush eyes with water for at least 15 minutes.",
+      "ingestion": "Rinse mouth. Seek medical attention."
+    },
+    "regulatory_notes": "Respiratory sensitizer. Workers with history of asthma should avoid handling. Used as free radical initiator for polyacrylamide gel polymerization."
+  }
+]
