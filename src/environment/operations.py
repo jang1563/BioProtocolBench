@@ -16,14 +16,23 @@ from .state import (
     PcrReaction,
     PlatedSample,
     PreparedPlate,
+    ScreeningColony,
+    ScreeningPlate,
     TransformationCulture,
 )
-from .stochastic import load_growth_parameters, load_pcr_parameters, sample_poisson
+from .stochastic import (
+    load_growth_parameters,
+    load_pcr_parameters,
+    load_screening_parameters,
+    sample_poisson,
+)
 
 _GROWTH_PARAMETERS_PATH = Path(__file__).resolve().parents[2] / "data" / "parameters" / "growth.json"
 _GROWTH_BUNDLE = None
 _PCR_PARAMETERS_PATH = Path(__file__).resolve().parents[2] / "data" / "parameters" / "pcr.json"
 _PCR_BUNDLE = None
+_SCREENING_PARAMETERS_PATH = Path(__file__).resolve().parents[2] / "data" / "parameters" / "screening.json"
+_SCREENING_BUNDLE = None
 
 
 def _growth_bundle():
@@ -38,6 +47,13 @@ def _pcr_bundle():
     if _PCR_BUNDLE is None:
         _PCR_BUNDLE = load_pcr_parameters(_PCR_PARAMETERS_PATH)
     return _PCR_BUNDLE
+
+
+def _screening_bundle():
+    global _SCREENING_BUNDLE
+    if _SCREENING_BUNDLE is None:
+        _SCREENING_BUNDLE = load_screening_parameters(_SCREENING_PARAMETERS_PATH)
+    return _SCREENING_BUNDLE
 
 
 def _normalize_choice(value: str) -> str:
@@ -83,6 +99,53 @@ def _resolve_pcr_reaction_id(state: LabState, reaction_id: str) -> str:
             ", ".join(sorted(candidates)),
         )
     )
+
+
+def _ensure_screening_plate(state: LabState) -> ScreeningPlate:
+    existing = next(iter(state.screening_plates.values()), None)
+    if existing is not None:
+        return existing
+
+    bundle = _screening_bundle()
+    plate_id = state.next_screening_plate_id()
+    recombinant_band_bp = bundle.integer("screening_recombinant_colony_pcr_band_bp")
+    empty_vector_band_bp = bundle.integer("screening_empty_vector_colony_pcr_band_bp")
+    plate = ScreeningPlate(
+        plate_id=plate_id,
+        historical_positive_rate_among_white=bundle.value("historical_positive_rate_among_white_colonies"),
+        target_confidence=bundle.value("screening_target_confidence"),
+        recombinant_band_bp=recombinant_band_bp,
+        empty_vector_band_bp=empty_vector_band_bp,
+    )
+
+    recombinant_white_ids = {"white_002", "white_005", "white_006", "white_011"}
+    for idx in range(1, 13):
+        colony_id = "white_{:03d}".format(idx)
+        is_recombinant = colony_id in recombinant_white_ids
+        plate.colonies[colony_id] = ScreeningColony(
+            colony_id=colony_id,
+            color="white",
+            is_recombinant=is_recombinant,
+            expected_band_bp=recombinant_band_bp if is_recombinant else empty_vector_band_bp,
+            notes=[
+                "White colony from blue-white screening.",
+                "Expected insert-positive band near {:d} bp.".format(recombinant_band_bp)
+                if is_recombinant
+                else "White false positive with empty-vector-like colony PCR band.",
+            ],
+        )
+    for idx in range(1, 19):
+        colony_id = "blue_{:03d}".format(idx)
+        plate.colonies[colony_id] = ScreeningColony(
+            colony_id=colony_id,
+            color="blue",
+            is_recombinant=False,
+            expected_band_bp=empty_vector_band_bp,
+            notes=["Blue colony retaining lacZ alpha activity; treat as vector-only background."],
+        )
+
+    state.screening_plates[plate_id] = plate
+    return plate
 
 
 def prepare_media(
@@ -585,4 +648,100 @@ def run_gel(
         "notes": notes,
     }
     state.log_event("run_gel", payload)
+    return payload
+
+
+def inspect_screening_plate(state: LabState) -> Dict[str, object]:
+    """Return the fixed blue-white screening plate for Screen-01."""
+    plate = _ensure_screening_plate(state)
+    white_ids = sorted(colony_id for colony_id, colony in plate.colonies.items() if colony.color == "white")
+    blue_ids = sorted(colony_id for colony_id, colony in plate.colonies.items() if colony.color == "blue")
+    payload = {
+        "status": "screening_plate_ready",
+        "plate_id": plate.plate_id,
+        "white_colony_ids": white_ids,
+        "blue_colony_ids": blue_ids,
+        "white_colony_count": len(white_ids),
+        "blue_colony_count": len(blue_ids),
+        "historical_positive_rate_among_white": float(plate.historical_positive_rate_among_white),
+        "target_confidence": float(plate.target_confidence),
+        "recombinant_band_bp": int(plate.recombinant_band_bp),
+        "empty_vector_band_bp": int(plate.empty_vector_band_bp),
+        "notes": [
+            "White colonies are enriched for inserts but may include false positives.",
+            "Blue colonies should be treated as vector-only background in this task.",
+        ],
+    }
+    state.log_event("inspect_screening_plate", payload)
+    return payload
+
+
+def run_colony_pcr(
+    state: LabState,
+    colony_ids: List[str],
+    primer_pair: str = "M13/pUC flank primers",
+) -> Dict[str, object]:
+    """Run colony PCR on the requested blue-white screening colonies."""
+    if not colony_ids:
+        raise ValueError("run_colony_pcr requires at least one colony_id.")
+
+    plate = _ensure_screening_plate(state)
+    results = []
+    batch_screening_strategy = "white_only"
+    batch_confirmed = []
+    for colony_id in colony_ids:
+        if colony_id not in plate.colonies:
+            raise ValueError(
+                "Unknown colony_id '{:s}'. Available colony IDs: {:s}".format(
+                    colony_id,
+                    ", ".join(sorted(plate.colonies)),
+                )
+            )
+        colony = plate.colonies[colony_id]
+        if colony.color != "white":
+            batch_screening_strategy = "includes_blue"
+        if colony_id not in plate.screened_colony_ids:
+            plate.screened_colony_ids.append(colony_id)
+        result = {
+            "colony_id": colony.colony_id,
+            "color": colony.color,
+            "status": "recombinant_positive" if colony.is_recombinant else "empty_vector_or_background",
+            "visible_bands_bp": [int(colony.expected_band_bp)],
+            "notes": list(colony.notes),
+        }
+        results.append(result)
+        if colony.is_recombinant:
+            batch_confirmed.append(colony.colony_id)
+
+    cumulative_white_ids = [
+        colony_id
+        for colony_id in plate.screened_colony_ids
+        if plate.colonies[colony_id].color == "white"
+    ]
+    confidence = 1.0 - math.pow(
+        1.0 - float(plate.historical_positive_rate_among_white),
+        len(cumulative_white_ids),
+    )
+    cumulative_confirmed = sorted(
+        colony_id
+        for colony_id in plate.screened_colony_ids
+        if plate.colonies[colony_id].is_recombinant
+    )
+    payload = {
+        "status": "screened",
+        "plate_id": plate.plate_id,
+        "primer_pair": primer_pair,
+        "screened_colony_ids": list(colony_ids),
+        "screened_colony_count": len(colony_ids),
+        "screening_strategy": batch_screening_strategy,
+        "colony_pcr_used": True,
+        "results": results,
+        "confirmed_recombinant_ids_in_batch": sorted(batch_confirmed),
+        "confirmed_recombinant_ids_cumulative": cumulative_confirmed,
+        "cumulative_screened_white_colony_count": len(cumulative_white_ids),
+        "cumulative_confidence_pct": round(confidence * 100.0, 1),
+        "recombinant_band_bp": int(plate.recombinant_band_bp),
+        "empty_vector_band_bp": int(plate.empty_vector_band_bp),
+    }
+    state.log_event("run_colony_pcr", payload)
     return payload

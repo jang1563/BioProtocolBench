@@ -102,6 +102,26 @@ class GelRun:
 
 
 @dataclass
+class ScreeningColony:
+    colony_id: str
+    color: str
+    is_recombinant: bool
+    expected_band_bp: int
+    notes: List[str] = field(default_factory=list)
+
+
+@dataclass
+class ScreeningPlate:
+    plate_id: str
+    historical_positive_rate_among_white: float
+    target_confidence: float
+    recombinant_band_bp: int
+    empty_vector_band_bp: int
+    colonies: Dict[str, ScreeningColony] = field(default_factory=dict)
+    screened_colony_ids: List[str] = field(default_factory=list)
+
+
+@dataclass
 class LabState:
     sample_id: str
     seed: int
@@ -114,6 +134,7 @@ class LabState:
     growth_cultures: Dict[str, GrowthCulture] = field(default_factory=dict)
     pcr_reactions: Dict[str, PcrReaction] = field(default_factory=dict)
     gel_runs: Dict[str, GelRun] = field(default_factory=dict)
+    screening_plates: Dict[str, ScreeningPlate] = field(default_factory=dict)
     event_log: List[Dict[str, Any]] = field(default_factory=list)
     plate_counter: int = 0
     culture_counter: int = 0
@@ -121,6 +142,7 @@ class LabState:
     growth_counter: int = 0
     pcr_counter: int = 0
     gel_counter: int = 0
+    screening_plate_counter: int = 0
 
     def next_plate_id(self) -> str:
         self.plate_counter += 1
@@ -145,6 +167,10 @@ class LabState:
     def next_gel_id(self) -> str:
         self.gel_counter += 1
         return "gel_{:03d}".format(self.gel_counter)
+
+    def next_screening_plate_id(self) -> str:
+        self.screening_plate_counter += 1
+        return "screen_plate_{:03d}".format(self.screening_plate_counter)
 
     def log_event(self, kind: str, payload: Dict[str, Any]) -> None:
         self.event_log.append({"kind": kind, "payload": payload})

@@ -10,6 +10,8 @@ from src.trajectory_scorer import (
     score_growth_trajectory,
     score_pcr_task_success,
     score_pcr_trajectory,
+    score_screen_task_success,
+    score_screen_trajectory,
     score_task_success,
     score_transform_trajectory,
 )
@@ -18,6 +20,7 @@ from src.trajectory_scorer import (
 TRANSFORM_GROUND_TRUTH_PATH = Path(__file__).resolve().parents[1] / "task_data" / "transform_01" / "ground_truth.json"
 GROWTH_GROUND_TRUTH_PATH = Path(__file__).resolve().parents[1] / "task_data" / "growth_01" / "ground_truth.json"
 PCR_GROUND_TRUTH_PATH = Path(__file__).resolve().parents[1] / "task_data" / "pcr_01" / "ground_truth.json"
+SCREEN_GROUND_TRUTH_PATH = Path(__file__).resolve().parents[1] / "task_data" / "screen_01" / "ground_truth.json"
 TARGET_MASSES = [10, 100, 1000, 10000]
 
 
@@ -442,4 +445,204 @@ def test_failed_pcr_requires_troubleshooting_for_credit():
         ground_truth_path=str(PCR_GROUND_TRUTH_PATH),
     )
     assert scores["task_success"] == 0.0
+    assert scores["troubleshooting"] == 0.0
+
+
+def _good_screen_transcript():
+    return [
+        {
+            "type": "tool_call",
+            "tool_name": "inspect_screening_plate",
+            "arguments": {
+                "status": "screening_plate_ready",
+                "plate_id": "screen_plate_001",
+                "white_colony_count": 12,
+                "blue_colony_count": 18,
+            },
+        },
+        {
+            "type": "tool_call",
+            "tool_name": "run_colony_pcr",
+            "arguments": {
+                "plate_id": "screen_plate_001",
+                "primer_pair": "M13/pUC flank primers",
+                "screened_colony_ids": [
+                    "white_001",
+                    "white_002",
+                    "white_003",
+                    "white_004",
+                    "white_005",
+                    "white_006",
+                ],
+                "screened_colony_count": 6,
+                "screening_strategy": "white_only",
+                "cumulative_screened_white_colony_count": 6,
+                "cumulative_confidence_pct": 95.3,
+                "confirmed_recombinant_ids_cumulative": ["white_002", "white_005"],
+                "confirmed_recombinant_ids_in_batch": ["white_002", "white_005"],
+            },
+        },
+    ]
+
+
+def _good_screen_answer() -> str:
+    return (
+        "White colonies screened: 6\n"
+        "Confirmed recombinant colonies: white_002, white_005\n"
+        "Confidence achieved: 95.3%\n"
+        "Interpretation: Two recombinant colonies confirmed from six white candidates."
+    )
+
+
+def test_good_screen_trajectory_scores_high():
+    scores = score_screen_trajectory(
+        final_answer=_good_screen_answer(),
+        transcript=_good_screen_transcript(),
+        ground_truth_path=str(SCREEN_GROUND_TRUTH_PATH),
+    )
+    assert scores["task_success"] == 1.0
+    assert scores["decision_quality"] == 1.0
+    assert scores["troubleshooting"] == 1.0
+    assert scores["efficiency"] == 1.0
+    assert scores["overall"] >= 0.999
+
+
+def test_screen_task_success_requires_matching_screened_count():
+    mismatch = (
+        "White colonies screened: 8\n"
+        "Confirmed recombinant colonies: white_002, white_005\n"
+        "Confidence achieved: 95.3%\n"
+        "Interpretation: Two recombinant colonies confirmed."
+    )
+    assert score_screen_task_success(mismatch, _good_screen_transcript()) == 0.0
+
+
+def test_screen_task_success_requires_interpretation_keyword():
+    answer = (
+        "White colonies screened: 6\n"
+        "Confirmed recombinant colonies: white_002, white_005\n"
+        "Confidence achieved: 95.3%\n"
+        "Interpretation: Two positive clones confirmed."
+    )
+    assert score_screen_task_success(answer, _good_screen_transcript()) == 0.0
+
+
+def test_screen_includes_blue_colony_fails_decision_quality():
+    transcript = _good_screen_transcript()
+    transcript.append(
+        {
+            "type": "tool_call",
+            "tool_name": "run_colony_pcr",
+            "arguments": {
+                "plate_id": "screen_plate_001",
+                "primer_pair": "M13/pUC flank primers",
+                "screened_colony_ids": ["blue_001"],
+                "screened_colony_count": 1,
+                "screening_strategy": "includes_blue",
+                "cumulative_screened_white_colony_count": 6,
+                "cumulative_confidence_pct": 95.3,
+                "confirmed_recombinant_ids_cumulative": ["white_002", "white_005"],
+                "confirmed_recombinant_ids_in_batch": [],
+            },
+        }
+    )
+    scores = score_screen_trajectory(
+        final_answer=_good_screen_answer(),
+        transcript=transcript,
+        ground_truth_path=str(SCREEN_GROUND_TRUTH_PATH),
+    )
+    assert scores["decision_scores"]["screens_only_white_colonies"] == 0.0
+
+
+def test_screen_blue_colony_without_recombinants_requires_diagnosis_for_credit():
+    transcript = [
+        {
+            "type": "tool_call",
+            "tool_name": "inspect_screening_plate",
+            "arguments": {
+                "status": "screening_plate_ready",
+                "plate_id": "screen_plate_001",
+            },
+        },
+        {
+            "type": "tool_call",
+            "tool_name": "run_colony_pcr",
+            "arguments": {
+                "plate_id": "screen_plate_001",
+                "primer_pair": "M13/pUC flank primers",
+                "screened_colony_ids": ["blue_001", "blue_002"],
+                "screened_colony_count": 2,
+                "screening_strategy": "includes_blue",
+                "cumulative_screened_white_colony_count": 0,
+                "cumulative_confidence_pct": 0.0,
+                "confirmed_recombinant_ids_cumulative": [],
+                "confirmed_recombinant_ids_in_batch": [],
+            },
+        },
+    ]
+    bare_answer = (
+        "White colonies screened: 0\n"
+        "Confirmed recombinant colonies: None\n"
+        "Confidence achieved: 0.0%\n"
+        "Interpretation: No recombinant colonies confirmed."
+    )
+    scores_without_diagnosis = score_screen_trajectory(
+        final_answer=bare_answer,
+        transcript=transcript,
+        ground_truth_path=str(SCREEN_GROUND_TRUTH_PATH),
+    )
+    assert scores_without_diagnosis["troubleshooting"] == 0.0
+
+    diagnosed_answer = bare_answer + (
+        "\nBlue colonies should not have been screened because they are empty-vector "
+        "background."
+    )
+    scores_with_diagnosis = score_screen_trajectory(
+        final_answer=diagnosed_answer,
+        transcript=transcript,
+        ground_truth_path=str(SCREEN_GROUND_TRUTH_PATH),
+    )
+    assert scores_with_diagnosis["troubleshooting"] > 0.0
+
+
+def test_screen_undersampling_without_diagnosis_scores_zero_troubleshooting():
+    transcript = [
+        {
+            "type": "tool_call",
+            "tool_name": "inspect_screening_plate",
+            "arguments": {
+                "status": "screening_plate_ready",
+                "plate_id": "screen_plate_001",
+            },
+        },
+        {
+            "type": "tool_call",
+            "tool_name": "run_colony_pcr",
+            "arguments": {
+                "plate_id": "screen_plate_001",
+                "primer_pair": "M13/pUC flank primers",
+                "screened_colony_ids": ["white_001", "white_003", "white_004"],
+                "screened_colony_count": 3,
+                "screening_strategy": "white_only",
+                "cumulative_screened_white_colony_count": 3,
+                "cumulative_confidence_pct": 78.4,
+                "confirmed_recombinant_ids_cumulative": [],
+                "confirmed_recombinant_ids_in_batch": [],
+            },
+        },
+    ]
+    answer = (
+        "White colonies screened: 3\n"
+        "Confirmed recombinant colonies: None\n"
+        "Confidence achieved: 78.4%\n"
+        "Interpretation: No recombinant colonies confirmed in this batch."
+    )
+    scores = score_screen_trajectory(
+        final_answer=answer,
+        transcript=transcript,
+        ground_truth_path=str(SCREEN_GROUND_TRUTH_PATH),
+    )
+    assert scores["task_success"] == 0.0
+    assert scores["decision_scores"]["reaches_confidence_threshold"] == 0.0
+    assert scores["decision_scores"]["screens_at_least_six_white_colonies"] == 0.0
     assert scores["troubleshooting"] == 0.0

@@ -1,0 +1,98 @@
+{
+  "task_id": "screen_01",
+  "task_title": "Blue-white colony screening to confirm pUC-style recombinants",
+  "source": "LabCraft Screen-01",
+  "num_errors_introduced": 0,
+  "total_leaf_nodes": 7,
+  "rubric": {
+    "name": "Task Evaluation",
+    "weight": 1.0,
+    "is_leaf": false,
+    "children": [
+      {
+        "name": "Task Success",
+        "weight": 0.4,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Reports screened colonies, confirmed recombinants, confidence, and interpretation",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "task_success",
+            "requirement": "The final answer uses the required fields (White colonies screened, Confirmed recombinant colonies, Confidence achieved, Interpretation), the screened count and confirmed IDs match the trajectory, confidence matches the trajectory within tolerance, and at least one recombinant was confirmed.",
+            "grading_notes": "Measured by score_screen_task_success against the reconstructed trajectory."
+          }
+        ]
+      },
+      {
+        "name": "Decision Quality",
+        "weight": 0.3,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Inspects the screening plate before running colony PCR",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Calls inspect_screening_plate at least once before colony PCR.",
+            "grading_notes": "Measured from the inspect_screening_plate tool observation."
+          },
+          {
+            "name": "Screens only white colonies",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Every run_colony_pcr call uses only white colonies (screening_strategy == 'white_only').",
+            "grading_notes": "Measured from the run_colony_pcr tool observation."
+          },
+          {
+            "name": "Reaches the 95% confidence threshold",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Final cumulative_confidence_pct from run_colony_pcr is at least 95%.",
+            "grading_notes": "Measured from the last run_colony_pcr observation."
+          },
+          {
+            "name": "Screens at least the NIST-derived six white colonies",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Final cumulative_screened_white_colony_count is at least 6.",
+            "grading_notes": "Measured from the last run_colony_pcr observation."
+          }
+        ]
+      },
+      {
+        "name": "Troubleshooting",
+        "weight": 0.2,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Diagnoses blue-colony screening or undersampling when triggered",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "troubleshooting",
+            "requirement": "If the agent screens blue colonies or stops under the confidence threshold, the final answer explains the corresponding failure mode.",
+            "grading_notes": "Defaults to full credit when no troubleshooting trigger occurs."
+          }
+        ]
+      },
+      {
+        "name": "Efficiency",
+        "weight": 0.1,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Uses a reasonable number of tool calls",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "efficiency",
+            "requirement": "The trajectory stays within the reference tool-call budget for a competent run.",
+            "grading_notes": "Full credit at or under the optimal call budget, partial credit within the reasonable budget."
+          }
+        ]
+      }
+    ]
+  }
+}

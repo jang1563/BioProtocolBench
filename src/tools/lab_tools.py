@@ -11,10 +11,12 @@ from src.environment.operations import (
     count_colonies,
     fit_growth_curve,
     incubate,
+    inspect_screening_plate,
     inoculate_growth,
     measure_od600,
     plate,
     prepare_media,
+    run_colony_pcr,
     run_gel,
     run_pcr,
     transform,
@@ -163,6 +165,25 @@ async def run_gel_call(
             reaction_id=reaction_id,
             agarose_percent=agarose_percent,
             ladder_name=ladder_name,
+        )
+    )
+
+
+async def inspect_screening_plate_call() -> str:
+    state = _current_state()
+    return render_observation(inspect_screening_plate(state=state))
+
+
+async def run_colony_pcr_call(
+    colony_ids: list[str],
+    primer_pair: str = "M13/pUC flank primers",
+) -> str:
+    state = _current_state()
+    return render_observation(
+        run_colony_pcr(
+            state=state,
+            colony_ids=colony_ids,
+            primer_pair=primer_pair,
         )
     )
 
@@ -441,3 +462,46 @@ def run_gel_tool():
         return execute
 
     return run_gel_tool_impl()
+
+
+def inspect_screening_plate_tool():
+    from inspect_ai.tool import tool
+
+    @tool(name="inspect_screening_plate")
+    def inspect_screening_plate_tool_impl():
+        """Inspect the blue-white screening plate used in Screen-01."""
+
+        async def execute() -> str:
+            """Return the plate composition and available colony identifiers."""
+            return await inspect_screening_plate_call()
+
+        return execute
+
+    return inspect_screening_plate_tool_impl()
+
+
+def run_colony_pcr_tool():
+    from inspect_ai.tool import tool
+
+    @tool(name="run_colony_pcr")
+    def run_colony_pcr_tool_impl():
+        """Run colony PCR on one or more candidate colonies from the screening plate."""
+
+        async def execute(
+            colony_ids: list[str],
+            primer_pair: str = "M13/pUC flank primers",
+        ) -> str:
+            """Run colony PCR on selected colonies.
+
+            Args:
+                colony_ids: Colony identifiers returned by inspect_screening_plate.
+                primer_pair: Primer pair label for the screening PCR.
+            """
+            return await run_colony_pcr_call(
+                colony_ids=colony_ids,
+                primer_pair=primer_pair,
+            )
+
+        return execute
+
+    return run_colony_pcr_tool_impl()

@@ -145,3 +145,27 @@ def load_pcr_parameters(path: Path) -> PcrParameterBundle:
         item["parameter_name"]: item for item in raw.get("parameters", [])
     }
     return PcrParameterBundle(raw=raw, parameter_map=parameter_map)
+
+
+@dataclass
+class ScreeningParameterBundle:
+    raw: Dict[str, object]
+    parameter_map: Dict[str, Dict[str, object]]
+
+    def get(self, name: str) -> Dict[str, object]:
+        return self.parameter_map[name]
+
+    def value(self, name: str) -> float:
+        return float(self.get(name)["parameters"]["value"])
+
+    def integer(self, name: str) -> int:
+        return int(self.get(name)["parameters"]["value"])
+
+
+def load_screening_parameters(path: Path) -> ScreeningParameterBundle:
+    with open(path) as handle:
+        raw = json.load(handle)
+    parameter_map = {
+        item["parameter_name"]: item for item in raw.get("parameters", [])
+    }
+    return ScreeningParameterBundle(raw=raw, parameter_map=parameter_map)

@@ -107,6 +107,31 @@ def build_pcr_solver():
     )
 
 
+def build_screen_solver():
+    """Build the Screen-01 solver chain with only colony-screening tools."""
+    from inspect_ai.agent import AgentPrompt, react
+
+    from .tools.lab_tools import inspect_screening_plate_tool, run_colony_pcr_tool
+    from .tools.reference import check_safety_tool, lookup_reagent_tool
+
+    return react(
+        prompt=AgentPrompt(
+            instructions=LABCRAFT_SYSTEM_PROMPT,
+            assistant_prompt=(
+                "\nBe concise between tool calls. Inspect the plate once, screen the "
+                "minimum sensible set of white colonies needed to meet the confidence "
+                "target, then provide the final answer.\n"
+            ),
+        ),
+        tools=[
+            lookup_reagent_tool(),
+            check_safety_tool(),
+            inspect_screening_plate_tool(),
+            run_colony_pcr_tool(),
+        ],
+    )
+
+
 @solver
 def configure_transform_sample():
     """Initialize per-sample LabCraft state before the main solver runs."""
@@ -132,6 +157,17 @@ def configure_growth_sample():
 @solver
 def configure_pcr_sample():
     """Initialize per-sample LabCraft state before the PCR solver runs."""
+
+    async def solve(state, generate):
+        set_active_sample(state.sample_id)
+        return state
+
+    return solve
+
+
+@solver
+def configure_screen_sample():
+    """Initialize per-sample LabCraft state before the screening solver runs."""
 
     async def solve(state, generate):
         set_active_sample(state.sample_id)

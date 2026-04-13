@@ -1,0 +1,113 @@
+{
+  "task_id": "screen_01",
+  "parameters": [
+    {
+      "parameter_name": "historical_positive_rate_among_white_colonies",
+      "description": "Task-specific prior probability that a white colony from this ligation is a true recombinant before colony-PCR confirmation.",
+      "units": "probability",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 0.4
+      },
+      "claim_type": "task_configuration",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "NIST/SEMATECH e-Handbook of Statistical Methods: Binomial Distribution",
+          "canonical_url": "https://www.itl.nist.gov/div898/handbook/eda/section3/eda366i.htm",
+          "tier": "Bronze",
+          "tier_justification": "Official NIST reference used for the binomial success model; the 0.4 value itself is an explicit Screen-01 scenario prior rather than a general biological claim."
+        }
+      ]
+    },
+    {
+      "parameter_name": "screening_target_confidence",
+      "description": "Confidence target for stopping clone screening once enough white colonies have been tested.",
+      "units": "probability",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 0.95
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "NIST/SEMATECH e-Handbook of Statistical Methods: Binomial Distribution",
+          "canonical_url": "https://www.itl.nist.gov/div898/handbook/eda/section3/eda366i.htm",
+          "tier": "Bronze",
+          "tier_justification": "Official NIST reference supporting the cumulative binomial probability calculation used to define the stopping-confidence threshold."
+        }
+      ]
+    },
+    {
+      "parameter_name": "minimum_white_colonies_for_40pct_hit_rate_at_95pct_confidence",
+      "description": "Minimum number of white colonies that must be screened to achieve at least 95% probability of finding one correct clone when the per-colony hit rate is 40%.",
+      "units": "colonies",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 6
+      },
+      "claim_type": "derived_threshold",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "NIST/SEMATECH e-Handbook of Statistical Methods: Binomial Distribution",
+          "canonical_url": "https://www.itl.nist.gov/div898/handbook/eda/section3/eda366i.htm",
+          "tier": "Bronze",
+          "tier_justification": "Official NIST reference for the binomial model used to derive a six-colony screening threshold from the Screen-01 scenario values p=0.4 and confidence=0.95."
+        }
+      ]
+    },
+    {
+      "parameter_name": "screening_recombinant_colony_pcr_band_bp",
+      "description": "Task-specific colony-PCR band size used to represent a correct recombinant clone in Screen-01.",
+      "units": "base pairs",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 1200
+      },
+      "claim_type": "task_configuration",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "authors": "Bergkessel M, Guthrie C",
+          "title": "Colony PCR",
+          "journal": "Methods in Enzymology",
+          "year": 2013,
+          "doi": "10.1016/B978-0-12-420037-1.00027-2",
+          "canonical_url": "https://doi.org/10.1016/B978-0-12-420037-1.00027-2",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed colony-PCR methods chapter supporting colony PCR as the confirmation readout; the exact 1200 bp band size is a Screen-01 scenario configuration layered onto that method."
+        }
+      ]
+    },
+    {
+      "parameter_name": "screening_empty_vector_colony_pcr_band_bp",
+      "description": "Task-specific colony-PCR band size used to represent empty-vector or background colonies in Screen-01.",
+      "units": "base pairs",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 250
+      },
+      "claim_type": "task_configuration",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "authors": "Bergkessel M, Guthrie C",
+          "title": "Colony PCR",
+          "journal": "Methods in Enzymology",
+          "year": 2013,
+          "doi": "10.1016/B978-0-12-420037-1.00027-2",
+          "canonical_url": "https://doi.org/10.1016/B978-0-12-420037-1.00027-2",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed colony-PCR methods chapter supporting colony PCR as the confirmation readout; the exact 250 bp empty-vector band is a Screen-01 scenario configuration layered onto that method."
+        }
+      ]
+    }
+  ]
+}

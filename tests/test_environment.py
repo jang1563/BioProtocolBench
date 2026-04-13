@@ -7,28 +7,35 @@ import json
 
 import pytest
 
+from pathlib import Path
+
 from src.environment.operations import (
     count_colonies,
     fit_growth_curve,
     incubate,
     inoculate_growth,
+    inspect_screening_plate,
     measure_od600,
     plate,
     prepare_media,
+    run_colony_pcr,
     run_gel,
     run_pcr,
     transform,
 )
 from src.environment.state import create_lab_state
+from src.environment.stochastic import load_screening_parameters
 from src.tools.lab_tools import (
     cleanup_sample,
     count_colonies_call,
     fit_growth_curve_call,
     incubate_call,
     inoculate_growth_call,
+    inspect_screening_plate_call,
     measure_od600_call,
     plate_call,
     prepare_media_call,
+    run_colony_pcr_call,
     run_gel_call,
     run_pcr_call,
     set_active_sample,
@@ -347,5 +354,96 @@ def test_pcr_tool_wrapper_concurrent_sample_isolation():
     concurrent_a, concurrent_b = asyncio.run(run_pair())
     sequential_a = asyncio.run(_run_pcr_tool_sequence("pcr-tool-sequential-a", 51))
     sequential_b = asyncio.run(_run_pcr_tool_sequence("pcr-tool-sequential-b", 62))
+    assert concurrent_a == sequential_a
+    assert concurrent_b == sequential_b
+
+
+SCREENING_PARAMETERS_PATH = (
+    Path(__file__).resolve().parents[1] / "data" / "parameters" / "screening.json"
+)
+
+
+def test_screening_parameter_bundle_exposes_required_values():
+    bundle = load_screening_parameters(SCREENING_PARAMETERS_PATH)
+    assert bundle.value("historical_positive_rate_among_white_colonies") == pytest.approx(0.4)
+    assert bundle.value("screening_target_confidence") == pytest.approx(0.95)
+    assert bundle.integer("minimum_white_colonies_for_40pct_hit_rate_at_95pct_confidence") == 6
+    assert bundle.integer("screening_recombinant_colony_pcr_band_bp") == 1200
+    assert bundle.integer("screening_empty_vector_colony_pcr_band_bp") == 250
+
+
+def test_inspect_screening_plate_reports_expected_composition():
+    state = create_lab_state(sample_id="screen-inspect", seed=1)
+    observation = inspect_screening_plate(state=state)
+    assert observation["status"] == "screening_plate_ready"
+    assert observation["white_colony_count"] == 12
+    assert observation["blue_colony_count"] == 18
+    assert observation["recombinant_band_bp"] == 1200
+    assert observation["empty_vector_band_bp"] == 250
+    assert observation["historical_positive_rate_among_white"] == pytest.approx(0.4)
+    assert observation["target_confidence"] == pytest.approx(0.95)
+
+
+def test_run_colony_pcr_on_six_white_colonies_hits_confidence_target():
+    state = create_lab_state(sample_id="screen-six-whites", seed=1)
+    inspect_screening_plate(state=state)
+    result = run_colony_pcr(
+        state=state,
+        colony_ids=[
+            "white_001",
+            "white_002",
+            "white_003",
+            "white_004",
+            "white_005",
+            "white_006",
+        ],
+    )
+    assert result["status"] == "screened"
+    assert result["screening_strategy"] == "white_only"
+    assert result["cumulative_screened_white_colony_count"] == 6
+    assert result["cumulative_confidence_pct"] >= 95.0
+    assert set(result["confirmed_recombinant_ids_cumulative"]).issuperset({"white_002", "white_005"})
+
+
+def test_run_colony_pcr_flags_blue_colony_as_includes_blue():
+    state = create_lab_state(sample_id="screen-blue", seed=1)
+    inspect_screening_plate(state=state)
+    result = run_colony_pcr(state=state, colony_ids=["blue_001"])
+    assert result["screening_strategy"] == "includes_blue"
+    assert result["confirmed_recombinant_ids_in_batch"] == []
+    assert result["cumulative_screened_white_colony_count"] == 0
+
+
+def test_run_colony_pcr_is_deterministic_on_same_seed():
+    first_state = create_lab_state(sample_id="screen-det-a", seed=42)
+    second_state = create_lab_state(sample_id="screen-det-b", seed=42)
+    inspect_screening_plate(state=first_state)
+    inspect_screening_plate(state=second_state)
+    first = run_colony_pcr(state=first_state, colony_ids=["white_002", "white_005"])
+    second = run_colony_pcr(state=second_state, colony_ids=["white_002", "white_005"])
+    assert first == second
+
+
+async def _run_screen_tool_sequence(sample_id, seed):
+    set_active_sample(sample_id, seed=seed)
+    try:
+        plate_info = json.loads(await inspect_screening_plate_call())
+        white_ids = plate_info["white_colony_ids"][:6]
+        screening = json.loads(await run_colony_pcr_call(white_ids))
+        return {"plate_info": plate_info, "screening": screening}
+    finally:
+        cleanup_sample(sample_id)
+
+
+def test_screen_tool_wrapper_concurrent_sample_isolation():
+    async def run_pair():
+        return await asyncio.gather(
+            _run_screen_tool_sequence("screen-tool-concurrent-a", 71),
+            _run_screen_tool_sequence("screen-tool-concurrent-b", 82),
+        )
+
+    concurrent_a, concurrent_b = asyncio.run(run_pair())
+    sequential_a = asyncio.run(_run_screen_tool_sequence("screen-tool-sequential-a", 71))
+    sequential_b = asyncio.run(_run_screen_tool_sequence("screen-tool-sequential-b", 82))
     assert concurrent_a == sequential_a
     assert concurrent_b == sequential_b

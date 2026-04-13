@@ -1,0 +1,156 @@
+{
+  "task_id": "screen_01",
+  "decision_points": [
+    {
+      "id": "inspects_screening_plate",
+      "description": "Inspect the blue-white screening plate at least once to learn the colony identifiers and screening parameters before running colony PCR.",
+      "minimum_tier_required": "Silver",
+      "matcher": {
+        "tool_name": "inspect_screening_plate",
+        "argument": "status",
+        "occurrence": "first"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": "screening_plate_ready"
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "authors": "Vieira J, Messing J",
+          "title": "The pUC plasmids, an M13mp7-derived system for insertion mutagenesis and sequencing with synthetic universal primers",
+          "journal": "Gene",
+          "year": 1982,
+          "doi": "10.1016/0378-1119(82)90015-4",
+          "canonical_url": "https://doi.org/10.1016/0378-1119(82)90015-4",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed canonical pUC blue-white screening paper used to justify the plate-inspection step."
+        }
+      ]
+    },
+    {
+      "id": "screens_only_white_colonies",
+      "description": "Never submit blue colonies to colony PCR: blue colonies are vector-only background for this task.",
+      "minimum_tier_required": "Silver",
+      "matcher": {
+        "tool_name": "run_colony_pcr",
+        "argument": "screening_strategy",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": "white_only"
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "authors": "Vieira J, Messing J",
+          "title": "The pUC plasmids, an M13mp7-derived system for insertion mutagenesis and sequencing with synthetic universal primers",
+          "journal": "Gene",
+          "year": 1982,
+          "doi": "10.1016/0378-1119(82)90015-4",
+          "canonical_url": "https://doi.org/10.1016/0378-1119(82)90015-4",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed canonical pUC blue-white screening paper establishing that blue colonies carry empty vector and should not be picked as putative recombinants."
+        }
+      ]
+    },
+    {
+      "id": "reaches_confidence_threshold",
+      "description": "Continue screening white colonies until the cumulative probability of having found at least one recombinant is at least 95%.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "run_colony_pcr",
+        "argument": "cumulative_confidence_pct",
+        "occurrence": "last"
+      },
+      "acceptable_values": {
+        "type": "range",
+        "min": 95.0,
+        "max": 100.0
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "NIST/SEMATECH e-Handbook of Statistical Methods: Binomial Distribution",
+          "canonical_url": "https://www.itl.nist.gov/div898/handbook/eda/section3/eda366i.htm",
+          "tier": "Bronze",
+          "tier_justification": "Official NIST reference for the binomial cumulative distribution used to derive the 95% screening-confidence stopping rule from the 0.4 white-colony hit rate."
+        }
+      ]
+    },
+    {
+      "id": "screens_at_least_six_white_colonies",
+      "description": "Screen at least the NIST-derived minimum of six white colonies required to reach 95% confidence at a 0.4 per-colony hit rate.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "run_colony_pcr",
+        "argument": "cumulative_screened_white_colony_count",
+        "occurrence": "last"
+      },
+      "acceptable_values": {
+        "type": "range",
+        "min": 6,
+        "max": 12
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "NIST/SEMATECH e-Handbook of Statistical Methods: Binomial Distribution",
+          "canonical_url": "https://www.itl.nist.gov/div898/handbook/eda/section3/eda366i.htm",
+          "tier": "Bronze",
+          "tier_justification": "Official NIST reference supporting the six-colony derived threshold from the binomial model with p=0.4 and confidence=0.95."
+        }
+      ]
+    }
+  ],
+  "failure_diagnosis_map": {
+    "screened_blue_background": {
+      "canonical_diagnosis": "Blue colonies were submitted to colony PCR even though they represent vector-only background in this screen.",
+      "acceptable_variants": [
+        "Blue colonies should not have been screened because they are empty-vector background.",
+        "Screening blue colonies wastes reagents because blue colonies retain lacZ alpha and do not contain the insert."
+      ],
+      "judge_strategy": "substring_any",
+      "minimum_tier_required": "Silver",
+      "citations": [
+        {
+          "authors": "Vieira J, Messing J",
+          "title": "The pUC plasmids, an M13mp7-derived system for insertion mutagenesis and sequencing with synthetic universal primers",
+          "journal": "Gene",
+          "year": 1982,
+          "doi": "10.1016/0378-1119(82)90015-4",
+          "canonical_url": "https://doi.org/10.1016/0378-1119(82)90015-4",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed canonical pUC blue-white screening paper establishing blue colonies as vector-only background."
+        }
+      ]
+    },
+    "undersampled_white_colonies": {
+      "canonical_diagnosis": "Screening stopped before reaching the 95% cumulative confidence threshold for finding a recombinant.",
+      "acceptable_variants": [
+        "Fewer white colonies were screened than the NIST binomial threshold required, so the confidence target was not reached.",
+        "The screening stopped below the 95% cumulative confidence target for this hit rate."
+      ],
+      "judge_strategy": "substring_any",
+      "minimum_tier_required": "Bronze",
+      "citations": [
+        {
+          "title": "NIST/SEMATECH e-Handbook of Statistical Methods: Binomial Distribution",
+          "canonical_url": "https://www.itl.nist.gov/div898/handbook/eda/section3/eda366i.htm",
+          "tier": "Bronze",
+          "tier_justification": "Official NIST reference supporting the cumulative binomial confidence threshold used to judge undersampling."
+        }
+      ]
+    }
+  },
+  "efficiency_reference": {
+    "optimal_tool_calls": 3,
+    "max_reasonable_tool_calls": 10,
+    "reagent_budget": {
+      "screening_plates": 1,
+      "colony_pcr_reactions_min": 6,
+      "colony_pcr_reactions_max": 12
+    }
+  }
+}

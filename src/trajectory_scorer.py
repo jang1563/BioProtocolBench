@@ -15,6 +15,7 @@ GROWTH_CONDITIONS = (
 )
 GROWTH_TASK_SUCCESS_RELATIVE_TOLERANCE = 0.15
 PCR_TARGET_BAND_REGEX = re.compile(r"(single\s+clean[\s\S]{0,40}(?:2(?:\.0)?\s*kb|2000\s*bp))|((?:2(?:\.0)?\s*kb|2000\s*bp)[\s\S]{0,40}single\s+clean)", re.IGNORECASE)
+SCREEN_CONFIDENCE_ABSOLUTE_TOLERANCE = 0.2
 
 
 def load_ground_truth(path: str) -> Dict[str, Any]:
@@ -716,6 +717,150 @@ def score_pcr_trajectory(
     }
 
 
+def _parse_colony_id_list(value: str) -> List[str]:
+    return re.findall(r"\b(?:white|blue)_\d{3}\b", value, flags=re.IGNORECASE)
+
+
+def _extract_reported_screen_summary(final_answer: str) -> Dict[str, Any]:
+    summary: Dict[str, Any] = {}
+    screened_match = re.search(r"(?im)^White colonies screened:\s*(.+)$", final_answer)
+    confirmed_match = re.search(r"(?im)^Confirmed recombinant colonies:\s*(.+)$", final_answer)
+    confidence_match = re.search(r"(?im)^Confidence achieved:\s*([0-9]+(?:\.[0-9]+)?)\s*%\s*$", final_answer)
+    interpretation_match = re.search(r"(?im)^Interpretation:\s*(.+)$", final_answer)
+
+    if screened_match:
+        screened_value = screened_match.group(1).strip()
+        screened_count_match = re.search(r"\d+", screened_value)
+        if screened_count_match:
+            summary["white_colonies_screened"] = int(screened_count_match.group(0))
+        else:
+            summary["white_colonies_screened"] = len(_parse_colony_id_list(screened_value))
+    if confirmed_match:
+        confirmed_value = confirmed_match.group(1).strip()
+        if re.fullmatch(r"none", confirmed_value, flags=re.IGNORECASE):
+            summary["confirmed_recombinant_ids"] = []
+        else:
+            summary["confirmed_recombinant_ids"] = sorted(
+                colony_id.lower() for colony_id in _parse_colony_id_list(confirmed_value)
+            )
+    if confidence_match:
+        summary["confidence_pct"] = float(confidence_match.group(1))
+    if interpretation_match:
+        summary["interpretation"] = interpretation_match.group(1).strip()
+    return summary
+
+
+def _reconstruct_screening_results(tool_calls: List[Dict[str, Any]]) -> Dict[str, Any]:
+    latest = {
+        "confirmed_recombinant_ids": [],
+        "cumulative_screened_white_colony_count": 0,
+        "cumulative_confidence_pct": 0.0,
+        "screening_strategy": None,
+    }
+    any_colony_pcr = False
+    for call in tool_calls:
+        if _normalize_tool_name(call.get("tool_name", "")) != "run_colony_pcr":
+            continue
+        any_colony_pcr = True
+        observed = _observed_values(call)
+        latest = {
+            "confirmed_recombinant_ids": sorted(
+                colony_id.lower()
+                for colony_id in observed.get("confirmed_recombinant_ids_cumulative", []) or []
+            ),
+            "cumulative_screened_white_colony_count": _coerce_int(
+                observed.get("cumulative_screened_white_colony_count")
+            )
+            or 0,
+            "cumulative_confidence_pct": _coerce_float(observed.get("cumulative_confidence_pct")) or 0.0,
+            "screening_strategy": observed.get("screening_strategy"),
+        }
+    latest["any_colony_pcr"] = any_colony_pcr
+    return latest
+
+
+def score_screen_task_success(final_answer: str, tool_calls: List[Dict[str, Any]]) -> float:
+    reported = _extract_reported_screen_summary(final_answer)
+    if {
+        "white_colonies_screened",
+        "confirmed_recombinant_ids",
+        "confidence_pct",
+        "interpretation",
+    } - set(reported):
+        return 0.0
+
+    reconstructed = _reconstruct_screening_results(tool_calls)
+    if not reconstructed["any_colony_pcr"]:
+        return 0.0
+    if not reconstructed["confirmed_recombinant_ids"]:
+        return 0.0
+    if reported["white_colonies_screened"] != reconstructed["cumulative_screened_white_colony_count"]:
+        return 0.0
+    if sorted(reported["confirmed_recombinant_ids"]) != reconstructed["confirmed_recombinant_ids"]:
+        return 0.0
+    if abs(reported["confidence_pct"] - reconstructed["cumulative_confidence_pct"]) > SCREEN_CONFIDENCE_ABSOLUTE_TOLERANCE:
+        return 0.0
+    if "recombinant" not in reported["interpretation"].lower():
+        return 0.0
+    return 1.0
+
+
+def score_screen_troubleshooting(final_answer: str, tool_calls: List[Dict[str, Any]], ground_truth: Dict[str, Any]) -> float:
+    reconstructed = _reconstruct_screening_results(tool_calls)
+    if reconstructed["confirmed_recombinant_ids"]:
+        return 1.0
+
+    failure_markers = []
+    for call in tool_calls:
+        if _normalize_tool_name(call.get("tool_name", "")) != "run_colony_pcr":
+            continue
+        observed = _observed_values(call)
+        if observed.get("screening_strategy") == "includes_blue":
+            failure_markers.append("screened_blue_background")
+        confidence_pct = _coerce_float(observed.get("cumulative_confidence_pct")) or 0.0
+        if confidence_pct < 95.0:
+            failure_markers.append("undersampled_white_colonies")
+
+    if not failure_markers:
+        return 1.0
+
+    final_answer_lower = final_answer.lower()
+    resolved = 0
+    for marker in failure_markers:
+        diagnosis = ground_truth["failure_diagnosis_map"][marker]
+        acceptable = [diagnosis["canonical_diagnosis"]] + diagnosis.get("acceptable_variants", [])
+        if any(candidate.lower() in final_answer_lower for candidate in acceptable):
+            resolved += 1
+    return float(resolved) / float(len(failure_markers))
+
+
+def score_screen_trajectory(
+    final_answer: str,
+    transcript: Iterable[Any],
+    ground_truth_path: str,
+) -> Dict[str, Any]:
+    ground_truth = load_ground_truth(ground_truth_path)
+    tool_calls = _extract_tool_calls(transcript)
+    decision_quality = score_decision_quality(tool_calls, ground_truth)
+    task_success = score_screen_task_success(final_answer, tool_calls)
+    troubleshooting = score_screen_troubleshooting(final_answer, tool_calls, ground_truth)
+    efficiency = score_efficiency(tool_calls, ground_truth)
+    overall = (
+        0.4 * task_success
+        + 0.3 * decision_quality["mean"]
+        + 0.2 * troubleshooting
+        + 0.1 * efficiency
+    )
+    return {
+        "overall": overall,
+        "task_success": task_success,
+        "decision_quality": decision_quality["mean"],
+        "troubleshooting": troubleshooting,
+        "efficiency": efficiency,
+        "decision_scores": decision_quality["by_decision"],
+    }
+
+
 def build_transform_trajectory_scorer():
     from inspect_ai.scorer import Score, Target, mean, scorer
 
@@ -817,6 +962,47 @@ def build_pcr_trajectory_scorer():
             if getattr(state, "output", None) is not None:
                 final_answer = getattr(state.output, "completion", "") or ""
             values = score_pcr_trajectory(
+                final_answer=final_answer,
+                transcript=getattr(state, "messages", []),
+                ground_truth_path=ground_truth_path,
+            )
+            return Score(
+                value={
+                    "overall": values["overall"],
+                    "task_success": values["task_success"],
+                    "decision_quality": values["decision_quality"],
+                    "troubleshooting": values["troubleshooting"],
+                    "efficiency": values["efficiency"],
+                },
+                answer=final_answer[:500],
+                explanation=json.dumps(values["decision_scores"], indent=2, sort_keys=True),
+                metadata=values,
+            )
+
+        return score
+
+    return _scorer()
+
+
+def build_screen_trajectory_scorer():
+    from inspect_ai.scorer import Score, Target, mean, scorer
+
+    @scorer(
+        metrics={
+            "overall": [mean()],
+            "task_success": [mean()],
+            "decision_quality": [mean()],
+            "troubleshooting": [mean()],
+            "efficiency": [mean()],
+        }
+    )
+    def _scorer():
+        async def score(state, target: Target):
+            ground_truth_path = target.text
+            final_answer = ""
+            if getattr(state, "output", None) is not None:
+                final_answer = getattr(state.output, "completion", "") or ""
+            values = score_screen_trajectory(
                 final_answer=final_answer,
                 transcript=getattr(state, "messages", []),
                 ground_truth_path=ground_truth_path,
