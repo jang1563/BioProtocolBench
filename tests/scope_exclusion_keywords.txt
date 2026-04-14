@@ -1,0 +1,47 @@
+# BioProtocolBench scope-exclusion keywords.
+#
+# tests/test_scope_compliance.py scans every task-surface file for case-insensitive matches
+# of these terms. A match triggers a test failure. Review and update this list via code
+# review — the test is intentionally strict so adding a keyword is a deliberate action.
+#
+# Lines starting with '#' are comments. Blank lines are ignored.
+# One keyword per line.
+#
+# These keywords denote content that is ALWAYS out of scope for LabCraft per SAFETY.md:
+# - viral work of any kind
+# - primary tissue / stem cells / organoids
+# - gene drives
+# - BSL-3/4 content and select agents
+# - protein cargo classes known for dual-use concern
+
+lentivirus
+lentiviral
+AAV
+retrovirus
+retroviral
+viral vector
+viral packaging
+packaging line
+transduction
+virus titer
+viral titer
+cytopathic
+gene drive
+iPSC
+iPSCs
+ESC
+organoid
+primary tissue
+primary cell
+primary culture
+CDC select agent
+select agent
+BSL-3
+BSL-4
+BSL3
+BSL4
+gain-of-function
+gain of function
+pathogen enhancement
+toxin expression
+cytokine expression

@@ -1249,7 +1249,6 @@
     "preparation_notes": "Penicillin inhibits gram-positive bacteria (cell wall synthesis); streptomycin inhibits gram-negative bacteria (protein synthesis). Not a substitute for aseptic technique. May mask low-level contamination. Some cell types are sensitive to streptomycin.",
     "shelf_life": "24 months at -20\u00b0C; 4 weeks in complete medium at 4\u00b0C",
     "incompatible_with": [
-      "primary cell cultures and stem cells may be affected by antibiotics",
       "antibiotic sensitivity assays"
     ],
     "safety_notes": "Penicillin may cause allergic reactions in sensitized individuals; avoid skin contact if penicillin-allergic",
@@ -1467,9 +1466,8 @@
     ],
     "safety_notes": "Irritant; cytotoxic at high concentrations; handle with gloves",
     "common_uses": [
-      "large-scale transient transfection",
-      "viral vector production (HEK293T)",
-      "low-cost transfection alternative"
+      "large-scale transient transfection of reporter plasmids",
+      "low-cost transfection alternative to Lipofectamine"
     ]
   },
   {
@@ -1706,26 +1704,6 @@
       "RIPA buffer component",
       "membrane protein solubilization",
       "protein extraction"
-    ]
-  },
-  {
-    "name": "Polybrene (Hexadimethrine Bromide)",
-    "type": "chemical",
-    "category": "viral transduction",
-    "working_concentration": "4-8 \u00b5g/mL",
-    "stock_concentration": "10 mg/mL in water",
-    "storage_temperature_c": "-20",
-    "storage_conditions": "Store stock at -20\u00b0C; filter-sterilize; aliquot",
-    "preparation_notes": "Cationic polymer that neutralizes charge repulsion between viral particles and cell surface sialic acid. Increases retroviral/lentiviral transduction efficiency 10-100 fold. Toxic to some cell types (especially primary cells)\u2014titrate concentration. Some cells require alternative (e.g., protamine sulfate).",
-    "shelf_life": "12 months at -20\u00b0C",
-    "incompatible_with": [
-      "heparin (anionic polymer neutralizes polybrene)"
-    ],
-    "safety_notes": "Irritant; cytotoxic at high concentrations; handle with gloves",
-    "common_uses": [
-      "enhancing lentiviral transduction efficiency",
-      "retroviral transduction",
-      "stable cell line generation"
     ]
   }
 ]
