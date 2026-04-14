@@ -1,0 +1,122 @@
+{
+  "task_id": "golden_gate_01",
+  "task_title": "One-pot Golden Gate / Type IIS assembly of a four-fragment construct",
+  "source": "LabCraft Golden Gate-01",
+  "num_errors_introduced": 0,
+  "total_leaf_nodes": 10,
+  "rubric": {
+    "name": "Task Evaluation",
+    "weight": 1.0,
+    "is_leaf": false,
+    "children": [
+      {
+        "name": "Task Success",
+        "weight": 0.4,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Reports enzyme, ligase, cycling conditions, fragment count, transformants, and interpretation",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "task_success",
+            "requirement": "The final answer uses every required field and the values are consistent with the trajectory: Type IIS enzyme is BsaI or BsmBI, ligase is T4 DNA ligase, the assembly completed successfully, and the reported transformant count matches the simulator observation.",
+            "grading_notes": "Measured by score_golden_gate_task_success."
+          }
+        ]
+      },
+      {
+        "name": "Decision Quality",
+        "weight": 0.3,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Uses a Type IIS enzyme (BsaI or BsmBI)",
+            "weight": 0.1428,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Every golden_gate_assembly call uses BsaI or BsmBI.",
+            "grading_notes": "Measured from golden_gate_assembly.enzyme_normalized."
+          },
+          {
+            "name": "Uses T4 DNA ligase",
+            "weight": 0.1428,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Every golden_gate_assembly call uses T4 DNA ligase.",
+            "grading_notes": "Measured from golden_gate_assembly.ligase_normalized."
+          },
+          {
+            "name": "Digest temperature 37 C",
+            "weight": 0.1428,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Digest cycling temperature is in 35 - 39 C.",
+            "grading_notes": "Measured from golden_gate_assembly.digest_temperature_c."
+          },
+          {
+            "name": "Ligate temperature 16 C",
+            "weight": 0.1428,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Ligate cycling temperature is in 14 - 20 C.",
+            "grading_notes": "Measured from golden_gate_assembly.ligate_temperature_c."
+          },
+          {
+            "name": "At least 25 cycles",
+            "weight": 0.1428,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Cycle count is at least 25.",
+            "grading_notes": "Measured from golden_gate_assembly.cycle_count."
+          },
+          {
+            "name": "All four fragments submitted",
+            "weight": 0.1428,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Exactly four fragments are submitted.",
+            "grading_notes": "Measured from golden_gate_assembly.fragment_count."
+          },
+          {
+            "name": "Uses 100 ug/mL ampicillin selection",
+            "weight": 0.1432,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Selection plate uses 100 ug/mL ampicillin.",
+            "grading_notes": "Measured from prepare_media arguments."
+          }
+        ]
+      },
+      {
+        "name": "Troubleshooting",
+        "weight": 0.2,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Diagnoses enzyme / ligase / fragment-count failures when triggered",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "troubleshooting",
+            "requirement": "If the assembly reports wrong_enzyme, wrong_ligase, or wrong_fragment_count, the final answer explains the corresponding failure mode.",
+            "grading_notes": "Defaults to full credit when no failure is triggered."
+          }
+        ]
+      },
+      {
+        "name": "Efficiency",
+        "weight": 0.1,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Uses a reasonable number of tool calls",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "efficiency",
+            "requirement": "Trajectory stays within the reference tool-call budget.",
+            "grading_notes": "Full credit at or under optimal_tool_calls, partial credit within max_reasonable_tool_calls."
+          }
+        ]
+      }
+    ]
+  }
+}

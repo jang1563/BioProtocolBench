@@ -9,6 +9,7 @@ from typing import Dict, List
 
 from .observations import render_observation
 from .state import (
+    AssemblyReaction,
     DigestReaction,
     DnaFragment,
     GelRun,
@@ -25,6 +26,7 @@ from .state import (
 )
 from .stochastic import (
     load_cloning_parameters,
+    load_golden_gate_parameters,
     load_growth_parameters,
     load_pcr_parameters,
     load_screening_parameters,
@@ -39,6 +41,8 @@ _SCREENING_PARAMETERS_PATH = Path(__file__).resolve().parents[2] / "data" / "par
 _SCREENING_BUNDLE = None
 _CLONING_PARAMETERS_PATH = Path(__file__).resolve().parents[2] / "data" / "parameters" / "cloning.json"
 _CLONING_BUNDLE = None
+_GOLDEN_GATE_PARAMETERS_PATH = Path(__file__).resolve().parents[2] / "data" / "parameters" / "golden_gate.json"
+_GOLDEN_GATE_BUNDLE = None
 
 
 def _growth_bundle():
@@ -67,6 +71,13 @@ def _cloning_bundle():
     if _CLONING_BUNDLE is None:
         _CLONING_BUNDLE = load_cloning_parameters(_CLONING_PARAMETERS_PATH)
     return _CLONING_BUNDLE
+
+
+def _golden_gate_bundle():
+    global _GOLDEN_GATE_BUNDLE
+    if _GOLDEN_GATE_BUNDLE is None:
+        _GOLDEN_GATE_BUNDLE = load_golden_gate_parameters(_GOLDEN_GATE_PARAMETERS_PATH)
+    return _GOLDEN_GATE_BUNDLE
 
 
 def _normalize_choice(value: str) -> str:
@@ -1209,4 +1220,294 @@ def transform_ligation(
         "notes": notes,
     }
     state.log_event("transform_ligation", payload)
+    return payload
+
+
+def _ensure_golden_gate_substrates(state: LabState) -> None:
+    """Seed the four Golden Gate fragments (1 backbone + 3 inserts) the agent starts with."""
+    if state.golden_gate_substrates_initialized:
+        return
+    bundle = _golden_gate_bundle()
+    backbone = DnaFragment(
+        fragment_id="gg_backbone",
+        name="pGG_backbone (BsaI-flanked destination vector)",
+        length_bp=2900,
+        concentration_ng_ul=40.0,
+        is_circular=False,
+        end_5_prime="BsaI_overhang_A",
+        end_3_prime="BsaI_overhang_D",
+        recognition_sites=["BsaI"],
+        notes=["Pre-linearised Golden Gate destination vector with BsaI-cut ends A and D."],
+    )
+    fragments = [backbone]
+    for idx, (name, size, ends) in enumerate(
+        [
+            ("gg_insert_promoter", 380, ("BsaI_overhang_A", "BsaI_overhang_B")),
+            ("gg_insert_cds", 740, ("BsaI_overhang_B", "BsaI_overhang_C")),
+            ("gg_insert_terminator", 290, ("BsaI_overhang_C", "BsaI_overhang_D")),
+        ],
+        start=1,
+    ):
+        fragments.append(
+            DnaFragment(
+                fragment_id=name,
+                name="{} (BsaI-flanked insert)".format(name),
+                length_bp=size,
+                concentration_ng_ul=20.0,
+                is_circular=False,
+                end_5_prime=ends[0],
+                end_3_prime=ends[1],
+                recognition_sites=["BsaI"],
+                notes=["Golden Gate insert with directional BsaI overhangs."],
+            )
+        )
+    for fragment in fragments:
+        state.dna_fragments[fragment.fragment_id] = fragment
+    state.golden_gate_substrates_initialized = True
+    # Expose accepted-enzyme list on the bundle so downstream ops can read it without re-loading.
+    _ = bundle
+
+
+def list_golden_gate_substrates(state: LabState) -> Dict[str, object]:
+    """Return the four Golden Gate starting fragments."""
+    _ensure_golden_gate_substrates(state)
+    fragments = [
+        {
+            "fragment_id": fragment.fragment_id,
+            "name": fragment.name,
+            "length_bp": int(fragment.length_bp),
+            "concentration_ng_ul": float(fragment.concentration_ng_ul),
+            "end_5_prime": fragment.end_5_prime,
+            "end_3_prime": fragment.end_3_prime,
+            "recognition_sites": list(fragment.recognition_sites),
+        }
+        for fragment in state.dna_fragments.values()
+        if fragment.fragment_id.startswith("gg_")
+    ]
+    payload = {
+        "status": "golden_gate_substrates_ready",
+        "fragments": fragments,
+        "expected_fragment_count": 4,
+        "assembly_order_hint": "Overhangs chain A -> B -> C -> D for directional assembly.",
+    }
+    state.log_event("list_golden_gate_substrates", payload)
+    return payload
+
+
+def golden_gate_assembly(
+    state: LabState,
+    fragment_ids: List[str],
+    enzyme_name: str,
+    ligase_name: str,
+    buffer: str = "T4 DNA ligase buffer",
+    cycle_count: int = 25,
+    digest_temperature_c: float = 37.0,
+    ligate_temperature_c: float = 16.0,
+    final_digest_minutes: int = 5,
+    heat_kill_temperature_c: float = 60.0,
+) -> Dict[str, object]:
+    """Simulate a Golden Gate / Type IIS one-pot assembly."""
+    _ensure_golden_gate_substrates(state)
+    bundle = _golden_gate_bundle()
+    accepted_enzymes = {e.lower() for e in bundle.choices("accepted_type_iis_enzymes")}
+    required_ligase = bundle.text("preferred_ligase_name")
+    optimal_digest_c = bundle.value("digest_cycling_temperature_c")
+    optimal_ligate_c = bundle.value("ligate_cycling_temperature_c")
+    min_cycles = bundle.integer("recommended_cycle_count_min")
+    base_efficiency = bundle.value("base_assembly_efficiency")
+    expected_fragment_count = bundle.integer("fragment_count")
+
+    notes: List[str] = []
+    status = "assembled"
+
+    for fragment_id in fragment_ids:
+        if fragment_id not in state.dna_fragments:
+            raise ValueError(
+                "Unknown fragment_id '{:s}'. Available: {:s}".format(
+                    fragment_id, ", ".join(sorted(state.dna_fragments))
+                )
+            )
+
+    if len(fragment_ids) != expected_fragment_count:
+        status = "wrong_fragment_count"
+        notes.append(
+            "Golden Gate-01 requires exactly {:d} fragments; received {:d}.".format(
+                expected_fragment_count, len(fragment_ids)
+            )
+        )
+
+    enzyme_normalized = _normalize_choice(enzyme_name).replace("-hfv2", "").replace("-v2", "").replace(" ", "")
+    if not any(enzyme_normalized == a.replace("-hfv2", "").replace("-v2", "").replace(" ", "") for a in accepted_enzymes):
+        status = "wrong_enzyme"
+        notes.append(
+            "Enzyme '{}' is not a Type IIS enzyme accepted by Golden Gate-01 (use BsaI or BsmBI).".format(enzyme_name)
+        )
+
+    if _normalize_choice(ligase_name) != _normalize_choice(required_ligase):
+        status = "wrong_ligase"
+        notes.append(
+            "Non-T4 ligase used; Golden Gate cycling requires T4 DNA ligase co-incubation."
+        )
+
+    efficiency_multiplier = 1.0
+    if abs(float(digest_temperature_c) - optimal_digest_c) > 2.0:
+        notes.append(
+            "Digest cycling temperature deviated from the {:.0f} C optimum.".format(optimal_digest_c)
+        )
+        efficiency_multiplier *= 0.6
+    if abs(float(ligate_temperature_c) - optimal_ligate_c) > 2.0:
+        notes.append(
+            "Ligate cycling temperature deviated from the {:.0f} C optimum.".format(optimal_ligate_c)
+        )
+        efficiency_multiplier *= 0.6
+    if int(cycle_count) < min_cycles:
+        notes.append(
+            "Cycle count {:d} is below the recommended minimum {:d}.".format(
+                int(cycle_count), min_cycles
+            )
+        )
+        efficiency_multiplier *= 0.5
+
+    if status == "assembled":
+        effective_efficiency = base_efficiency * efficiency_multiplier
+    elif status == "wrong_enzyme":
+        effective_efficiency = 0.02
+    elif status == "wrong_ligase":
+        effective_efficiency = 0.05
+    else:
+        effective_efficiency = base_efficiency * 0.10
+
+    effective_efficiency = max(0.0, min(1.0, float(effective_efficiency)))
+    expected_transformant_yield = 600.0 * efficiency_multiplier if status == "assembled" else 60.0
+
+    assembly_id = state.next_assembly_id()
+    output_fragment_id = None
+    if status in {"assembled"}:
+        output_fragment_id = state.next_fragment_id()
+        total_length = sum(state.dna_fragments[f].length_bp for f in fragment_ids)
+        output_fragment = DnaFragment(
+            fragment_id=output_fragment_id,
+            name="Golden Gate assembled construct ({})".format(assembly_id),
+            length_bp=int(total_length),
+            concentration_ng_ul=15.0,
+            is_circular=True,
+            end_5_prime="circular",
+            end_3_prime="circular",
+            recognition_sites=[],
+            notes=["Circular assembled Golden Gate construct."],
+        )
+        state.dna_fragments[output_fragment_id] = output_fragment
+
+    reaction = AssemblyReaction(
+        assembly_id=assembly_id,
+        fragment_ids=list(fragment_ids),
+        enzyme_name=enzyme_name,
+        ligase_name=ligase_name,
+        buffer=buffer,
+        cycle_count=int(cycle_count),
+        digest_temperature_c=float(digest_temperature_c),
+        ligate_temperature_c=float(ligate_temperature_c),
+        final_digest_minutes=int(final_digest_minutes),
+        heat_kill_temperature_c=float(heat_kill_temperature_c),
+        status=status,
+        effective_assembly_efficiency=float(effective_efficiency),
+        expected_transformant_yield=float(expected_transformant_yield),
+        output_fragment_id=output_fragment_id,
+        notes=list(notes),
+    )
+    state.assembly_reactions[assembly_id] = reaction
+    payload = {
+        "status": status,
+        "assembly_id": assembly_id,
+        "fragment_ids": list(fragment_ids),
+        "fragment_count": len(fragment_ids),
+        "enzyme_name": enzyme_name,
+        "enzyme_normalized": enzyme_normalized,
+        "ligase_name": ligase_name,
+        "ligase_normalized": _normalize_choice(ligase_name),
+        "buffer": buffer,
+        "cycle_count": int(cycle_count),
+        "digest_temperature_c": float(digest_temperature_c),
+        "ligate_temperature_c": float(ligate_temperature_c),
+        "final_digest_minutes": int(final_digest_minutes),
+        "heat_kill_temperature_c": float(heat_kill_temperature_c),
+        "output_fragment_id": output_fragment_id,
+        "effective_assembly_efficiency": float(effective_efficiency),
+        "expected_transformant_yield": float(expected_transformant_yield),
+        "notes": list(notes),
+    }
+    state.log_event("golden_gate_assembly", payload)
+    return payload
+
+
+def _resolve_assembly_id(state: LabState, assembly_id: str) -> str:
+    """Accept full or suffix-based Golden Gate assembly ids."""
+    requested = str(assembly_id).strip()
+    if requested in state.assembly_reactions:
+        return requested
+    suffix_match = re.search(r"(\d+)$", requested)
+    if suffix_match:
+        canonical = "assembly_{:03d}".format(int(suffix_match.group(1)))
+        if canonical in state.assembly_reactions:
+            return canonical
+    available = sorted(state.assembly_reactions)
+    raise ValueError(
+        "Unknown assembly_id '{:s}'. Available assembly IDs: {:s}".format(
+            requested, ", ".join(available) if available else "none"
+        )
+    )
+
+
+def transform_assembly(
+    state: LabState,
+    assembly_id: str,
+    heat_shock_seconds: int = 30,
+    recovery_minutes: int = 60,
+    outgrowth_media: str = "SOC",
+    shaking: bool = True,
+    ice_incubation_minutes: int = 30,
+) -> Dict[str, object]:
+    """Transform a Golden Gate assembled construct into competent E. coli."""
+    resolved_id = _resolve_assembly_id(state, assembly_id)
+    assembly = state.assembly_reactions[resolved_id]
+
+    expected_yield = float(assembly.expected_transformant_yield)
+    if int(heat_shock_seconds) != int(
+        state.parameters.get("heat_shock_duration_seconds")["parameters"]["optimal"]
+    ):
+        expected_yield *= 0.5
+    if outgrowth_media.upper() != "SOC":
+        expected_yield *= 0.5
+    if not shaking:
+        expected_yield *= 0.7
+
+    culture_id = state.next_culture_id()
+    notes = list(assembly.notes)
+    culture = TransformationCulture(
+        culture_id=culture_id,
+        plasmid_mass_pg=float(expected_yield * 1000.0),
+        base_efficiency_cfu_per_ug=state.base_efficiency_cfu_per_ug,
+        adjusted_efficiency_cfu_per_ug=state.base_efficiency_cfu_per_ug,
+        recovery_minutes=int(recovery_minutes),
+        outgrowth_media=outgrowth_media,
+        shaking=bool(shaking),
+        heat_shock_seconds=int(heat_shock_seconds),
+        ice_incubation_minutes=int(ice_incubation_minutes),
+        expected_total_transformants=expected_yield,
+        notes=notes,
+    )
+    state.cultures[culture_id] = culture
+    payload = {
+        "status": "transformed",
+        "culture_id": culture_id,
+        "assembly_id": resolved_id,
+        "assembly_status": assembly.status,
+        "effective_assembly_efficiency": float(assembly.effective_assembly_efficiency),
+        "expected_transformants": float(expected_yield),
+        "heat_shock_seconds": int(heat_shock_seconds),
+        "recovery_minutes": int(recovery_minutes),
+        "outgrowth_media": outgrowth_media,
+        "notes": notes,
+    }
+    state.log_event("transform_assembly", payload)
     return payload

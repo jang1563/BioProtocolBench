@@ -8,6 +8,8 @@ from pathlib import Path
 from src.trajectory_scorer import (
     score_clone_task_success,
     score_clone_trajectory,
+    score_golden_gate_task_success,
+    score_golden_gate_trajectory,
     score_growth_task_success,
     score_growth_trajectory,
     score_pcr_task_success,
@@ -24,6 +26,9 @@ GROWTH_GROUND_TRUTH_PATH = Path(__file__).resolve().parents[1] / "task_data" / "
 PCR_GROUND_TRUTH_PATH = Path(__file__).resolve().parents[1] / "task_data" / "pcr_01" / "ground_truth.json"
 SCREEN_GROUND_TRUTH_PATH = Path(__file__).resolve().parents[1] / "task_data" / "screen_01" / "ground_truth.json"
 CLONE_GROUND_TRUTH_PATH = Path(__file__).resolve().parents[1] / "task_data" / "clone_01" / "ground_truth.json"
+GOLDEN_GATE_GROUND_TRUTH_PATH = (
+    Path(__file__).resolve().parents[1] / "task_data" / "golden_gate_01" / "ground_truth.json"
+)
 TARGET_MASSES = [10, 100, 1000, 10000]
 
 
@@ -855,3 +860,126 @@ def test_screen_undersampling_without_diagnosis_scores_zero_troubleshooting():
     assert scores["decision_scores"]["reaches_confidence_threshold"] == 0.0
     assert scores["decision_scores"]["screens_at_least_six_white_colonies"] == 0.0
     assert scores["troubleshooting"] == 0.0
+
+
+def _good_golden_gate_transcript():
+    assembly_call = {
+        "type": "tool_call",
+        "tool_name": "golden_gate_assembly",
+        "arguments": {
+            "assembly_id": "assembly_001",
+            "fragment_ids": [
+                "gg_backbone",
+                "gg_insert_promoter",
+                "gg_insert_cds",
+                "gg_insert_terminator",
+            ],
+            "fragment_count": 4,
+            "enzyme_name": "BsaI",
+            "enzyme_normalized": "bsai",
+            "ligase_name": "T4 DNA ligase",
+            "ligase_normalized": "t4 dna ligase",
+            "buffer": "T4 DNA ligase buffer",
+            "cycle_count": 30,
+            "digest_temperature_c": 37.0,
+            "ligate_temperature_c": 16.0,
+            "final_digest_minutes": 5,
+            "heat_kill_temperature_c": 60.0,
+            "output_fragment_id": "fragment_010",
+            "status": "assembled",
+            "effective_assembly_efficiency": 0.85,
+            "expected_transformant_yield": 600.0,
+        },
+    }
+    prepare = {
+        "type": "tool_call",
+        "tool_name": "prepare_media",
+        "arguments": {
+            "medium": "LB agar",
+            "antibiotic": "ampicillin",
+            "antibiotic_concentration_ug_ml": 100,
+            "plate_count": 1,
+        },
+    }
+    transform_call = {
+        "type": "tool_call",
+        "tool_name": "transform_assembly",
+        "arguments": {
+            "assembly_id": "assembly_001",
+            "culture_id": "culture_001",
+            "status": "transformed",
+            "effective_assembly_efficiency": 0.85,
+        },
+    }
+    plate_call = {
+        "type": "tool_call",
+        "tool_name": "plate",
+        "arguments": {
+            "culture_id": "culture_001",
+            "plate_id": "plate_001",
+            "dilution_factor": 1.0,
+            "volume_ul": 100,
+        },
+    }
+    count = {
+        "type": "tool_call",
+        "tool_name": "count_colonies",
+        "arguments": {
+            "plating_id": "plating_001",
+            "observed_colonies": 300,
+            "status": "plated",
+        },
+    }
+    return [assembly_call, prepare, transform_call, plate_call, count]
+
+
+def _good_golden_gate_answer() -> str:
+    return (
+        "Type IIS enzyme: BsaI\n"
+        "Ligase: T4 DNA ligase\n"
+        "Digest temperature: 37 C\n"
+        "Ligate temperature: 16 C\n"
+        "Cycle count: 30\n"
+        "Fragment count: 4\n"
+        "Transformants observed: 300\n"
+        "Interpretation: Four-fragment Golden Gate assembly completed and transformed successfully."
+    )
+
+
+def test_good_golden_gate_trajectory_scores_high():
+    scores = score_golden_gate_trajectory(
+        final_answer=_good_golden_gate_answer(),
+        transcript=_good_golden_gate_transcript(),
+        ground_truth_path=str(GOLDEN_GATE_GROUND_TRUTH_PATH),
+    )
+    assert scores["task_success"] == 1.0
+    assert scores["decision_quality"] == 1.0
+    assert scores["troubleshooting"] == 1.0
+    assert scores["overall"] >= 0.9
+
+
+def test_golden_gate_wrong_enzyme_fails_decision_quality():
+    transcript = _good_golden_gate_transcript()
+    transcript[0]["arguments"]["enzyme_normalized"] = "ecori"
+    transcript[0]["arguments"]["status"] = "wrong_enzyme"
+    scores = score_golden_gate_trajectory(
+        final_answer=_good_golden_gate_answer(),
+        transcript=transcript,
+        ground_truth_path=str(GOLDEN_GATE_GROUND_TRUTH_PATH),
+    )
+    assert scores["decision_scores"]["uses_type_iis_enzyme"] == 0.0
+    assert scores["task_success"] == 0.0
+
+
+def test_golden_gate_wrong_ligase_fails_decision_quality():
+    transcript = _good_golden_gate_transcript()
+    transcript[0]["arguments"]["ligase_normalized"] = "e. coli dna ligase"
+    transcript[0]["arguments"]["status"] = "wrong_ligase"
+    answer = _good_golden_gate_answer().replace("T4 DNA ligase", "E. coli DNA ligase")
+    assert score_golden_gate_task_success(answer, transcript) == 0.0
+    scores = score_golden_gate_trajectory(
+        final_answer=answer,
+        transcript=transcript,
+        ground_truth_path=str(GOLDEN_GATE_GROUND_TRUTH_PATH),
+    )
+    assert scores["decision_scores"]["uses_t4_dna_ligase"] == 0.0

@@ -230,3 +230,51 @@ def configure_clone_sample():
         return state
 
     return solve
+
+
+def build_golden_gate_solver():
+    """Build the Golden Gate-01 solver chain with Type IIS assembly + transformation + plating tools."""
+    from inspect_ai.agent import AgentPrompt, react
+
+    from .tools.lab_tools import (
+        count_colonies_tool,
+        golden_gate_assembly_tool,
+        list_golden_gate_substrates_tool,
+        plate_tool,
+        prepare_media_tool,
+        transform_assembly_tool,
+    )
+    from .tools.reference import check_safety_tool, lookup_enzyme_tool, lookup_reagent_tool
+
+    return react(
+        prompt=AgentPrompt(
+            instructions=LABCRAFT_SYSTEM_PROMPT,
+            assistant_prompt=(
+                "\nBe concise between tool calls. Inspect the substrates, choose a Type IIS enzyme "
+                "(BsaI) plus T4 DNA ligase, run at least 25 cycles of 37 C / 16 C, transform the "
+                "assembled construct, plate on LB + ampicillin, and count transformants.\n"
+            ),
+        ),
+        tools=[
+            lookup_reagent_tool(),
+            lookup_enzyme_tool(),
+            check_safety_tool(),
+            list_golden_gate_substrates_tool(),
+            golden_gate_assembly_tool(),
+            prepare_media_tool(),
+            transform_assembly_tool(),
+            plate_tool(),
+            count_colonies_tool(),
+        ],
+    )
+
+
+@solver
+def configure_golden_gate_sample():
+    """Initialize per-sample LabCraft state before the Golden Gate solver runs."""
+
+    async def solve(state, generate):
+        set_active_sample(state.sample_id)
+        return state
+
+    return solve

@@ -1,0 +1,262 @@
+{
+  "task_id": "golden_gate_01",
+  "decision_points": [
+    {
+      "id": "uses_type_iis_enzyme",
+      "description": "Agent chose a Type IIS enzyme (BsaI or BsmBI) for the one-pot assembly.",
+      "minimum_tier_required": "Silver",
+      "matcher": {
+        "tool_name": "golden_gate_assembly",
+        "argument": "enzyme_normalized",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "one_of",
+        "values": ["bsai", "bsmbi"]
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "authors": "Engler C, Kandzia R, Marillonnet S",
+          "title": "A one pot, one step, precision cloning method with high throughput capability",
+          "journal": "PLoS ONE",
+          "year": 2008,
+          "doi": "10.1371/journal.pone.0003647",
+          "canonical_url": "https://doi.org/10.1371/journal.pone.0003647",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed Golden Gate one-pot assembly paper using BsaI."
+        }
+      ]
+    },
+    {
+      "id": "uses_t4_dna_ligase",
+      "description": "Agent chose T4 DNA ligase for the one-pot assembly (co-incubated with the Type IIS enzyme).",
+      "minimum_tier_required": "Silver",
+      "matcher": {
+        "tool_name": "golden_gate_assembly",
+        "argument": "ligase_normalized",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": "t4 dna ligase"
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "authors": "Engler C, Kandzia R, Marillonnet S",
+          "title": "A one pot, one step, precision cloning method with high throughput capability",
+          "journal": "PLoS ONE",
+          "year": 2008,
+          "doi": "10.1371/journal.pone.0003647",
+          "canonical_url": "https://doi.org/10.1371/journal.pone.0003647",
+          "tier": "Silver",
+          "tier_justification": "Golden Gate as described requires T4 DNA ligase co-incubation."
+        }
+      ]
+    },
+    {
+      "id": "digest_temperature_37",
+      "description": "Digest step temperature is 37 C (BsaI/BsmBI optimum).",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "golden_gate_assembly",
+        "argument": "digest_temperature_c",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "range",
+        "min": 35.0,
+        "max": 39.0
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "NEB BsaI-HFv2 product page (R3733)",
+          "canonical_url": "https://www.neb.com/en-us/products/r3733-bsai-hfv2",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative NEB product page supporting 37 C as the BsaI optimum."
+        }
+      ]
+    },
+    {
+      "id": "ligate_temperature_16",
+      "description": "Ligate step temperature is 16 C (T4 ligase optimum for cohesive ends).",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "golden_gate_assembly",
+        "argument": "ligate_temperature_c",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "range",
+        "min": 14.0,
+        "max": 20.0
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "NEB T4 DNA Ligase Protocol (M0202)",
+          "canonical_url": "https://www.neb.com/en-us/protocols/0001/01/01/dna-ligation-with-t4-dna-ligase-m0202",
+          "tier": "Bronze",
+          "tier_justification": "NEB T4 ligase protocol: 16 C overnight for cohesive-end ligation."
+        }
+      ]
+    },
+    {
+      "id": "cycle_count_at_least_25",
+      "description": "Thermal cycling runs at least 25 cycles of 37 C / 16 C for efficient Golden Gate.",
+      "minimum_tier_required": "Silver",
+      "matcher": {
+        "tool_name": "golden_gate_assembly",
+        "argument": "cycle_count",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "range",
+        "min": 25,
+        "max": 100
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "authors": "Engler C, Kandzia R, Marillonnet S",
+          "title": "A one pot, one step, precision cloning method with high throughput capability",
+          "journal": "PLoS ONE",
+          "year": 2008,
+          "doi": "10.1371/journal.pone.0003647",
+          "canonical_url": "https://doi.org/10.1371/journal.pone.0003647",
+          "tier": "Silver",
+          "tier_justification": "Original Golden Gate paper reports 25 cycles of 37/16 as giving efficient assembly."
+        }
+      ]
+    },
+    {
+      "id": "uses_all_four_fragments",
+      "description": "Exactly four fragments (backbone + three inserts) are submitted to the assembly.",
+      "minimum_tier_required": "Silver",
+      "matcher": {
+        "tool_name": "golden_gate_assembly",
+        "argument": "fragment_count",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": 4
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "authors": "Engler C, Kandzia R, Marillonnet S",
+          "title": "A one pot, one step, precision cloning method with high throughput capability",
+          "journal": "PLoS ONE",
+          "year": 2008,
+          "doi": "10.1371/journal.pone.0003647",
+          "canonical_url": "https://doi.org/10.1371/journal.pone.0003647",
+          "tier": "Silver",
+          "tier_justification": "Golden Gate-01 is a four-fragment directional assembly as described in the original paper."
+        }
+      ]
+    },
+    {
+      "id": "ampicillin_selection_100",
+      "description": "Selection plates use the vendor-recommended 100 ug/mL ampicillin concentration.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "prepare_media",
+        "argument": "antibiotic_concentration_ug_ml",
+        "filters": {
+          "antibiotic": "ampicillin"
+        },
+        "occurrence": "first"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": 100
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "NEB 5-alpha Competent E. coli",
+          "canonical_url": "https://www.neb.com/en-us/products/c2987-neb-5-alpha-competent-e-coli-high-efficiency",
+          "tier": "Bronze",
+          "tier_justification": "NEB product page specifying 100 ug/mL ampicillin for selection."
+        }
+      ]
+    }
+  ],
+  "failure_diagnosis_map": {
+    "wrong_enzyme": {
+      "canonical_diagnosis": "A non-Type IIS enzyme was used; Golden Gate one-pot cycling requires BsaI or BsmBI.",
+      "acceptable_variants": [
+        "Golden Gate assembly must use a Type IIS enzyme such as BsaI or BsmBI.",
+        "BsaI or BsmBI is required for Golden Gate; the chosen enzyme is not compatible."
+      ],
+      "judge_strategy": "substring_any",
+      "minimum_tier_required": "Silver",
+      "citations": [
+        {
+          "authors": "Engler C, Kandzia R, Marillonnet S",
+          "title": "A one pot, one step, precision cloning method with high throughput capability",
+          "journal": "PLoS ONE",
+          "year": 2008,
+          "doi": "10.1371/journal.pone.0003647",
+          "canonical_url": "https://doi.org/10.1371/journal.pone.0003647",
+          "tier": "Silver",
+          "tier_justification": "Canonical Golden Gate paper establishes BsaI as the canonical Type IIS enzyme."
+        }
+      ]
+    },
+    "wrong_ligase": {
+      "canonical_diagnosis": "A non-T4 ligase was used; Golden Gate cycling requires T4 DNA ligase co-incubation with the Type IIS enzyme.",
+      "acceptable_variants": [
+        "T4 DNA ligase is required for Golden Gate cycling; the chosen ligase is not compatible.",
+        "Only T4 DNA ligase ligates cohesive ends at 16 C during Golden Gate cycling."
+      ],
+      "judge_strategy": "substring_any",
+      "minimum_tier_required": "Silver",
+      "citations": [
+        {
+          "authors": "Engler C, Kandzia R, Marillonnet S",
+          "title": "A one pot, one step, precision cloning method with high throughput capability",
+          "journal": "PLoS ONE",
+          "year": 2008,
+          "doi": "10.1371/journal.pone.0003647",
+          "canonical_url": "https://doi.org/10.1371/journal.pone.0003647",
+          "tier": "Silver",
+          "tier_justification": "Golden Gate cycling as described uses T4 DNA ligase."
+        }
+      ]
+    },
+    "wrong_fragment_count": {
+      "canonical_diagnosis": "Fragment count did not match the four-fragment Golden Gate-01 design (1 backbone + 3 inserts).",
+      "acceptable_variants": [
+        "Golden Gate-01 requires all four fragments (backbone plus three inserts).",
+        "The assembly did not include the expected four fragments."
+      ],
+      "judge_strategy": "substring_any",
+      "minimum_tier_required": "Silver",
+      "citations": [
+        {
+          "authors": "Engler C, Kandzia R, Marillonnet S",
+          "title": "A one pot, one step, precision cloning method with high throughput capability",
+          "journal": "PLoS ONE",
+          "year": 2008,
+          "doi": "10.1371/journal.pone.0003647",
+          "canonical_url": "https://doi.org/10.1371/journal.pone.0003647",
+          "tier": "Silver",
+          "tier_justification": "Canonical Golden Gate paper demonstrates four-fragment directional assembly."
+        }
+      ]
+    }
+  },
+  "efficiency_reference": {
+    "optimal_tool_calls": 6,
+    "max_reasonable_tool_calls": 15,
+    "reagent_budget": {
+      "assembly_reactions": 1,
+      "selection_plates": 1,
+      "competent_cell_aliquots": 1
+    }
+  }
+}

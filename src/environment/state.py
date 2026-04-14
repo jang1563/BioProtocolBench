@@ -165,6 +165,27 @@ class LigationReaction:
 
 
 @dataclass
+class AssemblyReaction:
+    """Golden Gate / Type IIS one-pot assembly reaction."""
+
+    assembly_id: str
+    fragment_ids: List[str]
+    enzyme_name: str
+    ligase_name: str
+    buffer: str
+    cycle_count: int
+    digest_temperature_c: float
+    ligate_temperature_c: float
+    final_digest_minutes: int
+    heat_kill_temperature_c: float
+    status: str
+    effective_assembly_efficiency: float
+    expected_transformant_yield: float
+    output_fragment_id: Optional[str] = None
+    notes: List[str] = field(default_factory=list)
+
+
+@dataclass
 class LabState:
     sample_id: str
     seed: int
@@ -181,6 +202,7 @@ class LabState:
     dna_fragments: Dict[str, DnaFragment] = field(default_factory=dict)
     digest_reactions: Dict[str, DigestReaction] = field(default_factory=dict)
     ligation_reactions: Dict[str, LigationReaction] = field(default_factory=dict)
+    assembly_reactions: Dict[str, AssemblyReaction] = field(default_factory=dict)
     event_log: List[Dict[str, Any]] = field(default_factory=list)
     plate_counter: int = 0
     culture_counter: int = 0
@@ -192,7 +214,9 @@ class LabState:
     fragment_counter: int = 0
     digest_counter: int = 0
     ligation_counter: int = 0
+    assembly_counter: int = 0
     cloning_substrates_initialized: bool = False
+    golden_gate_substrates_initialized: bool = False
 
     def next_plate_id(self) -> str:
         self.plate_counter += 1
@@ -233,6 +257,10 @@ class LabState:
     def next_ligation_id(self) -> str:
         self.ligation_counter += 1
         return "ligation_{:03d}".format(self.ligation_counter)
+
+    def next_assembly_id(self) -> str:
+        self.assembly_counter += 1
+        return "assembly_{:03d}".format(self.assembly_counter)
 
     def log_event(self, kind: str, payload: Dict[str, Any]) -> None:
         self.event_log.append({"kind": kind, "payload": payload})

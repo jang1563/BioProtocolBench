@@ -12,11 +12,13 @@ from pathlib import Path
 from src.environment.operations import (
     count_colonies,
     fit_growth_curve,
+    golden_gate_assembly,
     incubate,
     inoculate_growth,
     inspect_screening_plate,
     ligate,
     list_cloning_substrates,
+    list_golden_gate_substrates,
     measure_od600,
     plate,
     prepare_media,
@@ -25,11 +27,13 @@ from src.environment.operations import (
     run_gel,
     run_pcr,
     transform,
+    transform_assembly,
     transform_ligation,
 )
 from src.environment.state import create_lab_state
 from src.environment.stochastic import (
     load_cloning_parameters,
+    load_golden_gate_parameters,
     load_screening_parameters,
 )
 from src.tools.lab_tools import (
@@ -586,3 +590,97 @@ def test_clone_workflow_is_deterministic_on_same_seed():
         if c.is_recombinant
     )
     assert recombinants_a == recombinants_b
+
+
+GOLDEN_GATE_PARAMETERS_PATH = (
+    Path(__file__).resolve().parents[1] / "data" / "parameters" / "golden_gate.json"
+)
+
+
+def _run_good_golden_gate_core(sample_id: str, seed: int):
+    state = create_lab_state(sample_id=sample_id, seed=seed)
+    list_golden_gate_substrates(state=state)
+    assembly = golden_gate_assembly(
+        state=state,
+        fragment_ids=[
+            "gg_backbone",
+            "gg_insert_promoter",
+            "gg_insert_cds",
+            "gg_insert_terminator",
+        ],
+        enzyme_name="BsaI",
+        ligase_name="T4 DNA ligase",
+        cycle_count=30,
+        digest_temperature_c=37.0,
+        ligate_temperature_c=16.0,
+    )
+    return state, assembly
+
+
+def test_golden_gate_parameter_bundle_exposes_required_values():
+    bundle = load_golden_gate_parameters(GOLDEN_GATE_PARAMETERS_PATH)
+    assert bundle.value("digest_cycling_temperature_c") == pytest.approx(37.0)
+    assert bundle.value("ligate_cycling_temperature_c") == pytest.approx(16.0)
+    assert bundle.integer("recommended_cycle_count_min") == 25
+    assert bundle.integer("fragment_count") == 4
+    assert "BsaI" in bundle.choices("accepted_type_iis_enzymes")
+    assert bundle.text("preferred_ligase_name") == "T4 DNA ligase"
+
+
+def test_list_golden_gate_substrates_returns_four_fragments():
+    state = create_lab_state(sample_id="gg-list", seed=1)
+    observation = list_golden_gate_substrates(state=state)
+    assert observation["status"] == "golden_gate_substrates_ready"
+    fragment_ids = {f["fragment_id"] for f in observation["fragments"]}
+    assert {"gg_backbone", "gg_insert_promoter", "gg_insert_cds", "gg_insert_terminator"} == fragment_ids
+
+
+def test_golden_gate_assembly_happy_path_status():
+    _, assembly = _run_good_golden_gate_core("gg-happy", 1)
+    assert assembly["status"] == "assembled"
+    assert assembly["enzyme_normalized"] == "bsai"
+    assert assembly["ligase_normalized"] == "t4 dna ligase"
+    assert assembly["fragment_count"] == 4
+    assert assembly["output_fragment_id"] is not None
+
+
+def test_golden_gate_wrong_enzyme_is_flagged():
+    state = create_lab_state(sample_id="gg-wrong-enzyme", seed=1)
+    list_golden_gate_substrates(state=state)
+    result = golden_gate_assembly(
+        state=state,
+        fragment_ids=[
+            "gg_backbone",
+            "gg_insert_promoter",
+            "gg_insert_cds",
+            "gg_insert_terminator",
+        ],
+        enzyme_name="EcoRI",
+        ligase_name="T4 DNA ligase",
+    )
+    assert result["status"] == "wrong_enzyme"
+
+
+def test_golden_gate_wrong_ligase_is_flagged():
+    state = create_lab_state(sample_id="gg-wrong-ligase", seed=1)
+    list_golden_gate_substrates(state=state)
+    result = golden_gate_assembly(
+        state=state,
+        fragment_ids=[
+            "gg_backbone",
+            "gg_insert_promoter",
+            "gg_insert_cds",
+            "gg_insert_terminator",
+        ],
+        enzyme_name="BsaI",
+        ligase_name="E. coli DNA ligase",
+    )
+    assert result["status"] == "wrong_ligase"
+
+
+def test_transform_assembly_produces_culture():
+    state, assembly = _run_good_golden_gate_core("gg-transform", 42)
+    result = transform_assembly(state=state, assembly_id=assembly["assembly_id"])
+    assert result["status"] == "transformed"
+    assert result["assembly_id"] == assembly["assembly_id"]
+    assert result["effective_assembly_efficiency"] > 0.5

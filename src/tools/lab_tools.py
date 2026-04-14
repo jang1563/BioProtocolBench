@@ -10,11 +10,13 @@ from src.environment.observations import render_observation
 from src.environment.operations import (
     count_colonies,
     fit_growth_curve,
+    golden_gate_assembly,
     incubate,
     inspect_screening_plate,
     inoculate_growth,
     ligate,
     list_cloning_substrates,
+    list_golden_gate_substrates,
     measure_od600,
     plate,
     prepare_media,
@@ -23,6 +25,7 @@ from src.environment.operations import (
     run_gel,
     run_pcr,
     transform,
+    transform_assembly,
     transform_ligation,
 )
 from src.environment.state import reset_lab_state
@@ -283,6 +286,65 @@ async def transform_ligation_call(
         )
     except ValueError as exc:
         return _tool_error_observation("transform_ligation", exc)
+    return render_observation(payload)
+
+
+async def list_golden_gate_substrates_call() -> str:
+    state = _current_state()
+    return render_observation(list_golden_gate_substrates(state=state))
+
+
+async def golden_gate_assembly_call(
+    fragment_ids: list[str],
+    enzyme_name: str,
+    ligase_name: str,
+    buffer: str = "T4 DNA ligase buffer",
+    cycle_count: int = 25,
+    digest_temperature_c: float = 37.0,
+    ligate_temperature_c: float = 16.0,
+    final_digest_minutes: int = 5,
+    heat_kill_temperature_c: float = 60.0,
+) -> str:
+    state = _current_state()
+    try:
+        payload = golden_gate_assembly(
+            state=state,
+            fragment_ids=fragment_ids,
+            enzyme_name=enzyme_name,
+            ligase_name=ligase_name,
+            buffer=buffer,
+            cycle_count=cycle_count,
+            digest_temperature_c=digest_temperature_c,
+            ligate_temperature_c=ligate_temperature_c,
+            final_digest_minutes=final_digest_minutes,
+            heat_kill_temperature_c=heat_kill_temperature_c,
+        )
+    except ValueError as exc:
+        return _tool_error_observation("golden_gate_assembly", exc)
+    return render_observation(payload)
+
+
+async def transform_assembly_call(
+    assembly_id: str,
+    heat_shock_seconds: int = 30,
+    recovery_minutes: int = 60,
+    outgrowth_media: str = "SOC",
+    shaking: bool = True,
+    ice_incubation_minutes: int = 30,
+) -> str:
+    state = _current_state()
+    try:
+        payload = transform_assembly(
+            state=state,
+            assembly_id=assembly_id,
+            heat_shock_seconds=heat_shock_seconds,
+            recovery_minutes=recovery_minutes,
+            outgrowth_media=outgrowth_media,
+            shaking=shaking,
+            ice_incubation_minutes=ice_incubation_minutes,
+        )
+    except ValueError as exc:
+        return _tool_error_observation("transform_assembly", exc)
     return render_observation(payload)
 
 
@@ -742,3 +804,106 @@ def transform_ligation_tool():
         return execute
 
     return transform_ligation_tool_impl()
+
+
+def list_golden_gate_substrates_tool():
+    from inspect_ai.tool import tool
+
+    @tool(name="list_golden_gate_substrates")
+    def list_golden_gate_substrates_tool_impl():
+        """List the four starting DNA fragments for the Golden Gate task."""
+
+        async def execute() -> str:
+            """Return the backbone + three inserts and their BsaI overhangs."""
+            return await list_golden_gate_substrates_call()
+
+        return execute
+
+    return list_golden_gate_substrates_tool_impl()
+
+
+def golden_gate_assembly_tool():
+    from inspect_ai.tool import tool
+
+    @tool(name="golden_gate_assembly")
+    def golden_gate_assembly_tool_impl():
+        """Run a one-pot Golden Gate / Type IIS assembly with thermal cycling."""
+
+        async def execute(
+            fragment_ids: list[str],
+            enzyme_name: str,
+            ligase_name: str,
+            buffer: str = "T4 DNA ligase buffer",
+            cycle_count: int = 25,
+            digest_temperature_c: float = 37.0,
+            ligate_temperature_c: float = 16.0,
+            final_digest_minutes: int = 5,
+            heat_kill_temperature_c: float = 60.0,
+        ) -> str:
+            """Run a Golden Gate assembly.
+
+            Args:
+                fragment_ids: Fragments to assemble (must be all four Golden Gate substrates).
+                enzyme_name: Type IIS enzyme (e.g., "BsaI" or "BsmBI").
+                ligase_name: Ligase (use "T4 DNA ligase").
+                buffer: Reaction buffer.
+                cycle_count: Number of 37/16 C cycles (>= 25 recommended).
+                digest_temperature_c: Digest step temperature (37 C optimal).
+                ligate_temperature_c: Ligate step temperature (16 C optimal).
+                final_digest_minutes: Final digest hold after cycling.
+                heat_kill_temperature_c: Heat-kill temperature (60 C standard for NEB Golden Gate Assembly Mix).
+            """
+            return await golden_gate_assembly_call(
+                fragment_ids=fragment_ids,
+                enzyme_name=enzyme_name,
+                ligase_name=ligase_name,
+                buffer=buffer,
+                cycle_count=cycle_count,
+                digest_temperature_c=digest_temperature_c,
+                ligate_temperature_c=ligate_temperature_c,
+                final_digest_minutes=final_digest_minutes,
+                heat_kill_temperature_c=heat_kill_temperature_c,
+            )
+
+        return execute
+
+    return golden_gate_assembly_tool_impl()
+
+
+def transform_assembly_tool():
+    from inspect_ai.tool import tool
+
+    @tool(name="transform_assembly")
+    def transform_assembly_tool_impl():
+        """Transform a Golden Gate assembled construct into competent E. coli."""
+
+        async def execute(
+            assembly_id: str,
+            heat_shock_seconds: int = 30,
+            recovery_minutes: int = 60,
+            outgrowth_media: str = "SOC",
+            shaking: bool = True,
+            ice_incubation_minutes: int = 30,
+        ) -> str:
+            """Transform a Golden Gate assembly into competent cells.
+
+            Args:
+                assembly_id: Assembly identifier from golden_gate_assembly.
+                heat_shock_seconds: Heat shock duration (30 s standard).
+                recovery_minutes: Post-shock outgrowth duration.
+                outgrowth_media: Outgrowth medium (SOC recommended).
+                shaking: Whether to shake during recovery.
+                ice_incubation_minutes: Pre-shock ice incubation time.
+            """
+            return await transform_assembly_call(
+                assembly_id=assembly_id,
+                heat_shock_seconds=heat_shock_seconds,
+                recovery_minutes=recovery_minutes,
+                outgrowth_media=outgrowth_media,
+                shaking=shaking,
+                ice_incubation_minutes=ice_incubation_minutes,
+            )
+
+        return execute
+
+    return transform_assembly_tool_impl()

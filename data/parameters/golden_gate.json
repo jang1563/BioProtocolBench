@@ -1,0 +1,185 @@
+{
+  "task_id": "golden_gate_01",
+  "parameters": [
+    {
+      "parameter_name": "accepted_type_iis_enzymes",
+      "description": "Type IIS restriction enzymes acceptable for Golden Gate one-pot assembly in the Engler protocol family.",
+      "units": "enzyme names",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": ["BsaI", "BsaI-HFv2", "BsmBI", "BsmBI-v2"]
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "authors": "Engler C, Kandzia R, Marillonnet S",
+          "title": "A one pot, one step, precision cloning method with high throughput capability",
+          "journal": "PLoS ONE",
+          "year": 2008,
+          "doi": "10.1371/journal.pone.0003647",
+          "canonical_url": "https://doi.org/10.1371/journal.pone.0003647",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed canonical Golden Gate Type IIS one-pot method paper. BsaI is the canonical enzyme; BsmBI is the close analogue used in MoClo."
+        }
+      ]
+    },
+    {
+      "parameter_name": "preferred_ligase_name",
+      "description": "Ligase required for Golden Gate cycling assembly.",
+      "units": "ligase name",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": "T4 DNA ligase"
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "authors": "Engler C, Kandzia R, Marillonnet S",
+          "title": "A one pot, one step, precision cloning method with high throughput capability",
+          "journal": "PLoS ONE",
+          "year": 2008,
+          "doi": "10.1371/journal.pone.0003647",
+          "canonical_url": "https://doi.org/10.1371/journal.pone.0003647",
+          "tier": "Silver",
+          "tier_justification": "Golden Gate as originally described uses T4 DNA ligase co-incubated with BsaI."
+        }
+      ]
+    },
+    {
+      "parameter_name": "digest_cycling_temperature_c",
+      "description": "Incubation temperature for the BsaI / BsmBI digest step during Golden Gate cycling.",
+      "units": "Celsius",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 37
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "NEB BsaI-HFv2 product page (R3733)",
+          "canonical_url": "https://www.neb.com/en-us/products/r3733-bsai-hfv2",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative vendor product page listing 37 C as the BsaI optimal incubation temperature."
+        }
+      ]
+    },
+    {
+      "parameter_name": "ligate_cycling_temperature_c",
+      "description": "Incubation temperature for the T4 DNA ligase step during Golden Gate cycling.",
+      "units": "Celsius",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 16
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "NEB T4 DNA Ligase Protocol (M0202)",
+          "canonical_url": "https://www.neb.com/en-us/protocols/0001/01/01/dna-ligation-with-t4-dna-ligase-m0202",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative NEB protocol supporting 16 C as the canonical T4 ligase ligation temperature."
+        }
+      ]
+    },
+    {
+      "parameter_name": "recommended_cycle_count_min",
+      "description": "Minimum number of 37 C / 16 C cycles for Golden Gate assembly of 4 fragments.",
+      "units": "cycles",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 25
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "authors": "Engler C, Kandzia R, Marillonnet S",
+          "title": "A one pot, one step, precision cloning method with high throughput capability",
+          "journal": "PLoS ONE",
+          "year": 2008,
+          "doi": "10.1371/journal.pone.0003647",
+          "canonical_url": "https://doi.org/10.1371/journal.pone.0003647",
+          "tier": "Silver",
+          "tier_justification": "Original Golden Gate paper reports 25 cycles of 37 C / 16 C as giving efficient assembly."
+        }
+      ]
+    },
+    {
+      "parameter_name": "heat_kill_temperature_c",
+      "description": "Temperature used to heat-kill BsaI and T4 ligase at the end of Golden Gate cycling.",
+      "units": "Celsius",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 60
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "NEB BsaI-HFv2 product page (R3733)",
+          "canonical_url": "https://www.neb.com/en-us/products/r3733-bsai-hfv2",
+          "tier": "Bronze",
+          "tier_justification": "Authoritative NEB reference: BsaI-HFv2 heat-inactivates at 80 C; BsaI-HF and the NEB Golden Gate Assembly Mix kit recommend 60 C for 5 min. 60 C is used here as the standard in-kit heat-kill step."
+        }
+      ]
+    },
+    {
+      "parameter_name": "fragment_count",
+      "description": "Number of DNA fragments supplied to the Golden Gate-01 task (1 backbone + 3 inserts).",
+      "units": "count",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 4
+      },
+      "claim_type": "task_configuration",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "authors": "Engler C, Kandzia R, Marillonnet S",
+          "title": "A one pot, one step, precision cloning method with high throughput capability",
+          "journal": "PLoS ONE",
+          "year": 2008,
+          "doi": "10.1371/journal.pone.0003647",
+          "canonical_url": "https://doi.org/10.1371/journal.pone.0003647",
+          "tier": "Silver",
+          "tier_justification": "Original Golden Gate paper validates 4-fragment directional assembly as the canonical demonstration; MoClo scales to more fragments but 4 is the baseline."
+        }
+      ]
+    },
+    {
+      "parameter_name": "base_assembly_efficiency",
+      "description": "Baseline fraction of transformants that contain the correctly assembled construct under optimal Golden Gate conditions.",
+      "units": "probability",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 0.85
+      },
+      "claim_type": "task_configuration",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "authors": "Engler C, Kandzia R, Marillonnet S",
+          "title": "A one pot, one step, precision cloning method with high throughput capability",
+          "journal": "PLoS ONE",
+          "year": 2008,
+          "doi": "10.1371/journal.pone.0003647",
+          "canonical_url": "https://doi.org/10.1371/journal.pone.0003647",
+          "tier": "Silver",
+          "tier_justification": "Original Golden Gate paper reports >80% correct assembly for 4-fragment one-pot reactions under optimal cycling."
+        }
+      ]
+    }
+  ]
+}

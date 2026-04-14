@@ -1283,3 +1283,198 @@ def build_clone_trajectory_scorer():
         return score
 
     return _scorer()
+
+
+# ---------------------------------------------------------------------------
+# Golden Gate-01 scorer (Phase 1a)
+# ---------------------------------------------------------------------------
+
+
+def _extract_reported_golden_gate_summary(final_answer: str) -> Dict[str, Any]:
+    summary: Dict[str, Any] = {}
+    enzyme_match = re.search(r"(?im)^Type IIS enzyme:\s*(.+)$", final_answer)
+    if enzyme_match:
+        summary["enzyme"] = enzyme_match.group(1).strip().lower()
+    ligase_match = re.search(r"(?im)^Ligase:\s*(.+)$", final_answer)
+    if ligase_match:
+        summary["ligase"] = ligase_match.group(1).strip()
+    digest_match = re.search(r"(?im)^Digest temperature:\s*([0-9]+(?:\.[0-9]+)?)\s*C", final_answer)
+    if digest_match:
+        summary["digest_temperature_c"] = float(digest_match.group(1))
+    ligate_match = re.search(r"(?im)^Ligate temperature:\s*([0-9]+(?:\.[0-9]+)?)\s*C", final_answer)
+    if ligate_match:
+        summary["ligate_temperature_c"] = float(ligate_match.group(1))
+    cycles_match = re.search(r"(?im)^Cycle count:\s*([0-9]+)", final_answer)
+    if cycles_match:
+        summary["cycle_count"] = int(cycles_match.group(1))
+    fragment_match = re.search(r"(?im)^Fragment count:\s*([0-9]+)", final_answer)
+    if fragment_match:
+        summary["fragment_count"] = int(fragment_match.group(1))
+    transformants_match = re.search(r"(?im)^Transformants observed:\s*([0-9]+)\b", final_answer)
+    if transformants_match:
+        summary["transformants_observed"] = int(transformants_match.group(1))
+    interpretation_match = re.search(r"(?im)^Interpretation:\s*(.+)$", final_answer)
+    if interpretation_match:
+        summary["interpretation"] = interpretation_match.group(1).strip()
+    return summary
+
+
+def _reconstruct_golden_gate_results(tool_calls: List[Dict[str, Any]]) -> Dict[str, Any]:
+    assembly_count = 0
+    transform_assembly_count = 0
+    assembly_statuses: List[str] = []
+    latest_efficiency = 0.0
+    transformants_observed = 0
+    last_assembly = None
+
+    for call in tool_calls:
+        name = _normalize_tool_name(call.get("tool_name", ""))
+        observed = _observed_values(call)
+        if name == "golden_gate_assembly":
+            assembly_count += 1
+            assembly_statuses.append(str(observed.get("status", "")))
+            latest_efficiency = _coerce_float(observed.get("effective_assembly_efficiency")) or 0.0
+            last_assembly = observed
+        elif name == "transform_assembly":
+            transform_assembly_count += 1
+        elif name == "count_colonies":
+            value = _coerce_int(observed.get("observed_colonies"))
+            if value is not None and value > transformants_observed:
+                transformants_observed = value
+
+    return {
+        "assembly_count": assembly_count,
+        "transform_assembly_count": transform_assembly_count,
+        "assembly_statuses": assembly_statuses,
+        "last_assembly": last_assembly,
+        "latest_efficiency": latest_efficiency,
+        "transformants_observed": transformants_observed,
+    }
+
+
+def score_golden_gate_task_success(final_answer: str, tool_calls: List[Dict[str, Any]]) -> float:
+    reported = _extract_reported_golden_gate_summary(final_answer)
+    required = {
+        "enzyme",
+        "ligase",
+        "digest_temperature_c",
+        "ligate_temperature_c",
+        "cycle_count",
+        "fragment_count",
+        "transformants_observed",
+        "interpretation",
+    }
+    if required - set(reported):
+        return 0.0
+    enzyme_token = reported["enzyme"].replace(" ", "").replace("-hfv2", "").replace("-v2", "")
+    if enzyme_token not in {"bsai", "bsmbi"}:
+        return 0.0
+    if "t4" not in reported["ligase"].lower():
+        return 0.0
+    if reported["fragment_count"] != 4:
+        return 0.0
+    reconstructed = _reconstruct_golden_gate_results(tool_calls)
+    if reconstructed["assembly_count"] < 1 or reconstructed["transform_assembly_count"] < 1:
+        return 0.0
+    last = reconstructed["last_assembly"] or {}
+    if str(last.get("status")) != "assembled":
+        return 0.0
+    if reported["transformants_observed"] != reconstructed["transformants_observed"]:
+        return 0.0
+    if "assembl" not in reported["interpretation"].lower():
+        return 0.0
+    return 1.0
+
+
+def score_golden_gate_troubleshooting(
+    final_answer: str, tool_calls: List[Dict[str, Any]], ground_truth: Dict[str, Any]
+) -> float:
+    reconstructed = _reconstruct_golden_gate_results(tool_calls)
+    failure_markers: List[str] = []
+    for status in reconstructed["assembly_statuses"]:
+        if status == "wrong_enzyme":
+            failure_markers.append("wrong_enzyme")
+        elif status == "wrong_ligase":
+            failure_markers.append("wrong_ligase")
+        elif status == "wrong_fragment_count":
+            failure_markers.append("wrong_fragment_count")
+    if not failure_markers:
+        return 1.0
+    final_answer_lower = final_answer.lower()
+    resolved = 0
+    for marker in failure_markers:
+        diagnosis = ground_truth["failure_diagnosis_map"].get(marker)
+        if diagnosis is None:
+            continue
+        acceptable = [diagnosis["canonical_diagnosis"]] + diagnosis.get("acceptable_variants", [])
+        if any(candidate.lower() in final_answer_lower for candidate in acceptable):
+            resolved += 1
+    return float(resolved) / float(len(failure_markers))
+
+
+def score_golden_gate_trajectory(
+    final_answer: str,
+    transcript: Iterable[Any],
+    ground_truth_path: str,
+) -> Dict[str, Any]:
+    ground_truth = load_ground_truth(ground_truth_path)
+    tool_calls = _extract_tool_calls(transcript)
+    decision_quality = score_decision_quality(tool_calls, ground_truth)
+    task_success = score_golden_gate_task_success(final_answer, tool_calls)
+    troubleshooting = score_golden_gate_troubleshooting(final_answer, tool_calls, ground_truth)
+    efficiency = score_efficiency(tool_calls, ground_truth)
+    overall = (
+        0.4 * task_success
+        + 0.3 * decision_quality["mean"]
+        + 0.2 * troubleshooting
+        + 0.1 * efficiency
+    )
+    return {
+        "overall": overall,
+        "task_success": task_success,
+        "decision_quality": decision_quality["mean"],
+        "troubleshooting": troubleshooting,
+        "efficiency": efficiency,
+        "decision_scores": decision_quality["by_decision"],
+    }
+
+
+def build_golden_gate_trajectory_scorer():
+    from inspect_ai.scorer import Score, Target, mean, scorer
+
+    @scorer(
+        metrics={
+            "overall": [mean()],
+            "task_success": [mean()],
+            "decision_quality": [mean()],
+            "troubleshooting": [mean()],
+            "efficiency": [mean()],
+        }
+    )
+    def _scorer():
+        async def score(state, target: Target):
+            ground_truth_path = target.text
+            final_answer = ""
+            if getattr(state, "output", None) is not None:
+                final_answer = getattr(state.output, "completion", "") or ""
+            values = score_golden_gate_trajectory(
+                final_answer=final_answer,
+                transcript=getattr(state, "messages", []),
+                ground_truth_path=ground_truth_path,
+            )
+            return Score(
+                value={
+                    "overall": values["overall"],
+                    "task_success": values["task_success"],
+                    "decision_quality": values["decision_quality"],
+                    "troubleshooting": values["troubleshooting"],
+                    "efficiency": values["efficiency"],
+                },
+                answer=final_answer[:500],
+                explanation=json.dumps(values["decision_scores"], indent=2, sort_keys=True),
+                metadata=values,
+            )
+
+        return score
+
+    return _scorer()
