@@ -97,11 +97,44 @@ Going from N=3 → N=5 moved `claude-haiku-4-5` overall from 0.815 to 0.856 (+0.
 - **The judge is the deterministic trajectory scorer** in [src/trajectory_scorer.py](../src/trajectory_scorer.py), not an LLM-as-judge. Most decision points are exact-match on tool arguments (enzyme name, buffer, temperature, molar ratio), so scoring is reproducible and auditable. Two of the four axes (task_success, troubleshooting) parse the final answer with regex, which is more brittle but still deterministic.
 - **Cost**: ~$0.70 total for 45 runs (mix of gpt-4o-mini, gpt-4o, claude-haiku-4-5). Per-run cost is dominated by prompt-caching efficiency; runs with higher cache-read counts are effectively sub-cent.
 
+## Ablation: is the OpenAI growth_01 troubleshooting gap prompt-sensitivity or model behaviour?
+
+The baseline finding was striking but unfalsified: OpenAI models scored troubleshooting = 0.00 on all 10 `growth_01` seeds; Anthropic scored 1.00 on all 10. Was this a genuine model-level gap, or an artefact of the baseline prompt not *asking* explicitly enough for troubleshooting discussion?
+
+To test this, I added a single prompt variant to [src/tasks/growth_01.py](../src/tasks/growth_01.py) that explicitly instructs the agent to surface any `insufficient_points` result in the final answer, and re-ran 5 seeds per OpenAI model. The baseline prompt remains the default; the variant is selected via the `LABCRAFT_GROWTH_PROMPT_VARIANT=verbose_troubleshoot` environment variable (see [results/ablation_growth_verbose.md](ablation_growth_verbose.md) for the variant's raw results).
+
+### Variant prompt (the only change)
+
+Added to the final-answer instructions:
+
+> *IMPORTANT: if any of the fit_growth_curve calls returned status `"insufficient_points"` or warned that not enough OD600 measurements were in the usable fitting range, you must briefly explain which condition was affected and that the fit was undersampled before giving the final ranking.*
+
+### Results
+
+| Model | Prompt | task_success | decision_quality | **troubleshooting** | efficiency | overall |
+|---|---|---:|---:|---:|---:|---:|
+| `gpt-4o-mini` | baseline | **0.80** | 0.47 | 0.00 | 1.00 | 0.560 |
+| `gpt-4o-mini` | verbose | 0.20 | 0.67 | **1.00** | 1.00 | 0.580 |
+| `gpt-4o` | baseline | **0.80** | 0.53 | 0.00 | 1.00 | 0.580 |
+| `gpt-4o` | verbose | 0.40 | 0.60 | **0.60** | 1.00 | 0.560 |
+
+### What this tells us
+
+1. **The gap was partially prompt-sensitive.** `gpt-4o-mini` went from 0/5 to **5/5** on troubleshooting with a single added sentence. `gpt-4o` went from 0/5 to 3/5. The "deterministic provider split" claim from the baseline analysis is therefore **too strong** — some of the split was the OpenAI models failing to surface an issue they *could* recognise if asked.
+2. **But the gap was also partially model-level.** `gpt-4o` still misses the troubleshooting prompt on 2/5 seeds *even when explicitly told* to report it, whereas both Anthropic models hit 1.0 on the baseline prompt without the hint. Claude models *volunteer* this discussion; GPT models only surface it when explicitly prompted, and gpt-4o doesn't even do it reliably then.
+3. **Prompt sensitivity introduces a tradeoff, not a free win.** Task-success dropped from 0.80 to 0.20 – 0.40 across both OpenAI models under the verbose prompt. The agents spent enough extra tokens discussing the fit warnings that they either ran out of message budget before reporting all three doubling times correctly, or they garbled the final-answer schema. Overall score is therefore ~unchanged (mini 0.560 → 0.580; gpt-4o 0.580 → 0.560). **Moving one axis moved the other.**
+
+### Implications
+
+- The honest framing is: *Anthropic models volunteer troubleshooting discussion under the default prompt; OpenAI models require explicit scaffolding, and even with scaffolding gpt-4o is unreliable*. This is a more defensible finding than "provider-level deterministic split".
+- Prompt engineering for single axes in multi-axis rubrics can be actively harmful. Any future prompt iteration should look at composite scores, not just the axis being targeted.
+- Closing the trouble axis for OpenAI requires either a longer message budget (so the verbose discussion doesn't crowd out task output) or a final-answer template that separates `DOUBLING_TIMES:` from `NOTES:` sections so the task_success parser isn't competing with the troubleshooting narrative.
+
 ## What a larger evaluation would add
 
-Items 1 and 2 from the original analysis are now done (N=5, sonnet added). Remaining open directions:
+Items 1, 2, and 4 from the original analysis are now done (N=5, sonnet added, prompt ablation run above). Remaining open directions:
 
 1. **Raise N further to 10 – 20 seeds** on the two discriminating tasks (`transform_01` and `growth_01`) to tighten the task_success stddev from ~0.45 down to ~0.20 — enough to publish confidence intervals.
 2. **Ablate the `efficiency` axis**. It has the second-loudest signal on some cells (haiku transform_01 efficiency = 0.10, sonnet transform_01 efficiency = 0.00) but correlates weakly with task success. Worth measuring whether it's capturing real waste or just message-limit artifacts.
 3. **Per-axis radar per (model, task)** for reviewer readability — the current flat-table view hides which axis drives each model gap.
-4. **Probe the OpenAI growth-troubleshooting blind spot** with prompt variants — is this a model limitation or a prompt-sensitivity issue? If a prompt tweak closes the gap, the "provider-level split" framing above becomes "prompt-sensitivity split" and the story changes.
+4. **Structured final-answer template for `growth_01`** to see if splitting doubling-time reporting from troubleshooting narrative eliminates the axis tradeoff uncovered in the ablation above.
