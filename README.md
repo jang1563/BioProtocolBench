@@ -22,6 +22,10 @@ The agent must plan the experiment, call tools in the right order, interpret obs
 
 See **[results/analysis.md](results/analysis.md)** for per-task failure-mode analysis, [results/results.md](results/results.md) for per-sample scores, and [results/logs/](results/logs/) for the raw Inspect trajectories.
 
+![Overall score by model and task](results/scorecard.png)
+
+![Per-axis breakdown](results/axis_heatmap.png)
+
 **Overall score by model × task** (mean ± stddev across 5 seeds, scored in [0, 1]):
 
 | Task | gpt-4o-mini | gpt-4o | claude-haiku-4-5 | claude-sonnet-4-5 |
@@ -39,6 +43,7 @@ Reproduce locally:
 SEEDS=5 MODELS="openai/gpt-4o-mini openai/gpt-4o anthropic/claude-haiku-4-5 anthropic/claude-sonnet-4-5" \
   ./scripts/run_portfolio_eval.sh
 python3 scripts/aggregate_eval_results.py        # results/logs/*.eval → results/results.md
+python3 scripts/plot_scorecard.py                # regenerates scorecard.png and axis_heatmap.png
 ```
 
 ## Key findings and limitations
