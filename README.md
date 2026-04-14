@@ -33,12 +33,6 @@ See **[results/analysis.md](results/analysis.md)** for per-task failure-mode ana
 | `clone_01` | 0.722 ± 0.397 | 0.904 ± 0.103 | 0.940 ± 0.022 | 0.950 ± 0.000 |
 | **Mean across tasks** | **0.744** | **0.743** | **0.856** | **0.852** |
 
-Headline findings (detail in [analysis.md](results/analysis.md)):
-- **Provider, not tier, is what separates the pack.** Both Anthropic models (haiku and sonnet) land at ~0.85; both OpenAI models (mini and gpt-4o) land at ~0.74. The gap is driven almost entirely by `growth_01` troubleshooting (Claude explains the late-time-course dilution issue every time; GPT never does).
-- **`sonnet` barely beats `haiku`** on this benchmark (0.852 vs. 0.856 — haiku actually edges out). For these five lab-reasoning tasks, paying 6× more for `sonnet` over `haiku` buys nothing measurable.
-- **`transform_01` is the hardest task for every model (~0.5).** It has a *compound requirement* — report CFU/µg for all four DNA masses, keep colony counts in the countable range, and note internal consistency. Only 2 / 20 seeds across all models cleared every gate.
-- The eval **surfaced two latent bugs** in the simulator, both fixed in-repo: (1) `ligate` didn't accept `digest_NNN` shorthand, which killed gpt-4o's first clone_01 run; (2) tool-layer `ValueError`s propagated through Inspect as fatal errors instead of agent-visible observations — now wrapped to return structured error payloads, so a single bad argument no longer nukes an entire 5-seed cell.
-
 Reproduce locally:
 
 ```bash
@@ -46,6 +40,25 @@ SEEDS=5 MODELS="openai/gpt-4o-mini openai/gpt-4o anthropic/claude-haiku-4-5 anth
   ./scripts/run_portfolio_eval.sh
 python3 scripts/aggregate_eval_results.py        # results/logs/*.eval → results/results.md
 ```
+
+## Key findings and limitations
+
+### What this evaluation showed
+
+1. **Provider-level behavioural differences dominate tier within this task set.** Both Anthropic models cluster at 0.85 ± 0.01; both OpenAI models cluster at 0.74 ± 0.01. The gap comes almost entirely from `growth_01`: Claude models score 1.00 on the troubleshooting axis across **10/10 seeds**, and GPT models score 0.00 on the same axis across all 10. This is not sampling noise — it is a deterministic behavioural split in how each provider's models narrate a late-time-course OD600 saturation event.
+
+2. **`claude-sonnet-4-5` and `claude-haiku-4-5` are statistically indistinguishable on these tasks** (0.852 vs. 0.856 — haiku numerically wins by 0.004). The 6× price premium for sonnet buys nothing measurable here. This is a specific, narrow finding — it does not generalise beyond this five-task benchmark, but it is the kind of finding only a multi-seed eval can make visible.
+
+3. **The benchmark did useful work by finding infrastructure bugs.** The eval surfaced two latent simulator issues that hand-written tests missed: (a) `ligate` rejecting the `digest_NNN` shorthand that `gpt-4o` consistently used, killing 5/5 samples; (b) tool-layer `ValueError`s propagating through Inspect as fatal task failures instead of agent-visible observations, nuking an entire 5-seed cell when a digest produced no output fragments. Both are fixed and live in [src/environment/operations.py](src/environment/operations.py) and [src/tools/lab_tools.py](src/tools/lab_tools.py). Adversarial agent exploration is doing the bug-finding work that formal tests cannot.
+
+### Limitations I want to flag before you build on these numbers
+
+- **N = 5 seeds is exploratory, not publishable.** Task-success stddev averages 0.27 per cell. One seed flipping changes the mean by 0.20. The haiku-vs-sonnet order could swap at N = 5 without surprise; the Anthropic-vs-OpenAI cluster gap of ~0.11 is robust.
+- **`transform_01` is the single hardest task (0.50 mean), but it is execution-constrained, not reasoning-limited.** Models that fail it do so by dropping one of four CFU/µg values or missing the `"consistent"` keyword, not by getting the biology wrong. If the goal were to probe reasoning depth, this task would need a redesign.
+- **The striking OpenAI growth-troubleshooting blind spot is unablated.** Is it a model-level limitation or prompt-sensitivity? I have not yet tested prompt variants that spell out the expected troubleshooting discussion. If a prompt tweak closes the gap, the "provider split" framing would become a "prompt-sensitivity split" — a materially different story.
+- **The scorer is deterministic regex + exact-match on tool arguments**, not LLM-as-judge. That makes scoring reproducible and auditable, but final-answer parsing is brittle (e.g., `gpt-4o` seed 01 on `screen_01` malformed one field and lost task_success despite correct content).
+
+These limitations are the top of the next-iteration backlog, documented in [results/analysis.md § "What a larger evaluation would add"](results/analysis.md).
 
 ## Tasks
 
