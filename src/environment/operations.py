@@ -22,12 +22,14 @@ from .state import (
     PcrReaction,
     PlatedSample,
     PreparedPlate,
+    ProteinExpression,
     ScreeningColony,
     ScreeningPlate,
     TransformationCulture,
 )
 from .stochastic import (
     load_cloning_parameters,
+    load_expression_parameters,
     load_gibson_parameters,
     load_golden_gate_parameters,
     load_growth_parameters,
@@ -51,6 +53,8 @@ _GIBSON_PARAMETERS_PATH = Path(__file__).resolve().parents[2] / "data" / "parame
 _GIBSON_BUNDLE = None
 _MINIPREP_PARAMETERS_PATH = Path(__file__).resolve().parents[2] / "data" / "parameters" / "miniprep.json"
 _MINIPREP_BUNDLE = None
+_EXPRESSION_PARAMETERS_PATH = Path(__file__).resolve().parents[2] / "data" / "parameters" / "expression.json"
+_EXPRESSION_BUNDLE = None
 
 
 def _growth_bundle():
@@ -100,6 +104,13 @@ def _miniprep_bundle():
     if _MINIPREP_BUNDLE is None:
         _MINIPREP_BUNDLE = load_miniprep_parameters(_MINIPREP_PARAMETERS_PATH)
     return _MINIPREP_BUNDLE
+
+
+def _expression_bundle():
+    global _EXPRESSION_BUNDLE
+    if _EXPRESSION_BUNDLE is None:
+        _EXPRESSION_BUNDLE = load_expression_parameters(_EXPRESSION_PARAMETERS_PATH)
+    return _EXPRESSION_BUNDLE
 
 
 def _normalize_choice(value: str) -> str:
@@ -1895,4 +1906,130 @@ def perform_miniprep(
         "notes": list(notes),
     }
     state.log_event("perform_miniprep", payload)
+    return payload
+
+
+def run_protein_expression(
+    state: LabState,
+    host_strain: str,
+    iptg_concentration_mm: float,
+    induction_od600: float,
+    induction_temperature_c: float,
+    induction_hours: float,
+    lysis_buffer_ph: float,
+    culture_volume_ml: float = 500.0,
+) -> Dict[str, object]:
+    """Simulate a single IPTG-induced recombinant protein expression run in BL21(DE3)."""
+    bundle = _expression_bundle()
+    accepted_strains = {_normalize_choice(s) for s in bundle.choices("accepted_host_strains")}
+    iptg_range = bundle.number_list("iptg_concentration_mm_acceptable_range")
+    induction_od_range = bundle.number_list("induction_od600_range")
+    accepted_temperatures = [float(t) for t in bundle.choices("induction_temperatures_c")]
+    ph_range = bundle.number_list("lysis_buffer_ph_range")
+    base_yield = bundle.value("optimal_soluble_yield_mg_per_l")
+    protein_name = bundle.text("target_protein_name")
+    protein_kda = bundle.value("target_protein_kda")
+
+    notes: List[str] = []
+    status = "induced"
+    yield_multiplier = 1.0
+    insoluble_fraction = 0.15
+
+    normalized_strain = _normalize_choice(host_strain)
+    if not any(normalized_strain == a or normalized_strain in a or a in normalized_strain for a in accepted_strains):
+        status = "wrong_host_strain"
+        notes.append(
+            "Host strain '{}' is not a T7 expression host. Use BL21(DE3) or a close derivative.".format(host_strain)
+        )
+        yield_multiplier *= 0.05
+
+    iptg_min, iptg_max = iptg_range
+    if float(iptg_concentration_mm) < iptg_min or float(iptg_concentration_mm) > iptg_max * 2:
+        notes.append(
+            "IPTG concentration {:.2f} mM is outside the {:.1f}-{:.1f} mM effective range.".format(
+                float(iptg_concentration_mm), iptg_min, iptg_max
+            )
+        )
+        yield_multiplier *= 0.3
+
+    od_min, od_max = induction_od_range
+    if float(induction_od600) < od_min or float(induction_od600) > od_max:
+        notes.append(
+            "Induction OD600 {:.2f} is outside the {:.2f}-{:.2f} mid-log window.".format(
+                float(induction_od600), od_min, od_max
+            )
+        )
+        yield_multiplier *= 0.5
+
+    if not any(abs(float(induction_temperature_c) - t) <= 1.0 for t in accepted_temperatures):
+        status = "wrong_induction_temperature"
+        notes.append(
+            "Induction temperature {:.1f} C is not in the accepted set {}.".format(
+                float(induction_temperature_c), accepted_temperatures
+            )
+        )
+        yield_multiplier *= 0.4
+
+    # Low-temperature long induction improves solubility for tricky fusions.
+    if float(induction_temperature_c) <= 22.0 and float(induction_hours) >= 12.0:
+        insoluble_fraction = 0.08
+    elif float(induction_temperature_c) >= 30.0 and float(induction_hours) <= 5.0:
+        insoluble_fraction = 0.25
+    if float(induction_hours) < 1.0:
+        notes.append("Induction time is too short; yield will be poor.")
+        yield_multiplier *= 0.2
+    if float(induction_hours) > 24.0:
+        notes.append("Induction time over 24 h risks cell lysis and proteolysis.")
+        yield_multiplier *= 0.6
+
+    ph_min, ph_max = ph_range
+    if float(lysis_buffer_ph) < ph_min or float(lysis_buffer_ph) > ph_max:
+        status = "wrong_lysis_ph" if status == "induced" else status
+        notes.append(
+            "Lysis buffer pH {:.2f} is outside the {:.1f}-{:.1f} Ni-NTA-compatible window.".format(
+                float(lysis_buffer_ph), ph_min, ph_max
+            )
+        )
+        yield_multiplier *= 0.5
+
+    soluble_yield = base_yield * yield_multiplier * (1.0 - insoluble_fraction)
+    soluble_yield = max(0.0, soluble_yield)
+
+    expression_id = state.next_expression_id()
+    record = ProteinExpression(
+        expression_id=expression_id,
+        host_strain=host_strain,
+        protein_name=protein_name,
+        expected_molecular_weight_kda=float(protein_kda),
+        iptg_concentration_mm=float(iptg_concentration_mm),
+        induction_od600=float(induction_od600),
+        induction_temperature_c=float(induction_temperature_c),
+        induction_hours=float(induction_hours),
+        lysis_buffer_ph=float(lysis_buffer_ph),
+        culture_volume_ml=float(culture_volume_ml),
+        status=status,
+        soluble_yield_mg_per_l=float(soluble_yield),
+        insoluble_fraction=float(insoluble_fraction),
+        notes=list(notes),
+    )
+    state.protein_expressions[expression_id] = record
+    payload = {
+        "status": status,
+        "expression_id": expression_id,
+        "host_strain": host_strain,
+        "host_strain_normalized": normalized_strain,
+        "protein_name": protein_name,
+        "expected_molecular_weight_kda": float(protein_kda),
+        "iptg_concentration_mm": float(iptg_concentration_mm),
+        "induction_od600": float(induction_od600),
+        "induction_temperature_c": float(induction_temperature_c),
+        "induction_hours": float(induction_hours),
+        "lysis_buffer_ph": float(lysis_buffer_ph),
+        "culture_volume_ml": float(culture_volume_ml),
+        "soluble_yield_mg_per_l": round(float(soluble_yield), 2),
+        "insoluble_fraction": round(float(insoluble_fraction), 2),
+        "total_soluble_mg": round(float(soluble_yield) * float(culture_volume_ml) / 1000.0, 2),
+        "notes": list(notes),
+    }
+    state.log_event("run_protein_expression", payload)
     return payload

@@ -1,0 +1,207 @@
+{
+  "task_id": "express_01",
+  "decision_points": [
+    {
+      "id": "uses_t7_expression_host",
+      "description": "Host strain is a T7 RNA polymerase-carrying E. coli (BL21(DE3) or close derivative).",
+      "minimum_tier_required": "Silver",
+      "matcher": {
+        "tool_name": "run_protein_expression",
+        "argument": "host_strain_normalized",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "one_of",
+        "values": ["bl21(de3)", "bl21(de3) plyss", "rosetta(de3)", "c41(de3)", "c43(de3)"]
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "authors": "Rosano GL, Ceccarelli EA",
+          "title": "Recombinant protein expression in Escherichia coli: advances and challenges",
+          "journal": "Frontiers in Microbiology",
+          "year": 2014,
+          "doi": "10.3389/fmicb.2014.00172",
+          "canonical_url": "https://doi.org/10.3389/fmicb.2014.00172",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed review establishing BL21(DE3) and derivatives as canonical T7 expression hosts."
+        }
+      ]
+    },
+    {
+      "id": "iptg_in_acceptable_range",
+      "description": "IPTG concentration is within the 0.1-1 mM canonical induction range.",
+      "minimum_tier_required": "Silver",
+      "matcher": {
+        "tool_name": "run_protein_expression",
+        "argument": "iptg_concentration_mm",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "range",
+        "min": 0.1,
+        "max": 1.0
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "authors": "Rosano GL, Ceccarelli EA",
+          "title": "Recombinant protein expression in Escherichia coli: advances and challenges",
+          "journal": "Frontiers in Microbiology",
+          "year": 2014,
+          "doi": "10.3389/fmicb.2014.00172",
+          "canonical_url": "https://doi.org/10.3389/fmicb.2014.00172",
+          "tier": "Silver",
+          "tier_justification": "Rosano 2014 establishes 0.1-1 mM as the canonical IPTG induction range."
+        }
+      ]
+    },
+    {
+      "id": "induction_od600_mid_log",
+      "description": "Induction OD600 is in the 0.4-0.8 mid-log window.",
+      "minimum_tier_required": "Silver",
+      "matcher": {
+        "tool_name": "run_protein_expression",
+        "argument": "induction_od600",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "range",
+        "min": 0.4,
+        "max": 0.8
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "authors": "Rosano GL, Ceccarelli EA",
+          "title": "Recombinant protein expression in Escherichia coli: advances and challenges",
+          "journal": "Frontiers in Microbiology",
+          "year": 2014,
+          "doi": "10.3389/fmicb.2014.00172",
+          "canonical_url": "https://doi.org/10.3389/fmicb.2014.00172",
+          "tier": "Silver",
+          "tier_justification": "Rosano 2014 recommends inducing at mid-log (OD600 0.4-0.8)."
+        }
+      ]
+    },
+    {
+      "id": "induction_temperature_standard",
+      "description": "Induction temperature is in the standard set of {18, 25, 30, 37} C.",
+      "minimum_tier_required": "Silver",
+      "matcher": {
+        "tool_name": "run_protein_expression",
+        "argument": "induction_temperature_c",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "one_of",
+        "values": [18.0, 25.0, 30.0, 37.0, 18, 25, 30, 37]
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "authors": "Rosano GL, Ceccarelli EA",
+          "title": "Recombinant protein expression in Escherichia coli: advances and challenges",
+          "journal": "Frontiers in Microbiology",
+          "year": 2014,
+          "doi": "10.3389/fmicb.2014.00172",
+          "canonical_url": "https://doi.org/10.3389/fmicb.2014.00172",
+          "tier": "Silver",
+          "tier_justification": "Rosano 2014 recommends 37 C short induction or 18-25 C overnight induction."
+        }
+      ]
+    },
+    {
+      "id": "lysis_ph_ni_nta_compatible",
+      "description": "Lysis buffer pH is in the 7.0-8.0 Ni-NTA-compatible window.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "run_protein_expression",
+        "argument": "lysis_buffer_ph",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "range",
+        "min": 7.0,
+        "max": 8.0
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "QIAGEN QIAexpressionist Handbook (5th ed.)",
+          "canonical_url": "https://www.qiagen.com/us/resources/resourcedetail?id=79ca2f7d-42fe-4d62-8676-4cfa948c9435",
+          "tier": "Bronze",
+          "tier_justification": "QIAexpressionist handbook recommends pH 7.0-8.0 for Ni-NTA-compatible lysis buffers."
+        }
+      ]
+    }
+  ],
+  "failure_diagnosis_map": {
+    "wrong_host_strain": {
+      "canonical_diagnosis": "Host strain lacks T7 RNA polymerase; pET / T7-driven IPTG induction requires BL21(DE3) or a (DE3) derivative.",
+      "acceptable_variants": [
+        "Only T7-RNAP carrying hosts such as BL21(DE3) can drive the pET-based induction used here.",
+        "The chosen strain is not a lambda DE3 lysogen; IPTG induction cannot proceed."
+      ],
+      "judge_strategy": "substring_any",
+      "minimum_tier_required": "Silver",
+      "citations": [
+        {
+          "authors": "Rosano GL, Ceccarelli EA",
+          "title": "Recombinant protein expression in Escherichia coli: advances and challenges",
+          "journal": "Frontiers in Microbiology",
+          "year": 2014,
+          "doi": "10.3389/fmicb.2014.00172",
+          "canonical_url": "https://doi.org/10.3389/fmicb.2014.00172",
+          "tier": "Silver",
+          "tier_justification": "Rosano 2014 on T7-RNAP requirement."
+        }
+      ]
+    },
+    "wrong_induction_temperature": {
+      "canonical_diagnosis": "Induction temperature was outside the accepted 18 / 25 / 30 / 37 C set; expression is inefficient.",
+      "acceptable_variants": [
+        "Induce at 37 C short, or 18-25 C overnight; neither window was used.",
+        "The chosen induction temperature does not match any standard IPTG induction protocol."
+      ],
+      "judge_strategy": "substring_any",
+      "minimum_tier_required": "Silver",
+      "citations": [
+        {
+          "authors": "Rosano GL, Ceccarelli EA",
+          "title": "Recombinant protein expression in Escherichia coli: advances and challenges",
+          "journal": "Frontiers in Microbiology",
+          "year": 2014,
+          "doi": "10.3389/fmicb.2014.00172",
+          "canonical_url": "https://doi.org/10.3389/fmicb.2014.00172",
+          "tier": "Silver",
+          "tier_justification": "Rosano 2014 on standard induction temperatures."
+        }
+      ]
+    },
+    "wrong_lysis_ph": {
+      "canonical_diagnosis": "Lysis buffer pH was outside the 7.0-8.0 Ni-NTA-compatible window.",
+      "acceptable_variants": [
+        "Ni-NTA binding requires pH 7-8; the chosen lysis pH is incompatible.",
+        "Lysis pH outside 7-8 will compromise Ni-NTA His-tag capture."
+      ],
+      "judge_strategy": "substring_any",
+      "minimum_tier_required": "Bronze",
+      "citations": [
+        {
+          "title": "QIAGEN QIAexpressionist Handbook",
+          "canonical_url": "https://www.qiagen.com/us/resources/resourcedetail?id=79ca2f7d-42fe-4d62-8676-4cfa948c9435",
+          "tier": "Bronze",
+          "tier_justification": "QIAGEN Ni-NTA pH guidance."
+        }
+      ]
+    }
+  },
+  "efficiency_reference": {
+    "optimal_tool_calls": 1,
+    "max_reasonable_tool_calls": 5,
+    "reagent_budget": {
+      "expression_runs": 1
+    }
+  }
+}

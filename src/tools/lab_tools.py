@@ -27,6 +27,7 @@ from src.environment.operations import (
     run_colony_pcr,
     run_gel,
     run_pcr,
+    run_protein_expression,
     transform,
     transform_assembly,
     transform_gibson,
@@ -422,6 +423,32 @@ async def perform_miniprep_call(
         )
     except ValueError as exc:
         return _tool_error_observation("perform_miniprep", exc)
+    return render_observation(payload)
+
+
+async def run_protein_expression_call(
+    host_strain: str,
+    iptg_concentration_mm: float,
+    induction_od600: float,
+    induction_temperature_c: float,
+    induction_hours: float,
+    lysis_buffer_ph: float,
+    culture_volume_ml: float = 500.0,
+) -> str:
+    state = _current_state()
+    try:
+        payload = run_protein_expression(
+            state=state,
+            host_strain=host_strain,
+            iptg_concentration_mm=iptg_concentration_mm,
+            induction_od600=induction_od600,
+            induction_temperature_c=induction_temperature_c,
+            induction_hours=induction_hours,
+            lysis_buffer_ph=lysis_buffer_ph,
+            culture_volume_ml=culture_volume_ml,
+        )
+    except ValueError as exc:
+        return _tool_error_observation("run_protein_expression", exc)
     return render_observation(payload)
 
 
@@ -1111,3 +1138,45 @@ def perform_miniprep_tool():
         return execute
 
     return perform_miniprep_tool_impl()
+
+
+def run_protein_expression_tool():
+    from inspect_ai.tool import tool
+
+    @tool(name="run_protein_expression")
+    def run_protein_expression_tool_impl():
+        """Run a single IPTG-induced recombinant protein expression in BL21(DE3)."""
+
+        async def execute(
+            host_strain: str,
+            iptg_concentration_mm: float,
+            induction_od600: float,
+            induction_temperature_c: float,
+            induction_hours: float,
+            lysis_buffer_ph: float,
+            culture_volume_ml: float = 500.0,
+        ) -> str:
+            """Run a protein expression experiment end-to-end.
+
+            Args:
+                host_strain: E. coli host with T7 RNA polymerase, e.g., "BL21(DE3)".
+                iptg_concentration_mm: IPTG induction concentration (0.1 - 1 mM).
+                induction_od600: OD600 at induction (mid-log, 0.4 - 0.8).
+                induction_temperature_c: Induction temperature (18, 25, 30, or 37 C).
+                induction_hours: Induction duration in hours.
+                lysis_buffer_ph: Lysis buffer pH (7.0 - 8.0 for Ni-NTA compatibility).
+                culture_volume_ml: Culture volume in mL (default 500).
+            """
+            return await run_protein_expression_call(
+                host_strain=host_strain,
+                iptg_concentration_mm=iptg_concentration_mm,
+                induction_od600=induction_od600,
+                induction_temperature_c=induction_temperature_c,
+                induction_hours=induction_hours,
+                lysis_buffer_ph=lysis_buffer_ph,
+                culture_volume_ml=culture_volume_ml,
+            )
+
+        return execute
+
+    return run_protein_expression_tool_impl()

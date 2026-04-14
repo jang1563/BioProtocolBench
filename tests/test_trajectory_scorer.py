@@ -8,6 +8,8 @@ from pathlib import Path
 from src.trajectory_scorer import (
     score_clone_task_success,
     score_clone_trajectory,
+    score_express_task_success,
+    score_express_trajectory,
     score_gibson_task_success,
     score_gibson_trajectory,
     score_golden_gate_task_success,
@@ -38,6 +40,9 @@ GIBSON_GROUND_TRUTH_PATH = (
 )
 MINIPREP_GROUND_TRUTH_PATH = (
     Path(__file__).resolve().parents[1] / "task_data" / "miniprep_01" / "ground_truth.json"
+)
+EXPRESS_GROUND_TRUTH_PATH = (
+    Path(__file__).resolve().parents[1] / "task_data" / "express_01" / "ground_truth.json"
 )
 TARGET_MASSES = [10, 100, 1000, 10000]
 
@@ -1151,3 +1156,66 @@ def test_miniprep_wrong_buffer_triggers_troubleshooting():
     )
     assert scores["troubleshooting"] < 1.0
     assert scores["task_success"] == 0.0
+
+
+def _good_express_transcript():
+    return [
+        {
+            "type": "tool_call",
+            "tool_name": "run_protein_expression",
+            "arguments": {
+                "expression_id": "expression_001",
+                "host_strain": "BL21(DE3)",
+                "host_strain_normalized": "bl21(de3)",
+                "protein_name": "MBP-GFP fusion",
+                "expected_molecular_weight_kda": 72.0,
+                "iptg_concentration_mm": 1.0,
+                "induction_od600": 0.6,
+                "induction_temperature_c": 18,
+                "induction_hours": 16,
+                "lysis_buffer_ph": 8.0,
+                "culture_volume_ml": 500.0,
+                "soluble_yield_mg_per_l": 36.8,
+                "insoluble_fraction": 0.08,
+                "total_soluble_mg": 18.4,
+                "status": "induced",
+            },
+        }
+    ]
+
+
+def _good_express_answer() -> str:
+    return (
+        "Host strain: BL21(DE3)\n"
+        "IPTG concentration: 1.0 mM\n"
+        "Induction OD600: 0.6\n"
+        "Induction temperature: 18 C\n"
+        "Induction duration: 16 h\n"
+        "Lysis buffer pH: 8.0\n"
+        "Expected soluble yield: 36.8 mg/L\n"
+        "Interpretation: Expression succeeded at low-temperature overnight induction with high solubility."
+    )
+
+
+def test_good_express_trajectory_scores_high():
+    scores = score_express_trajectory(
+        final_answer=_good_express_answer(),
+        transcript=_good_express_transcript(),
+        ground_truth_path=str(EXPRESS_GROUND_TRUTH_PATH),
+    )
+    assert scores["task_success"] == 1.0
+    assert scores["decision_quality"] == 1.0
+    assert scores["overall"] >= 0.9
+
+
+def test_express_wrong_host_triggers_troubleshooting():
+    transcript = _good_express_transcript()
+    transcript[0]["arguments"]["host_strain_normalized"] = "dh5alpha"
+    transcript[0]["arguments"]["status"] = "wrong_host_strain"
+    scores = score_express_trajectory(
+        final_answer=_good_express_answer(),
+        transcript=transcript,
+        ground_truth_path=str(EXPRESS_GROUND_TRUTH_PATH),
+    )
+    assert scores["troubleshooting"] < 1.0
+    assert scores["decision_scores"]["uses_t7_expression_host"] == 0.0

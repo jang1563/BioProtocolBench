@@ -361,3 +361,39 @@ def configure_miniprep_sample():
         return state
 
     return solve
+
+
+def build_expression_solver():
+    """Build the Express-01 solver chain."""
+    from inspect_ai.agent import AgentPrompt, react
+
+    from .tools.lab_tools import run_protein_expression_tool
+    from .tools.reference import check_safety_tool, lookup_reagent_tool
+
+    return react(
+        prompt=AgentPrompt(
+            instructions=LABCRAFT_SYSTEM_PROMPT,
+            assistant_prompt=(
+                "\nBe concise. Run a single recombinant protein expression in a T7 "
+                "expression host (BL21(DE3) or a close derivative), induce with 0.1-1 "
+                "mM IPTG at mid-log OD600, pick a standard induction temperature, and "
+                "lyse in a buffer compatible with Ni-NTA (pH 7-8). Report yield.\n"
+            ),
+        ),
+        tools=[
+            lookup_reagent_tool(),
+            check_safety_tool(),
+            run_protein_expression_tool(),
+        ],
+    )
+
+
+@solver
+def configure_expression_sample():
+    """Initialize per-sample LabCraft state before the expression solver runs."""
+
+    async def solve(state, generate):
+        set_active_sample(state.sample_id)
+        return state
+
+    return solve

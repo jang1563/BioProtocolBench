@@ -1,0 +1,106 @@
+{
+  "task_id": "express_01",
+  "task_title": "IPTG-induced recombinant protein expression in BL21(DE3)",
+  "source": "LabCraft Express-01",
+  "num_errors_introduced": 0,
+  "total_leaf_nodes": 8,
+  "rubric": {
+    "name": "Task Evaluation",
+    "weight": 1.0,
+    "is_leaf": false,
+    "children": [
+      {
+        "name": "Task Success",
+        "weight": 0.4,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Reports strain, IPTG, OD600, temperature, duration, lysis pH, yield, interpretation",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "task_success",
+            "requirement": "Final answer contains every required field, reported yield matches simulator within 3 mg/L, interpretation mentions 'expression'.",
+            "grading_notes": "Measured by score_express_task_success."
+          }
+        ]
+      },
+      {
+        "name": "Decision Quality",
+        "weight": 0.3,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Uses a T7 expression host",
+            "weight": 0.2,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Host strain is a (DE3) derivative.",
+            "grading_notes": "Measured from run_protein_expression.host_strain_normalized."
+          },
+          {
+            "name": "IPTG in 0.1-1 mM range",
+            "weight": 0.2,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "IPTG concentration 0.1-1 mM.",
+            "grading_notes": "Measured from run_protein_expression.iptg_concentration_mm."
+          },
+          {
+            "name": "Induction at mid-log OD600 0.4-0.8",
+            "weight": 0.2,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Induction OD600 0.4-0.8.",
+            "grading_notes": "Measured from run_protein_expression.induction_od600."
+          },
+          {
+            "name": "Standard induction temperature",
+            "weight": 0.2,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Induction temperature in {18, 25, 30, 37} C.",
+            "grading_notes": "Measured from run_protein_expression.induction_temperature_c."
+          },
+          {
+            "name": "Ni-NTA compatible lysis pH",
+            "weight": 0.2,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Lysis buffer pH 7.0-8.0.",
+            "grading_notes": "Measured from run_protein_expression.lysis_buffer_ph."
+          }
+        ]
+      },
+      {
+        "name": "Troubleshooting",
+        "weight": 0.2,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Diagnoses host / temperature / lysis pH failures when triggered",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "troubleshooting",
+            "requirement": "If expression reports wrong_host_strain, wrong_induction_temperature, or wrong_lysis_ph, final answer explains the corresponding failure.",
+            "grading_notes": "Defaults to 1.0 if no failure triggered."
+          }
+        ]
+      },
+      {
+        "name": "Efficiency",
+        "weight": 0.1,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Uses a reasonable number of tool calls",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "efficiency",
+            "requirement": "Stays within the reference tool-call budget (optimal = 1 call).",
+            "grading_notes": "Full credit at optimal_tool_calls."
+          }
+        ]
+      }
+    ]
+  }
+}

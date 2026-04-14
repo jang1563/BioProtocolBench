@@ -1,0 +1,209 @@
+{
+  "task_id": "express_01",
+  "parameters": [
+    {
+      "parameter_name": "accepted_host_strains",
+      "description": "E. coli strains carrying the T7 RNA polymerase required for pET-based IPTG induction.",
+      "units": "strain names",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": ["BL21(DE3)", "BL21(DE3) pLysS", "Rosetta(DE3)", "C41(DE3)", "C43(DE3)"]
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "authors": "Rosano GL, Ceccarelli EA",
+          "title": "Recombinant protein expression in Escherichia coli: advances and challenges",
+          "journal": "Frontiers in Microbiology",
+          "year": 2014,
+          "doi": "10.3389/fmicb.2014.00172",
+          "canonical_url": "https://doi.org/10.3389/fmicb.2014.00172",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed review establishing BL21(DE3) and its derivatives as canonical T7 expression hosts."
+        }
+      ]
+    },
+    {
+      "parameter_name": "iptg_concentration_mm_optimal",
+      "description": "Canonical IPTG induction concentration for pET / T7 systems in BL21(DE3).",
+      "units": "millimolar",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 1.0
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "authors": "Rosano GL, Ceccarelli EA",
+          "title": "Recombinant protein expression in Escherichia coli: advances and challenges",
+          "journal": "Frontiers in Microbiology",
+          "year": 2014,
+          "doi": "10.3389/fmicb.2014.00172",
+          "canonical_url": "https://doi.org/10.3389/fmicb.2014.00172",
+          "tier": "Silver",
+          "tier_justification": "Rosano 2014 establishes 0.1 - 1 mM IPTG as the canonical induction range; 1 mM is the standard textbook value."
+        }
+      ]
+    },
+    {
+      "parameter_name": "iptg_concentration_mm_acceptable_range",
+      "description": "Acceptable IPTG induction concentration range before yield falls off.",
+      "units": "millimolar",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": [0.1, 1.0]
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "authors": "Rosano GL, Ceccarelli EA",
+          "title": "Recombinant protein expression in Escherichia coli: advances and challenges",
+          "journal": "Frontiers in Microbiology",
+          "year": 2014,
+          "doi": "10.3389/fmicb.2014.00172",
+          "canonical_url": "https://doi.org/10.3389/fmicb.2014.00172",
+          "tier": "Silver",
+          "tier_justification": "Rosano 2014 defines 0.1-1 mM as the typical IPTG induction range."
+        }
+      ]
+    },
+    {
+      "parameter_name": "induction_od600_range",
+      "description": "Acceptable OD600 window for IPTG induction of exponentially growing BL21(DE3).",
+      "units": "OD600",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": [0.4, 0.8]
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "authors": "Rosano GL, Ceccarelli EA",
+          "title": "Recombinant protein expression in Escherichia coli: advances and challenges",
+          "journal": "Frontiers in Microbiology",
+          "year": 2014,
+          "doi": "10.3389/fmicb.2014.00172",
+          "canonical_url": "https://doi.org/10.3389/fmicb.2014.00172",
+          "tier": "Silver",
+          "tier_justification": "Rosano 2014 recommends inducing at mid-log phase, OD600 ~ 0.4 - 0.8."
+        }
+      ]
+    },
+    {
+      "parameter_name": "induction_temperatures_c",
+      "description": "Induction temperatures accepted for recombinant protein expression.",
+      "units": "Celsius",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": [18, 25, 30, 37]
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "authors": "Rosano GL, Ceccarelli EA",
+          "title": "Recombinant protein expression in Escherichia coli: advances and challenges",
+          "journal": "Frontiers in Microbiology",
+          "year": 2014,
+          "doi": "10.3389/fmicb.2014.00172",
+          "canonical_url": "https://doi.org/10.3389/fmicb.2014.00172",
+          "tier": "Silver",
+          "tier_justification": "Rosano 2014: 37 C short induction and 18-25 C overnight induction are both standard; low temperature improves solubility of hard-to-fold proteins."
+        }
+      ]
+    },
+    {
+      "parameter_name": "lysis_buffer_ph_range",
+      "description": "Acceptable lysis buffer pH range for His-tagged protein lysis.",
+      "units": "pH",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": [7.0, 8.0]
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "QIAGEN QIAexpressionist Handbook (5th ed.)",
+          "canonical_url": "https://www.qiagen.com/us/resources/resourcedetail?id=79ca2f7d-42fe-4d62-8676-4cfa948c9435",
+          "tier": "Bronze",
+          "tier_justification": "QIAGEN QIAexpressionist handbook recommends pH 7.0-8.0 for Ni-NTA-compatible lysis buffers."
+        }
+      ]
+    },
+    {
+      "parameter_name": "target_protein_name",
+      "description": "Benign model protein used for the Express-01 scenario.",
+      "units": "protein name",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": "MBP-GFP fusion"
+      },
+      "claim_type": "task_configuration",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "NEB pMAL Protein Fusion and Purification System",
+          "canonical_url": "https://www.neb.com/en-us/products/e8200-pmal-protein-fusion-and-purification-system",
+          "tier": "Bronze",
+          "tier_justification": "NEB pMAL product page supporting MBP fusions as a standard benign expression target; GFP is used as the reporter fusion partner."
+        }
+      ]
+    },
+    {
+      "parameter_name": "target_protein_kda",
+      "description": "Expected molecular weight of the MBP-GFP benign fusion.",
+      "units": "kilodaltons",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 72.0
+      },
+      "claim_type": "task_configuration",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "NEB pMAL Protein Fusion and Purification System",
+          "canonical_url": "https://www.neb.com/en-us/products/e8200-pmal-protein-fusion-and-purification-system",
+          "tier": "Bronze",
+          "tier_justification": "MBP ~ 42.5 kDa + GFP ~ 27 kDa + linker ~ 2 kDa = ~ 72 kDa for the MBP-GFP fusion per NEB pMAL product."
+        }
+      ]
+    },
+    {
+      "parameter_name": "optimal_soluble_yield_mg_per_l",
+      "description": "Expected soluble yield of the MBP-GFP fusion under optimal BL21(DE3) induction conditions.",
+      "units": "mg per litre of culture",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 40.0
+      },
+      "claim_type": "task_configuration",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "authors": "Rosano GL, Ceccarelli EA",
+          "title": "Recombinant protein expression in Escherichia coli: advances and challenges",
+          "journal": "Frontiers in Microbiology",
+          "year": 2014,
+          "doi": "10.3389/fmicb.2014.00172",
+          "canonical_url": "https://doi.org/10.3389/fmicb.2014.00172",
+          "tier": "Silver",
+          "tier_justification": "Rosano 2014 reports MBP fusions routinely express at tens of mg/L in BL21(DE3); 40 mg/L is a conservative optimal value."
+        }
+      ]
+    }
+  ]
+}

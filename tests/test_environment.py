@@ -29,6 +29,7 @@ from src.environment.operations import (
     run_colony_pcr,
     run_gel,
     run_pcr,
+    run_protein_expression,
     transform,
     transform_assembly,
     transform_gibson,
@@ -37,6 +38,7 @@ from src.environment.operations import (
 from src.environment.state import create_lab_state
 from src.environment.stochastic import (
     load_cloning_parameters,
+    load_expression_parameters,
     load_gibson_parameters,
     load_golden_gate_parameters,
     load_miniprep_parameters,
@@ -811,3 +813,59 @@ def test_miniprep_overlysis_flagged():
         elution_volume_ul=50,
     )
     assert result["status"] == "overlysis_genomic_contamination"
+
+
+EXPRESSION_PARAMETERS_PATH = (
+    Path(__file__).resolve().parents[1] / "data" / "parameters" / "expression.json"
+)
+
+
+def test_expression_parameter_bundle_exposes_required_values():
+    bundle = load_expression_parameters(EXPRESSION_PARAMETERS_PATH)
+    assert "BL21(DE3)" in bundle.choices("accepted_host_strains")
+    assert bundle.value("iptg_concentration_mm_optimal") == pytest.approx(1.0)
+    temps = [float(t) for t in bundle.choices("induction_temperatures_c")]
+    assert 18 in temps and 37 in temps
+
+
+def test_run_protein_expression_happy_path():
+    state = create_lab_state(sample_id="express-happy", seed=1)
+    result = run_protein_expression(
+        state=state,
+        host_strain="BL21(DE3)",
+        iptg_concentration_mm=1.0,
+        induction_od600=0.6,
+        induction_temperature_c=18.0,
+        induction_hours=16.0,
+        lysis_buffer_ph=8.0,
+    )
+    assert result["status"] == "induced"
+    assert result["soluble_yield_mg_per_l"] > 20.0
+
+
+def test_run_protein_expression_wrong_host_flagged():
+    state = create_lab_state(sample_id="express-wrong-host", seed=1)
+    result = run_protein_expression(
+        state=state,
+        host_strain="DH5alpha",
+        iptg_concentration_mm=1.0,
+        induction_od600=0.6,
+        induction_temperature_c=37.0,
+        induction_hours=4.0,
+        lysis_buffer_ph=8.0,
+    )
+    assert result["status"] == "wrong_host_strain"
+
+
+def test_run_protein_expression_wrong_ph_flagged():
+    state = create_lab_state(sample_id="express-wrong-ph", seed=1)
+    result = run_protein_expression(
+        state=state,
+        host_strain="BL21(DE3)",
+        iptg_concentration_mm=1.0,
+        induction_od600=0.6,
+        induction_temperature_c=37.0,
+        induction_hours=4.0,
+        lysis_buffer_ph=5.0,
+    )
+    assert result["status"] in {"wrong_lysis_ph"}

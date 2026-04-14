@@ -220,6 +220,26 @@ class MiniprepSample:
 
 
 @dataclass
+class ProteinExpression:
+    """Benign recombinant protein expression run (IPTG induction in BL21 family)."""
+
+    expression_id: str
+    host_strain: str
+    protein_name: str
+    expected_molecular_weight_kda: float
+    iptg_concentration_mm: float
+    induction_od600: float
+    induction_temperature_c: float
+    induction_hours: float
+    lysis_buffer_ph: float
+    culture_volume_ml: float
+    status: str
+    soluble_yield_mg_per_l: float
+    insoluble_fraction: float
+    notes: List[str] = field(default_factory=list)
+
+
+@dataclass
 class LabState:
     sample_id: str
     seed: int
@@ -239,6 +259,7 @@ class LabState:
     assembly_reactions: Dict[str, AssemblyReaction] = field(default_factory=dict)
     gibson_reactions: Dict[str, GibsonReaction] = field(default_factory=dict)
     miniprep_samples: Dict[str, MiniprepSample] = field(default_factory=dict)
+    protein_expressions: Dict[str, ProteinExpression] = field(default_factory=dict)
     event_log: List[Dict[str, Any]] = field(default_factory=list)
     plate_counter: int = 0
     culture_counter: int = 0
@@ -253,6 +274,7 @@ class LabState:
     assembly_counter: int = 0
     gibson_counter: int = 0
     miniprep_counter: int = 0
+    expression_counter: int = 0
     cloning_substrates_initialized: bool = False
     golden_gate_substrates_initialized: bool = False
     gibson_substrates_initialized: bool = False
@@ -308,6 +330,10 @@ class LabState:
     def next_miniprep_id(self) -> str:
         self.miniprep_counter += 1
         return "miniprep_{:03d}".format(self.miniprep_counter)
+
+    def next_expression_id(self) -> str:
+        self.expression_counter += 1
+        return "expression_{:03d}".format(self.expression_counter)
 
     def log_event(self, kind: str, payload: Dict[str, Any]) -> None:
         self.event_log.append({"kind": kind, "payload": payload})

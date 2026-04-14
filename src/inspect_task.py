@@ -18,6 +18,7 @@ except ImportError:  # pragma: no cover - keeps local imports working before Ins
 
 from src.solvers import (
     build_clone_solver,
+    build_expression_solver,
     build_gibson_solver,
     build_golden_gate_solver,
     build_growth_solver,
@@ -26,6 +27,7 @@ from src.solvers import (
     build_pcr_solver,
     build_screen_solver,
     configure_clone_sample,
+    configure_expression_sample,
     configure_gibson_sample,
     configure_golden_gate_sample,
     configure_growth_sample,
@@ -35,6 +37,7 @@ from src.solvers import (
     configure_transform_sample,
 )
 from src.tasks.clone_01 import build_clone_01_sample
+from src.tasks.express_01 import build_express_01_sample
 from src.tasks.gibson_01 import build_gibson_01_sample
 from src.tasks.golden_gate_01 import build_golden_gate_01_sample
 from src.tasks.growth_01 import build_growth_01_sample
@@ -45,6 +48,7 @@ from src.tasks.transform_01 import build_transform_01_sample
 from src.tools.lab_tools import cleanup_sample
 from src.trajectory_scorer import (
     build_clone_trajectory_scorer,
+    build_express_trajectory_scorer,
     build_gibson_trajectory_scorer,
     build_golden_gate_trajectory_scorer,
     build_growth_trajectory_scorer,
@@ -198,6 +202,20 @@ def miniprep_01(seeds: int = 1):
 
 
 @task
+def express_01(seeds: int = 1):
+    if Task is None or MemoryDataset is None or Sample is None:
+        raise ImportError("inspect_ai is required to instantiate LabCraft tasks.")
+    return Task(
+        dataset=MemoryDataset(samples=_samples(build_express_01_sample(), seeds)),
+        setup=configure_expression_sample(),
+        solver=build_expression_solver(),
+        scorer=build_express_trajectory_scorer(),
+        cleanup=_cleanup_transform_sample,
+        message_limit=40,
+    )
+
+
+@task
 def labcraft_suite():
     if Task is None:
         raise ImportError("inspect_ai is required to instantiate LabCraft tasks.")
@@ -213,5 +231,6 @@ __all__ = [
     "golden_gate_01",
     "gibson_01",
     "miniprep_01",
+    "express_01",
     "labcraft_suite",
 ]

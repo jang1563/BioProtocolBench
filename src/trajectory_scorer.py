@@ -1837,3 +1837,173 @@ def build_miniprep_trajectory_scorer():
         return score
 
     return _scorer()
+
+
+# ---------------------------------------------------------------------------
+# Express-01 scorer (Phase 2a)
+# ---------------------------------------------------------------------------
+
+EXPRESS_YIELD_TOLERANCE_MG_PER_L = 3.0
+
+
+def _extract_reported_express_summary(final_answer: str) -> Dict[str, Any]:
+    summary: Dict[str, Any] = {}
+    host = re.search(r"(?im)^Host strain:\s*(.+)$", final_answer)
+    if host:
+        summary["host_strain"] = host.group(1).strip().lower()
+    iptg = re.search(r"(?im)^IPTG concentration:\s*([0-9]+(?:\.[0-9]+)?)\s*mM", final_answer)
+    if iptg:
+        summary["iptg_concentration_mm"] = float(iptg.group(1))
+    od = re.search(r"(?im)^Induction OD600:\s*([0-9]+(?:\.[0-9]+)?)", final_answer)
+    if od:
+        summary["induction_od600"] = float(od.group(1))
+    temp = re.search(r"(?im)^Induction temperature:\s*([0-9]+(?:\.[0-9]+)?)\s*C", final_answer)
+    if temp:
+        summary["induction_temperature_c"] = float(temp.group(1))
+    dur = re.search(r"(?im)^Induction duration:\s*([0-9]+(?:\.[0-9]+)?)\s*h", final_answer)
+    if dur:
+        summary["induction_hours"] = float(dur.group(1))
+    ph = re.search(r"(?im)^Lysis buffer pH:\s*([0-9]+(?:\.[0-9]+)?)", final_answer)
+    if ph:
+        summary["lysis_buffer_ph"] = float(ph.group(1))
+    yld = re.search(r"(?im)^Expected soluble yield:\s*([0-9]+(?:\.[0-9]+)?)\s*mg/L", final_answer)
+    if yld:
+        summary["soluble_yield_mg_per_l"] = float(yld.group(1))
+    interp = re.search(r"(?im)^Interpretation:\s*(.+)$", final_answer)
+    if interp:
+        summary["interpretation"] = interp.group(1).strip()
+    return summary
+
+
+def _reconstruct_express_results(tool_calls: List[Dict[str, Any]]) -> Dict[str, Any]:
+    last = None
+    call_count = 0
+    statuses: List[str] = []
+    for call in tool_calls:
+        if _normalize_tool_name(call.get("tool_name", "")) != "run_protein_expression":
+            continue
+        call_count += 1
+        observed = _observed_values(call)
+        statuses.append(str(observed.get("status", "")))
+        last = observed
+    return {"last": last, "call_count": call_count, "statuses": statuses}
+
+
+def score_express_task_success(final_answer: str, tool_calls: List[Dict[str, Any]]) -> float:
+    reported = _extract_reported_express_summary(final_answer)
+    required = {
+        "host_strain",
+        "iptg_concentration_mm",
+        "induction_od600",
+        "induction_temperature_c",
+        "induction_hours",
+        "lysis_buffer_ph",
+        "soluble_yield_mg_per_l",
+        "interpretation",
+    }
+    if required - set(reported):
+        return 0.0
+    reconstructed = _reconstruct_express_results(tool_calls)
+    if reconstructed["call_count"] != 1 or reconstructed["last"] is None:
+        return 0.0
+    last = reconstructed["last"]
+    if str(last.get("status")) != "induced":
+        return 0.0
+    if (
+        abs(float(last.get("soluble_yield_mg_per_l", 0.0)) - reported["soluble_yield_mg_per_l"])
+        > EXPRESS_YIELD_TOLERANCE_MG_PER_L
+    ):
+        return 0.0
+    if "express" not in reported["interpretation"].lower():
+        return 0.0
+    return 1.0
+
+
+def score_express_troubleshooting(
+    final_answer: str, tool_calls: List[Dict[str, Any]], ground_truth: Dict[str, Any]
+) -> float:
+    reconstructed = _reconstruct_express_results(tool_calls)
+    failure_markers: List[str] = []
+    for status in reconstructed["statuses"]:
+        if status in {"wrong_host_strain", "wrong_induction_temperature", "wrong_lysis_ph"}:
+            failure_markers.append(status)
+    if not failure_markers:
+        return 1.0
+    final_answer_lower = final_answer.lower()
+    resolved = 0
+    for marker in failure_markers:
+        diagnosis = ground_truth["failure_diagnosis_map"].get(marker)
+        if diagnosis is None:
+            continue
+        acceptable = [diagnosis["canonical_diagnosis"]] + diagnosis.get("acceptable_variants", [])
+        if any(candidate.lower() in final_answer_lower for candidate in acceptable):
+            resolved += 1
+    return float(resolved) / float(len(failure_markers))
+
+
+def score_express_trajectory(
+    final_answer: str,
+    transcript: Iterable[Any],
+    ground_truth_path: str,
+) -> Dict[str, Any]:
+    ground_truth = load_ground_truth(ground_truth_path)
+    tool_calls = _extract_tool_calls(transcript)
+    decision_quality = score_decision_quality(tool_calls, ground_truth)
+    task_success = score_express_task_success(final_answer, tool_calls)
+    troubleshooting = score_express_troubleshooting(final_answer, tool_calls, ground_truth)
+    efficiency = score_efficiency(tool_calls, ground_truth)
+    overall = (
+        0.4 * task_success
+        + 0.3 * decision_quality["mean"]
+        + 0.2 * troubleshooting
+        + 0.1 * efficiency
+    )
+    return {
+        "overall": overall,
+        "task_success": task_success,
+        "decision_quality": decision_quality["mean"],
+        "troubleshooting": troubleshooting,
+        "efficiency": efficiency,
+        "decision_scores": decision_quality["by_decision"],
+    }
+
+
+def build_express_trajectory_scorer():
+    from inspect_ai.scorer import Score, Target, mean, scorer
+
+    @scorer(
+        metrics={
+            "overall": [mean()],
+            "task_success": [mean()],
+            "decision_quality": [mean()],
+            "troubleshooting": [mean()],
+            "efficiency": [mean()],
+        }
+    )
+    def _scorer():
+        async def score(state, target: Target):
+            ground_truth_path = target.text
+            final_answer = ""
+            if getattr(state, "output", None) is not None:
+                final_answer = getattr(state.output, "completion", "") or ""
+            values = score_express_trajectory(
+                final_answer=final_answer,
+                transcript=getattr(state, "messages", []),
+                ground_truth_path=ground_truth_path,
+            )
+            return Score(
+                value={
+                    "overall": values["overall"],
+                    "task_success": values["task_success"],
+                    "decision_quality": values["decision_quality"],
+                    "troubleshooting": values["troubleshooting"],
+                    "efficiency": values["efficiency"],
+                },
+                answer=final_answer[:500],
+                explanation=json.dumps(values["decision_scores"], indent=2, sort_keys=True),
+                metadata=values,
+            )
+
+        return score
+
+    return _scorer()
