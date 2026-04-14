@@ -14,6 +14,8 @@ from src.trajectory_scorer import (
     score_golden_gate_trajectory,
     score_growth_task_success,
     score_growth_trajectory,
+    score_miniprep_task_success,
+    score_miniprep_trajectory,
     score_pcr_task_success,
     score_pcr_trajectory,
     score_screen_task_success,
@@ -33,6 +35,9 @@ GOLDEN_GATE_GROUND_TRUTH_PATH = (
 )
 GIBSON_GROUND_TRUTH_PATH = (
     Path(__file__).resolve().parents[1] / "task_data" / "gibson_01" / "ground_truth.json"
+)
+MINIPREP_GROUND_TRUTH_PATH = (
+    Path(__file__).resolve().parents[1] / "task_data" / "miniprep_01" / "ground_truth.json"
 )
 TARGET_MASSES = [10, 100, 1000, 10000]
 
@@ -1082,6 +1087,67 @@ def test_gibson_wrong_master_mix_triggers_troubleshooting_requirement():
         final_answer=_good_gibson_answer(),
         transcript=transcript,
         ground_truth_path=str(GIBSON_GROUND_TRUTH_PATH),
+    )
+    assert scores["troubleshooting"] < 1.0
+    assert scores["task_success"] == 0.0
+
+
+def _good_miniprep_transcript():
+    return [
+        {
+            "type": "tool_call",
+            "tool_name": "perform_miniprep",
+            "arguments": {
+                "miniprep_id": "miniprep_001",
+                "culture_volume_ml": 5.0,
+                "lysis_buffer_sequence": "P1,P2,P3",
+                "lysis_buffer_sequence_normalized": "p1,p2,p3",
+                "lysis_duration_min": 3,
+                "purification_method": "silica column",
+                "purification_method_normalized": "silica column",
+                "elution_volume_ul": 50.0,
+                "final_concentration_ng_ul": 200.0,
+                "a260_a280_ratio": 1.9,
+                "total_yield_ug": 10.0,
+                "status": "prepared",
+            },
+        }
+    ]
+
+
+def _good_miniprep_answer() -> str:
+    return (
+        "Culture volume: 5 mL\n"
+        "Lysis buffer sequence: P1,P2,P3\n"
+        "Lysis duration: 3 min\n"
+        "Purification method: silica column\n"
+        "Elution volume: 50 uL\n"
+        "Plasmid concentration: 200.0 ng/uL\n"
+        "A260/A280: 1.90\n"
+        "Total yield: 10.0 ug\n"
+        "Interpretation: Plasmid is pure and ready for downstream use."
+    )
+
+
+def test_good_miniprep_trajectory_scores_high():
+    scores = score_miniprep_trajectory(
+        final_answer=_good_miniprep_answer(),
+        transcript=_good_miniprep_transcript(),
+        ground_truth_path=str(MINIPREP_GROUND_TRUTH_PATH),
+    )
+    assert scores["task_success"] == 1.0
+    assert scores["decision_quality"] == 1.0
+    assert scores["overall"] >= 0.9
+
+
+def test_miniprep_wrong_buffer_triggers_troubleshooting():
+    transcript = _good_miniprep_transcript()
+    transcript[0]["arguments"]["lysis_buffer_sequence_normalized"] = "p3,p2,p1"
+    transcript[0]["arguments"]["status"] = "wrong_buffer_sequence"
+    scores = score_miniprep_trajectory(
+        final_answer=_good_miniprep_answer(),
+        transcript=transcript,
+        ground_truth_path=str(MINIPREP_GROUND_TRUTH_PATH),
     )
     assert scores["troubleshooting"] < 1.0
     assert scores["task_success"] == 0.0

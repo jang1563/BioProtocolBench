@@ -1655,3 +1655,185 @@ def build_gibson_trajectory_scorer():
         return score
 
     return _scorer()
+
+
+# ---------------------------------------------------------------------------
+# Miniprep-01 scorer (Phase 1c)
+# ---------------------------------------------------------------------------
+
+
+def _extract_reported_miniprep_summary(final_answer: str) -> Dict[str, Any]:
+    summary: Dict[str, Any] = {}
+    vol = re.search(r"(?im)^Culture volume:\s*([0-9]+(?:\.[0-9]+)?)\s*mL", final_answer)
+    if vol:
+        summary["culture_volume_ml"] = float(vol.group(1))
+    buf = re.search(r"(?im)^Lysis buffer sequence:\s*(.+)$", final_answer)
+    if buf:
+        summary["lysis_buffer_sequence"] = buf.group(1).strip().lower()
+    dur = re.search(r"(?im)^Lysis duration:\s*([0-9]+)\s*min", final_answer)
+    if dur:
+        summary["lysis_duration_min"] = int(dur.group(1))
+    method = re.search(r"(?im)^Purification method:\s*(.+)$", final_answer)
+    if method:
+        summary["purification_method"] = method.group(1).strip().lower()
+    elu = re.search(r"(?im)^Elution volume:\s*([0-9]+(?:\.[0-9]+)?)\s*uL", final_answer)
+    if elu:
+        summary["elution_volume_ul"] = float(elu.group(1))
+    conc = re.search(r"(?im)^Plasmid concentration:\s*([0-9]+(?:\.[0-9]+)?)\s*ng/uL", final_answer)
+    if conc:
+        summary["final_concentration_ng_ul"] = float(conc.group(1))
+    ratio = re.search(r"(?im)^A260/A280:\s*([0-9]+(?:\.[0-9]+)?)", final_answer)
+    if ratio:
+        summary["a260_a280_ratio"] = float(ratio.group(1))
+    yld = re.search(r"(?im)^Total yield:\s*([0-9]+(?:\.[0-9]+)?)\s*ug", final_answer)
+    if yld:
+        summary["total_yield_ug"] = float(yld.group(1))
+    interp = re.search(r"(?im)^Interpretation:\s*(.+)$", final_answer)
+    if interp:
+        summary["interpretation"] = interp.group(1).strip()
+    return summary
+
+
+def _reconstruct_miniprep_results(tool_calls: List[Dict[str, Any]]) -> Dict[str, Any]:
+    last = None
+    call_count = 0
+    statuses: List[str] = []
+    for call in tool_calls:
+        if _normalize_tool_name(call.get("tool_name", "")) != "perform_miniprep":
+            continue
+        call_count += 1
+        observed = _observed_values(call)
+        statuses.append(str(observed.get("status", "")))
+        last = observed
+    return {"last": last, "call_count": call_count, "statuses": statuses}
+
+
+MINIPREP_CONCENTRATION_TOLERANCE = 2.0  # ng/uL
+MINIPREP_RATIO_TOLERANCE = 0.05
+
+
+def score_miniprep_task_success(final_answer: str, tool_calls: List[Dict[str, Any]]) -> float:
+    reported = _extract_reported_miniprep_summary(final_answer)
+    required = {
+        "culture_volume_ml",
+        "lysis_buffer_sequence",
+        "lysis_duration_min",
+        "purification_method",
+        "elution_volume_ul",
+        "final_concentration_ng_ul",
+        "a260_a280_ratio",
+        "total_yield_ug",
+        "interpretation",
+    }
+    if required - set(reported):
+        return 0.0
+    reconstructed = _reconstruct_miniprep_results(tool_calls)
+    if reconstructed["call_count"] != 1 or reconstructed["last"] is None:
+        return 0.0
+    last = reconstructed["last"]
+    if str(last.get("status")) != "prepared":
+        return 0.0
+    if (
+        abs(float(last.get("final_concentration_ng_ul", 0.0)) - reported["final_concentration_ng_ul"])
+        > MINIPREP_CONCENTRATION_TOLERANCE
+    ):
+        return 0.0
+    if abs(float(last.get("a260_a280_ratio", 0.0)) - reported["a260_a280_ratio"]) > MINIPREP_RATIO_TOLERANCE:
+        return 0.0
+    if "pur" not in reported["interpretation"].lower():
+        return 0.0
+    return 1.0
+
+
+def score_miniprep_troubleshooting(
+    final_answer: str, tool_calls: List[Dict[str, Any]], ground_truth: Dict[str, Any]
+) -> float:
+    reconstructed = _reconstruct_miniprep_results(tool_calls)
+    failure_markers: List[str] = []
+    for status in reconstructed["statuses"]:
+        if status in {
+            "wrong_buffer_sequence",
+            "overlysis_genomic_contamination",
+            "wrong_purification_method",
+        }:
+            failure_markers.append(status)
+    if not failure_markers:
+        return 1.0
+    final_answer_lower = final_answer.lower()
+    resolved = 0
+    for marker in failure_markers:
+        diagnosis = ground_truth["failure_diagnosis_map"].get(marker)
+        if diagnosis is None:
+            continue
+        acceptable = [diagnosis["canonical_diagnosis"]] + diagnosis.get("acceptable_variants", [])
+        if any(candidate.lower() in final_answer_lower for candidate in acceptable):
+            resolved += 1
+    return float(resolved) / float(len(failure_markers))
+
+
+def score_miniprep_trajectory(
+    final_answer: str,
+    transcript: Iterable[Any],
+    ground_truth_path: str,
+) -> Dict[str, Any]:
+    ground_truth = load_ground_truth(ground_truth_path)
+    tool_calls = _extract_tool_calls(transcript)
+    decision_quality = score_decision_quality(tool_calls, ground_truth)
+    task_success = score_miniprep_task_success(final_answer, tool_calls)
+    troubleshooting = score_miniprep_troubleshooting(final_answer, tool_calls, ground_truth)
+    efficiency = score_efficiency(tool_calls, ground_truth)
+    overall = (
+        0.4 * task_success
+        + 0.3 * decision_quality["mean"]
+        + 0.2 * troubleshooting
+        + 0.1 * efficiency
+    )
+    return {
+        "overall": overall,
+        "task_success": task_success,
+        "decision_quality": decision_quality["mean"],
+        "troubleshooting": troubleshooting,
+        "efficiency": efficiency,
+        "decision_scores": decision_quality["by_decision"],
+    }
+
+
+def build_miniprep_trajectory_scorer():
+    from inspect_ai.scorer import Score, Target, mean, scorer
+
+    @scorer(
+        metrics={
+            "overall": [mean()],
+            "task_success": [mean()],
+            "decision_quality": [mean()],
+            "troubleshooting": [mean()],
+            "efficiency": [mean()],
+        }
+    )
+    def _scorer():
+        async def score(state, target: Target):
+            ground_truth_path = target.text
+            final_answer = ""
+            if getattr(state, "output", None) is not None:
+                final_answer = getattr(state.output, "completion", "") or ""
+            values = score_miniprep_trajectory(
+                final_answer=final_answer,
+                transcript=getattr(state, "messages", []),
+                ground_truth_path=ground_truth_path,
+            )
+            return Score(
+                value={
+                    "overall": values["overall"],
+                    "task_success": values["task_success"],
+                    "decision_quality": values["decision_quality"],
+                    "troubleshooting": values["troubleshooting"],
+                    "efficiency": values["efficiency"],
+                },
+                answer=final_answer[:500],
+                explanation=json.dumps(values["decision_scores"], indent=2, sort_keys=True),
+                metadata=values,
+            )
+
+        return score
+
+    return _scorer()

@@ -1,0 +1,129 @@
+{
+  "task_id": "miniprep_01",
+  "parameters": [
+    {
+      "parameter_name": "canonical_lysis_buffer_sequence",
+      "description": "Canonical alkaline lysis buffer sequence for plasmid miniprep.",
+      "units": "buffer sequence",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": "P1,P2,P3"
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "authors": "Birnboim HC, Doly J",
+          "title": "A rapid alkaline extraction procedure for screening recombinant plasmid DNA",
+          "journal": "Nucleic Acids Research",
+          "year": 1979,
+          "doi": "10.1093/nar/7.6.1513",
+          "canonical_url": "https://doi.org/10.1093/nar/7.6.1513",
+          "tier": "Silver",
+          "tier_justification": "Canonical Birnboim and Doly paper for alkaline lysis plasmid miniprep; P1 (resuspension) / P2 (alkaline SDS lysis) / P3 (neutralization) is the standard modern naming."
+        }
+      ]
+    },
+    {
+      "parameter_name": "culture_volume_ml_optimal",
+      "description": "Optimal overnight culture volume for a standard plasmid miniprep.",
+      "units": "mL",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 5
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "QIAGEN QIAprep Spin Miniprep Kit Handbook",
+          "canonical_url": "https://www.qiagen.com/us/resources/resourcedetail?id=331d6776-2b47-4f56-ba30-c9ffe4c4d2fa&lang=en",
+          "tier": "Bronze",
+          "tier_justification": "QIAGEN handbook recommends 1-5 mL overnight culture for standard miniprep; 5 mL is the standard teaching-lab volume."
+        }
+      ]
+    },
+    {
+      "parameter_name": "lysis_duration_minutes_max",
+      "description": "Maximum time the lysate can sit in P2 before neutralization, beyond which genomic DNA shearing and irreversible chromosomal contamination become problems.",
+      "units": "minutes",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 5
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "QIAGEN QIAprep Spin Miniprep Kit Handbook",
+          "canonical_url": "https://www.qiagen.com/us/resources/resourcedetail?id=331d6776-2b47-4f56-ba30-c9ffe4c4d2fa&lang=en",
+          "tier": "Bronze",
+          "tier_justification": "QIAGEN handbook warns that lysis must not exceed 5 min to prevent genomic-DNA contamination."
+        }
+      ]
+    },
+    {
+      "parameter_name": "accepted_purification_methods",
+      "description": "Purification methods accepted for the miniprep task.",
+      "units": "method names",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": ["silica column", "Qiagen column", "anion exchange column"]
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "QIAGEN QIAprep Spin Miniprep Kit Handbook",
+          "canonical_url": "https://www.qiagen.com/us/resources/resourcedetail?id=331d6776-2b47-4f56-ba30-c9ffe4c4d2fa&lang=en",
+          "tier": "Bronze",
+          "tier_justification": "QIAGEN handbook confirms silica-membrane column purification as the standard miniprep method; anion exchange is the alternative for higher purity preps."
+        }
+      ]
+    },
+    {
+      "parameter_name": "elution_volume_ul_min",
+      "description": "Minimum elution volume to avoid silica-column matrix carryover.",
+      "units": "microlitres",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 30
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "QIAGEN QIAprep Spin Miniprep Kit Handbook",
+          "canonical_url": "https://www.qiagen.com/us/resources/resourcedetail?id=331d6776-2b47-4f56-ba30-c9ffe4c4d2fa&lang=en",
+          "tier": "Bronze",
+          "tier_justification": "QIAGEN handbook recommends 30-50 uL elution volume for standard spin columns."
+        }
+      ]
+    },
+    {
+      "parameter_name": "target_a260_a280_range",
+      "description": "Target A260/A280 ratio for pure plasmid DNA (below indicates protein contamination; above indicates RNA).",
+      "units": "ratio",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": [1.8, 2.0]
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "Thermo Fisher 260/280 and 260/230 Ratios Reference",
+          "canonical_url": "https://assets.thermofisher.com/TFS-Assets/CAD/Product-Bulletins/TN52646-E-0215M-NucleicAcid.pdf",
+          "tier": "Bronze",
+          "tier_justification": "Thermo Fisher technical note defining 1.8-2.0 as the target A260/A280 range for pure DNA."
+        }
+      ]
+    }
+  ]
+}

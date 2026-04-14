@@ -203,6 +203,23 @@ class GibsonReaction:
 
 
 @dataclass
+class MiniprepSample:
+    """Plasmid miniprep result (alkaline lysis + silica column workflow)."""
+
+    miniprep_id: str
+    culture_volume_ml: float
+    lysis_buffer_sequence: str
+    lysis_duration_min: int
+    purification_method: str
+    elution_volume_ul: float
+    final_concentration_ng_ul: float
+    a260_a280_ratio: float
+    total_yield_ug: float
+    status: str
+    notes: List[str] = field(default_factory=list)
+
+
+@dataclass
 class LabState:
     sample_id: str
     seed: int
@@ -221,6 +238,7 @@ class LabState:
     ligation_reactions: Dict[str, LigationReaction] = field(default_factory=dict)
     assembly_reactions: Dict[str, AssemblyReaction] = field(default_factory=dict)
     gibson_reactions: Dict[str, GibsonReaction] = field(default_factory=dict)
+    miniprep_samples: Dict[str, MiniprepSample] = field(default_factory=dict)
     event_log: List[Dict[str, Any]] = field(default_factory=list)
     plate_counter: int = 0
     culture_counter: int = 0
@@ -234,6 +252,7 @@ class LabState:
     ligation_counter: int = 0
     assembly_counter: int = 0
     gibson_counter: int = 0
+    miniprep_counter: int = 0
     cloning_substrates_initialized: bool = False
     golden_gate_substrates_initialized: bool = False
     gibson_substrates_initialized: bool = False
@@ -285,6 +304,10 @@ class LabState:
     def next_gibson_id(self) -> str:
         self.gibson_counter += 1
         return "gibson_{:03d}".format(self.gibson_counter)
+
+    def next_miniprep_id(self) -> str:
+        self.miniprep_counter += 1
+        return "miniprep_{:03d}".format(self.miniprep_counter)
 
     def log_event(self, kind: str, payload: Dict[str, Any]) -> None:
         self.event_log.append({"kind": kind, "payload": payload})

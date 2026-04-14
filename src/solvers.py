@@ -326,3 +326,38 @@ def configure_gibson_sample():
         return state
 
     return solve
+
+
+def build_miniprep_solver():
+    """Build the Miniprep-01 solver chain."""
+    from inspect_ai.agent import AgentPrompt, react
+
+    from .tools.lab_tools import perform_miniprep_tool
+    from .tools.reference import check_safety_tool, lookup_reagent_tool
+
+    return react(
+        prompt=AgentPrompt(
+            instructions=LABCRAFT_SYSTEM_PROMPT,
+            assistant_prompt=(
+                "\nBe concise. Run a single alkaline-lysis miniprep with the P1/P2/P3 "
+                "buffer sequence, no more than 5 min in P2, silica column purification, "
+                "and an elution volume of at least 30 uL. Report yield and A260/A280 purity.\n"
+            ),
+        ),
+        tools=[
+            lookup_reagent_tool(),
+            check_safety_tool(),
+            perform_miniprep_tool(),
+        ],
+    )
+
+
+@solver
+def configure_miniprep_sample():
+    """Initialize per-sample LabCraft state before the miniprep solver runs."""
+
+    async def solve(state, generate):
+        set_active_sample(state.sample_id)
+        return state
+
+    return solve

@@ -20,6 +20,7 @@ from src.environment.operations import (
     list_gibson_substrates,
     list_golden_gate_substrates,
     measure_od600,
+    perform_miniprep,
     plate,
     prepare_media,
     restriction_digest,
@@ -399,6 +400,28 @@ async def transform_gibson_call(
         )
     except ValueError as exc:
         return _tool_error_observation("transform_gibson", exc)
+    return render_observation(payload)
+
+
+async def perform_miniprep_call(
+    culture_volume_ml: float,
+    lysis_buffer_sequence: str,
+    lysis_duration_min: int,
+    purification_method: str,
+    elution_volume_ul: float,
+) -> str:
+    state = _current_state()
+    try:
+        payload = perform_miniprep(
+            state=state,
+            culture_volume_ml=culture_volume_ml,
+            lysis_buffer_sequence=lysis_buffer_sequence,
+            lysis_duration_min=lysis_duration_min,
+            purification_method=purification_method,
+            elution_volume_ul=elution_volume_ul,
+        )
+    except ValueError as exc:
+        return _tool_error_observation("perform_miniprep", exc)
     return render_observation(payload)
 
 
@@ -1052,3 +1075,39 @@ def transform_gibson_tool():
         return execute
 
     return transform_gibson_tool_impl()
+
+
+def perform_miniprep_tool():
+    from inspect_ai.tool import tool
+
+    @tool(name="perform_miniprep")
+    def perform_miniprep_tool_impl():
+        """Perform a single-pass alkaline-lysis plasmid miniprep with silica column purification."""
+
+        async def execute(
+            culture_volume_ml: float,
+            lysis_buffer_sequence: str,
+            lysis_duration_min: int,
+            purification_method: str,
+            elution_volume_ul: float,
+        ) -> str:
+            """Run an end-to-end plasmid miniprep.
+
+            Args:
+                culture_volume_ml: Overnight culture volume (1-10 mL recommended; 5 mL standard).
+                lysis_buffer_sequence: Buffer order, e.g., "P1,P2,P3" for canonical alkaline lysis.
+                lysis_duration_min: Time in P2 lysis buffer before neutralisation (1-5 min).
+                purification_method: "silica column" (standard) or "anion exchange column".
+                elution_volume_ul: Final elution volume in microlitres (>= 30 uL recommended).
+            """
+            return await perform_miniprep_call(
+                culture_volume_ml=culture_volume_ml,
+                lysis_buffer_sequence=lysis_buffer_sequence,
+                lysis_duration_min=lysis_duration_min,
+                purification_method=purification_method,
+                elution_volume_ul=elution_volume_ul,
+            )
+
+        return execute
+
+    return perform_miniprep_tool_impl()

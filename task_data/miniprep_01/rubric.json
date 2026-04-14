@@ -1,0 +1,106 @@
+{
+  "task_id": "miniprep_01",
+  "task_title": "Alkaline lysis plasmid miniprep with silica column purification",
+  "source": "LabCraft Miniprep-01",
+  "num_errors_introduced": 0,
+  "total_leaf_nodes": 8,
+  "rubric": {
+    "name": "Task Evaluation",
+    "weight": 1.0,
+    "is_leaf": false,
+    "children": [
+      {
+        "name": "Task Success",
+        "weight": 0.4,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Reports miniprep parameters, concentration, A260/A280, yield, and interpretation",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "task_success",
+            "requirement": "Final answer contains every required field, concentration and A260/A280 match the simulator within tolerance, interpretation mentions purity.",
+            "grading_notes": "Measured by score_miniprep_task_success."
+          }
+        ]
+      },
+      {
+        "name": "Decision Quality",
+        "weight": 0.3,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Uses canonical P1/P2/P3 buffer sequence",
+            "weight": 0.2,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "lysis_buffer_sequence_normalized == 'p1,p2,p3'.",
+            "grading_notes": "Measured from perform_miniprep.lysis_buffer_sequence_normalized."
+          },
+          {
+            "name": "Lysis duration within 1-5 min",
+            "weight": 0.2,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "1 <= lysis_duration_min <= 5.",
+            "grading_notes": "Measured from perform_miniprep.lysis_duration_min."
+          },
+          {
+            "name": "Silica column (or accepted alternative) purification",
+            "weight": 0.2,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "purification_method_normalized is an accepted method.",
+            "grading_notes": "Measured from perform_miniprep.purification_method_normalized."
+          },
+          {
+            "name": "Elution volume >= 30 uL",
+            "weight": 0.2,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "elution_volume_ul >= 30.",
+            "grading_notes": "Measured from perform_miniprep.elution_volume_ul."
+          },
+          {
+            "name": "Culture volume within 1-10 mL",
+            "weight": 0.2,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "1 <= culture_volume_ml <= 10.",
+            "grading_notes": "Measured from perform_miniprep.culture_volume_ml."
+          }
+        ]
+      },
+      {
+        "name": "Troubleshooting",
+        "weight": 0.2,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Diagnoses buffer, overlysis, or method failures when triggered",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "troubleshooting",
+            "requirement": "If miniprep reports wrong_buffer_sequence, overlysis_genomic_contamination, or wrong_purification_method, final answer explains the corresponding failure.",
+            "grading_notes": "Defaults to 1.0 if no failure is triggered."
+          }
+        ]
+      },
+      {
+        "name": "Efficiency",
+        "weight": 0.1,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Uses a reasonable number of tool calls",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "efficiency",
+            "requirement": "Stays within the reference tool-call budget (optimal = 1 call).",
+            "grading_notes": "Full credit at optimal_tool_calls."
+          }
+        ]
+      }
+    ]
+  }
+}

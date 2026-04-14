@@ -74,6 +74,9 @@ These limitations are the top of the next-iteration backlog, documented in [resu
 | `pcr_01` | PCR optimization | Choose conditions that yield specific amplification |
 | `screen_01` | pUC blue-white colony screening | Confirm recombinants by colony PCR with ≥95% confidence |
 | `clone_01` | Restriction cloning end-to-end | Digest + ligate 950 bp insert into pUC19 with EcoRI/BamHI, transform, and confirm recombinants |
+| `golden_gate_01` | Type IIS Golden Gate assembly | One-pot 4-fragment BsaI/T4 ligase assembly with 37 °C / 16 °C cycling, transform |
+| `gibson_01` | Isothermal Gibson overlap assembly | 2-fragment master-mix assembly at 50 °C for 15 min, transform |
+| `miniprep_01` | Alkaline lysis plasmid prep | P1/P2/P3 lysis + silica column; report concentration, A260/A280, yield |
 
 Each task directory (`task_data/<task_id>/`) contains `rubric.json` (hierarchical scoring tree), `ground_truth.json` (expected values with citation metadata), and `SOURCES.md` (citations).
 
@@ -101,11 +104,14 @@ pip install -e ".[dev]"
 
 ```bash
 # Single task
-inspect eval src.inspect_task:transform_01 --model openai/gpt-4o
-inspect eval src.inspect_task:growth_01   --model anthropic/claude-sonnet-4-5
-inspect eval src.inspect_task:pcr_01      --model openai/gpt-4o
-inspect eval src.inspect_task:screen_01   --model openai/gpt-4o-mini
-inspect eval src.inspect_task:clone_01    --model openai/gpt-4o-mini
+inspect eval src.inspect_task:transform_01     --model openai/gpt-4o
+inspect eval src.inspect_task:growth_01        --model anthropic/claude-sonnet-4-5
+inspect eval src.inspect_task:pcr_01           --model openai/gpt-4o
+inspect eval src.inspect_task:screen_01        --model openai/gpt-4o-mini
+inspect eval src.inspect_task:clone_01         --model openai/gpt-4o-mini
+inspect eval src.inspect_task:golden_gate_01   --model openai/gpt-4o-mini
+inspect eval src.inspect_task:gibson_01        --model openai/gpt-4o-mini
+inspect eval src.inspect_task:miniprep_01      --model openai/gpt-4o-mini
 
 # With a different grader model (trajectory scorer uses LLM-as-judge for some rubric leaves)
 inspect eval src.inspect_task:transform_01 \

@@ -18,6 +18,7 @@ from .state import (
     GrowthMeasurement,
     LabState,
     LigationReaction,
+    MiniprepSample,
     PcrReaction,
     PlatedSample,
     PreparedPlate,
@@ -30,6 +31,7 @@ from .stochastic import (
     load_gibson_parameters,
     load_golden_gate_parameters,
     load_growth_parameters,
+    load_miniprep_parameters,
     load_pcr_parameters,
     load_screening_parameters,
     sample_poisson,
@@ -47,6 +49,8 @@ _GOLDEN_GATE_PARAMETERS_PATH = Path(__file__).resolve().parents[2] / "data" / "p
 _GOLDEN_GATE_BUNDLE = None
 _GIBSON_PARAMETERS_PATH = Path(__file__).resolve().parents[2] / "data" / "parameters" / "gibson.json"
 _GIBSON_BUNDLE = None
+_MINIPREP_PARAMETERS_PATH = Path(__file__).resolve().parents[2] / "data" / "parameters" / "miniprep.json"
+_MINIPREP_BUNDLE = None
 
 
 def _growth_bundle():
@@ -89,6 +93,13 @@ def _gibson_bundle():
     if _GIBSON_BUNDLE is None:
         _GIBSON_BUNDLE = load_gibson_parameters(_GIBSON_PARAMETERS_PATH)
     return _GIBSON_BUNDLE
+
+
+def _miniprep_bundle():
+    global _MINIPREP_BUNDLE
+    if _MINIPREP_BUNDLE is None:
+        _MINIPREP_BUNDLE = load_miniprep_parameters(_MINIPREP_PARAMETERS_PATH)
+    return _MINIPREP_BUNDLE
 
 
 def _normalize_choice(value: str) -> str:
@@ -1767,4 +1778,121 @@ def transform_gibson(
         "notes": notes,
     }
     state.log_event("transform_gibson", payload)
+    return payload
+
+
+def perform_miniprep(
+    state: LabState,
+    culture_volume_ml: float,
+    lysis_buffer_sequence: str,
+    lysis_duration_min: int,
+    purification_method: str,
+    elution_volume_ul: float,
+) -> Dict[str, object]:
+    """Simulate a single-pass plasmid miniprep (alkaline lysis + silica column)."""
+    bundle = _miniprep_bundle()
+    optimal_volume = bundle.value("culture_volume_ml_optimal")
+    max_lysis = bundle.integer("lysis_duration_minutes_max")
+    min_elution = bundle.integer("elution_volume_ul_min")
+    canonical_buffers = bundle.text("canonical_lysis_buffer_sequence")
+    accepted_methods = {_normalize_choice(m) for m in bundle.choices("accepted_purification_methods")}
+    a260_target_min, a260_target_max = bundle.number_list("target_a260_a280_range")
+
+    notes: List[str] = []
+    status = "prepared"
+    purity_multiplier = 1.0
+    yield_multiplier = 1.0
+
+    normalized_buffers = (
+        lysis_buffer_sequence.replace(" ", "").replace("->", ",").replace("/", ",").lower()
+    )
+    if _normalize_choice(normalized_buffers) != _normalize_choice(canonical_buffers):
+        status = "wrong_buffer_sequence"
+        notes.append(
+            "Lysis buffer sequence '{}' does not match the canonical alkaline lysis order '{}'".format(
+                lysis_buffer_sequence, canonical_buffers
+            )
+        )
+        purity_multiplier *= 0.5
+        yield_multiplier *= 0.4
+
+    if int(lysis_duration_min) > max_lysis:
+        notes.append(
+            "Lysis duration {} min exceeds the {} min maximum; genomic DNA contamination is likely.".format(
+                int(lysis_duration_min), max_lysis
+            )
+        )
+        if status == "prepared":
+            status = "overlysis_genomic_contamination"
+        purity_multiplier *= 0.6
+
+    if int(lysis_duration_min) < 1:
+        notes.append("Lysis duration is too short; lysis is likely incomplete.")
+        yield_multiplier *= 0.3
+
+    normalized_method = _normalize_choice(purification_method)
+    if normalized_method not in accepted_methods:
+        if status == "prepared":
+            status = "wrong_purification_method"
+        notes.append(
+            "Purification method '{}' is not an accepted miniprep method.".format(purification_method)
+        )
+        purity_multiplier *= 0.5
+        yield_multiplier *= 0.5
+
+    if float(elution_volume_ul) < min_elution:
+        notes.append(
+            "Elution volume {:.0f} uL is below the {} uL minimum; matrix carryover and poor recovery are likely.".format(
+                float(elution_volume_ul), min_elution
+            )
+        )
+        yield_multiplier *= 0.5
+
+    if float(culture_volume_ml) < 1.0 or float(culture_volume_ml) > 10.0:
+        notes.append(
+            "Culture volume {:.1f} mL is outside the 1-10 mL recommended range for a standard miniprep.".format(
+                float(culture_volume_ml)
+            )
+        )
+        yield_multiplier *= 0.6
+
+    base_yield_ug = 10.0 * (float(culture_volume_ml) / optimal_volume)
+    total_yield_ug = base_yield_ug * yield_multiplier
+    final_concentration_ng_ul = (total_yield_ug * 1000.0) / max(float(elution_volume_ul), 1.0)
+
+    target_center = (a260_target_min + a260_target_max) / 2.0
+    a260_a280_ratio = target_center * purity_multiplier
+    a260_a280_ratio = max(1.2, min(2.3, float(a260_a280_ratio)))
+
+    miniprep_id = state.next_miniprep_id()
+    sample = MiniprepSample(
+        miniprep_id=miniprep_id,
+        culture_volume_ml=float(culture_volume_ml),
+        lysis_buffer_sequence=lysis_buffer_sequence,
+        lysis_duration_min=int(lysis_duration_min),
+        purification_method=purification_method,
+        elution_volume_ul=float(elution_volume_ul),
+        final_concentration_ng_ul=float(final_concentration_ng_ul),
+        a260_a280_ratio=float(a260_a280_ratio),
+        total_yield_ug=float(total_yield_ug),
+        status=status,
+        notes=list(notes),
+    )
+    state.miniprep_samples[miniprep_id] = sample
+    payload = {
+        "status": status,
+        "miniprep_id": miniprep_id,
+        "culture_volume_ml": float(culture_volume_ml),
+        "lysis_buffer_sequence": lysis_buffer_sequence,
+        "lysis_buffer_sequence_normalized": _normalize_choice(normalized_buffers),
+        "lysis_duration_min": int(lysis_duration_min),
+        "purification_method": purification_method,
+        "purification_method_normalized": normalized_method,
+        "elution_volume_ul": float(elution_volume_ul),
+        "final_concentration_ng_ul": round(float(final_concentration_ng_ul), 1),
+        "a260_a280_ratio": round(float(a260_a280_ratio), 2),
+        "total_yield_ug": round(float(total_yield_ug), 1),
+        "notes": list(notes),
+    }
+    state.log_event("perform_miniprep", payload)
     return payload

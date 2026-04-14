@@ -22,6 +22,7 @@ from src.environment.operations import (
     list_gibson_substrates,
     list_golden_gate_substrates,
     measure_od600,
+    perform_miniprep,
     plate,
     prepare_media,
     restriction_digest,
@@ -38,6 +39,7 @@ from src.environment.stochastic import (
     load_cloning_parameters,
     load_gibson_parameters,
     load_golden_gate_parameters,
+    load_miniprep_parameters,
     load_screening_parameters,
 )
 from src.tools.lab_tools import (
@@ -754,3 +756,58 @@ def test_transform_gibson_produces_culture():
     tx = transform_gibson(state=state, gibson_id=result["gibson_id"])
     assert tx["status"] == "transformed"
     assert tx["gibson_id"] == result["gibson_id"]
+
+
+MINIPREP_PARAMETERS_PATH = (
+    Path(__file__).resolve().parents[1] / "data" / "parameters" / "miniprep.json"
+)
+
+
+def test_miniprep_parameter_bundle_exposes_required_values():
+    bundle = load_miniprep_parameters(MINIPREP_PARAMETERS_PATH)
+    assert bundle.text("canonical_lysis_buffer_sequence") == "P1,P2,P3"
+    assert bundle.value("culture_volume_ml_optimal") == pytest.approx(5.0)
+    assert bundle.integer("lysis_duration_minutes_max") == 5
+    assert bundle.integer("elution_volume_ul_min") == 30
+    assert any("silica" in m.lower() for m in bundle.choices("accepted_purification_methods"))
+
+
+def test_miniprep_happy_path():
+    state = create_lab_state(sample_id="miniprep-happy", seed=1)
+    result = perform_miniprep(
+        state=state,
+        culture_volume_ml=5.0,
+        lysis_buffer_sequence="P1,P2,P3",
+        lysis_duration_min=3,
+        purification_method="silica column",
+        elution_volume_ul=50,
+    )
+    assert result["status"] == "prepared"
+    assert 1.8 <= result["a260_a280_ratio"] <= 2.0
+    assert result["total_yield_ug"] > 5.0
+
+
+def test_miniprep_wrong_buffer_sequence_flagged():
+    state = create_lab_state(sample_id="miniprep-wrong-buffer", seed=1)
+    result = perform_miniprep(
+        state=state,
+        culture_volume_ml=5.0,
+        lysis_buffer_sequence="P3,P2,P1",
+        lysis_duration_min=3,
+        purification_method="silica column",
+        elution_volume_ul=50,
+    )
+    assert result["status"] == "wrong_buffer_sequence"
+
+
+def test_miniprep_overlysis_flagged():
+    state = create_lab_state(sample_id="miniprep-overlysis", seed=1)
+    result = perform_miniprep(
+        state=state,
+        culture_volume_ml=5.0,
+        lysis_buffer_sequence="P1,P2,P3",
+        lysis_duration_min=15,
+        purification_method="silica column",
+        elution_volume_ul=50,
+    )
+    assert result["status"] == "overlysis_genomic_contamination"
