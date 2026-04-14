@@ -1,0 +1,170 @@
+{
+  "task_id": "gibson_01",
+  "decision_points": [
+    {
+      "id": "gibson_temperature_50",
+      "description": "Isothermal incubation at 50 C (Gibson optimum).",
+      "minimum_tier_required": "Silver",
+      "matcher": {
+        "tool_name": "gibson_assembly",
+        "argument": "temperature_c",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "range",
+        "min": 48.0,
+        "max": 52.0
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "authors": "Gibson DG, Young L, Chuang RY, Venter JC, Hutchison CA, Smith HO",
+          "title": "Enzymatic assembly of DNA molecules up to several hundred kilobases",
+          "journal": "Nature Methods",
+          "year": 2009,
+          "doi": "10.1038/nmeth.1318",
+          "canonical_url": "https://doi.org/10.1038/nmeth.1318",
+          "tier": "Silver",
+          "tier_justification": "Gibson 2009 establishes 50 C as optimal."
+        }
+      ]
+    },
+    {
+      "id": "gibson_duration_min_15",
+      "description": "Incubation duration at least 15 min (NEB recommendation for 2-3 fragments).",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "gibson_assembly",
+        "argument": "duration_minutes",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "range",
+        "min": 15,
+        "max": 240
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "NEBuilder HiFi DNA Assembly Master Mix Protocol",
+          "canonical_url": "https://www.neb.com/en-us/protocols/2014/11/26/gibson-assembly-protocol-e5510",
+          "tier": "Bronze",
+          "tier_justification": "NEB protocol recommends 15 min at 50 C for 2-3 fragments."
+        }
+      ]
+    },
+    {
+      "id": "gibson_overlap_at_least_20",
+      "description": "Homology overlap length at least 20 bp.",
+      "minimum_tier_required": "Silver",
+      "matcher": {
+        "tool_name": "gibson_assembly",
+        "argument": "overlap_length_bp",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "range",
+        "min": 20,
+        "max": 80
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "authors": "Gibson DG, Young L, Chuang RY, Venter JC, Hutchison CA, Smith HO",
+          "title": "Enzymatic assembly of DNA molecules up to several hundred kilobases",
+          "journal": "Nature Methods",
+          "year": 2009,
+          "doi": "10.1038/nmeth.1318",
+          "canonical_url": "https://doi.org/10.1038/nmeth.1318",
+          "tier": "Silver",
+          "tier_justification": "Gibson 2009 reports efficient assembly with 20-40 bp overlaps."
+        }
+      ]
+    },
+    {
+      "id": "gibson_uses_two_fragments",
+      "description": "Exactly two fragments (backbone + insert) are submitted.",
+      "minimum_tier_required": "Silver",
+      "matcher": {
+        "tool_name": "gibson_assembly",
+        "argument": "fragment_count",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": 2
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "authors": "Gibson DG, Young L, Chuang RY, Venter JC, Hutchison CA, Smith HO",
+          "title": "Enzymatic assembly of DNA molecules up to several hundred kilobases",
+          "journal": "Nature Methods",
+          "year": 2009,
+          "doi": "10.1038/nmeth.1318",
+          "canonical_url": "https://doi.org/10.1038/nmeth.1318",
+          "tier": "Silver",
+          "tier_justification": "Gibson-01 is a 2-fragment assembly as validated in the original paper."
+        }
+      ]
+    },
+    {
+      "id": "gibson_ampicillin_selection_100",
+      "description": "Selection plates use the vendor-recommended 100 ug/mL ampicillin.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "prepare_media",
+        "argument": "antibiotic_concentration_ug_ml",
+        "filters": {
+          "antibiotic": "ampicillin"
+        },
+        "occurrence": "first"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": 100
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "NEB 5-alpha Competent E. coli",
+          "canonical_url": "https://www.neb.com/en-us/products/c2987-neb-5-alpha-competent-e-coli-high-efficiency",
+          "tier": "Bronze",
+          "tier_justification": "NEB product page specifying 100 ug/mL ampicillin."
+        }
+      ]
+    }
+  ],
+  "failure_diagnosis_map": {
+    "wrong_master_mix": {
+      "canonical_diagnosis": "An unrecognised master mix was used; Gibson requires a mix containing T5 exonuclease, a high-fidelity polymerase (Phusion), and a thermostable ligase (Taq).",
+      "acceptable_variants": [
+        "The chosen master mix does not contain the Gibson enzyme trio.",
+        "Gibson needs T5 exonuclease + Phusion polymerase + Taq ligase; the chosen mix is not compatible."
+      ],
+      "judge_strategy": "substring_any",
+      "minimum_tier_required": "Silver",
+      "citations": [
+        {
+          "authors": "Gibson DG, Young L, Chuang RY, Venter JC, Hutchison CA, Smith HO",
+          "title": "Enzymatic assembly of DNA molecules up to several hundred kilobases",
+          "journal": "Nature Methods",
+          "year": 2009,
+          "doi": "10.1038/nmeth.1318",
+          "canonical_url": "https://doi.org/10.1038/nmeth.1318",
+          "tier": "Silver",
+          "tier_justification": "Gibson 2009 defines the enzyme trio required for the assembly."
+        }
+      ]
+    }
+  },
+  "efficiency_reference": {
+    "optimal_tool_calls": 6,
+    "max_reasonable_tool_calls": 14,
+    "reagent_budget": {
+      "gibson_reactions": 1,
+      "selection_plates": 1,
+      "competent_cell_aliquots": 1
+    }
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "task_id": "gibson_01",
+  "task_title": "Isothermal Gibson overlap assembly of a two-fragment construct",
+  "source": "LabCraft Gibson-01",
+  "num_errors_introduced": 0,
+  "total_leaf_nodes": 8,
+  "rubric": {
+    "name": "Task Evaluation",
+    "weight": 1.0,
+    "is_leaf": false,
+    "children": [
+      {
+        "name": "Task Success",
+        "weight": 0.4,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Reports master mix, temperature, duration, overlap, transformants, and interpretation",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "task_success",
+            "requirement": "Final answer contains every required field, assembly completed successfully, transformants reported match the simulator.",
+            "grading_notes": "Measured by score_gibson_task_success."
+          }
+        ]
+      },
+      {
+        "name": "Decision Quality",
+        "weight": 0.3,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Incubates at 50 C",
+            "weight": 0.2,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Temperature in 48 - 52 C.",
+            "grading_notes": "Measured from gibson_assembly.temperature_c."
+          },
+          {
+            "name": "Incubates at least 15 min",
+            "weight": 0.2,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Duration at least 15 min.",
+            "grading_notes": "Measured from gibson_assembly.duration_minutes."
+          },
+          {
+            "name": "Overlap at least 20 bp",
+            "weight": 0.2,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "overlap_length_bp at least 20.",
+            "grading_notes": "Measured from gibson_assembly.overlap_length_bp."
+          },
+          {
+            "name": "Uses two fragments",
+            "weight": 0.2,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "fragment_count equals 2.",
+            "grading_notes": "Measured from gibson_assembly.fragment_count."
+          },
+          {
+            "name": "Uses 100 ug/mL ampicillin",
+            "weight": 0.2,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Selection plates use 100 ug/mL ampicillin.",
+            "grading_notes": "Measured from prepare_media arguments."
+          }
+        ]
+      },
+      {
+        "name": "Troubleshooting",
+        "weight": 0.2,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Diagnoses wrong master mix when triggered",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "troubleshooting",
+            "requirement": "If assembly reports wrong_master_mix, final answer explains the Gibson enzyme-trio requirement.",
+            "grading_notes": "Defaults to 1.0 if no failure triggered."
+          }
+        ]
+      },
+      {
+        "name": "Efficiency",
+        "weight": 0.1,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Uses a reasonable number of tool calls",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "efficiency",
+            "requirement": "Stays within the reference tool-call budget.",
+            "grading_notes": "Full credit at or under optimal_tool_calls."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -12,12 +12,14 @@ from pathlib import Path
 from src.environment.operations import (
     count_colonies,
     fit_growth_curve,
+    gibson_assembly,
     golden_gate_assembly,
     incubate,
     inoculate_growth,
     inspect_screening_plate,
     ligate,
     list_cloning_substrates,
+    list_gibson_substrates,
     list_golden_gate_substrates,
     measure_od600,
     plate,
@@ -28,11 +30,13 @@ from src.environment.operations import (
     run_pcr,
     transform,
     transform_assembly,
+    transform_gibson,
     transform_ligation,
 )
 from src.environment.state import create_lab_state
 from src.environment.stochastic import (
     load_cloning_parameters,
+    load_gibson_parameters,
     load_golden_gate_parameters,
     load_screening_parameters,
 )
@@ -684,3 +688,69 @@ def test_transform_assembly_produces_culture():
     assert result["status"] == "transformed"
     assert result["assembly_id"] == assembly["assembly_id"]
     assert result["effective_assembly_efficiency"] > 0.5
+
+
+GIBSON_PARAMETERS_PATH = (
+    Path(__file__).resolve().parents[1] / "data" / "parameters" / "gibson.json"
+)
+
+
+def test_gibson_parameter_bundle_exposes_required_values():
+    bundle = load_gibson_parameters(GIBSON_PARAMETERS_PATH)
+    assert bundle.value("optimal_temperature_c") == pytest.approx(50.0)
+    assert bundle.integer("minimum_duration_minutes_two_fragments") == 15
+    assert bundle.integer("minimum_overlap_length_bp") == 20
+    assert any("NEBuilder" in m or "Gibson" in m for m in bundle.choices("accepted_master_mixes"))
+
+
+def test_list_gibson_substrates_returns_two_fragments():
+    state = create_lab_state(sample_id="gibson-list", seed=1)
+    observation = list_gibson_substrates(state=state)
+    assert observation["status"] == "gibson_substrates_ready"
+    fragment_ids = {f["fragment_id"] for f in observation["fragments"]}
+    assert {"gibson_backbone_linear", "gibson_insert_pcr"} == fragment_ids
+
+
+def test_gibson_assembly_happy_path():
+    state = create_lab_state(sample_id="gibson-happy", seed=1)
+    list_gibson_substrates(state=state)
+    result = gibson_assembly(
+        state=state,
+        fragment_ids=["gibson_backbone_linear", "gibson_insert_pcr"],
+        master_mix_name="Gibson Assembly Master Mix",
+        temperature_c=50.0,
+        duration_minutes=15,
+        overlap_length_bp=20,
+    )
+    assert result["status"] == "assembled"
+    assert result["output_fragment_id"] is not None
+
+
+def test_gibson_wrong_master_mix_is_flagged():
+    state = create_lab_state(sample_id="gibson-wrong-mix", seed=1)
+    list_gibson_substrates(state=state)
+    result = gibson_assembly(
+        state=state,
+        fragment_ids=["gibson_backbone_linear", "gibson_insert_pcr"],
+        master_mix_name="T4 DNA ligase buffer",
+        temperature_c=50.0,
+        duration_minutes=15,
+        overlap_length_bp=20,
+    )
+    assert result["status"] == "wrong_master_mix"
+
+
+def test_transform_gibson_produces_culture():
+    state = create_lab_state(sample_id="gibson-transform", seed=42)
+    list_gibson_substrates(state=state)
+    result = gibson_assembly(
+        state=state,
+        fragment_ids=["gibson_backbone_linear", "gibson_insert_pcr"],
+        master_mix_name="NEBuilder HiFi",
+        temperature_c=50.0,
+        duration_minutes=30,
+        overlap_length_bp=25,
+    )
+    tx = transform_gibson(state=state, gibson_id=result["gibson_id"])
+    assert tx["status"] == "transformed"
+    assert tx["gibson_id"] == result["gibson_id"]

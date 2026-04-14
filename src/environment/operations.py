@@ -13,6 +13,7 @@ from .state import (
     DigestReaction,
     DnaFragment,
     GelRun,
+    GibsonReaction,
     GrowthCulture,
     GrowthMeasurement,
     LabState,
@@ -26,6 +27,7 @@ from .state import (
 )
 from .stochastic import (
     load_cloning_parameters,
+    load_gibson_parameters,
     load_golden_gate_parameters,
     load_growth_parameters,
     load_pcr_parameters,
@@ -43,6 +45,8 @@ _CLONING_PARAMETERS_PATH = Path(__file__).resolve().parents[2] / "data" / "param
 _CLONING_BUNDLE = None
 _GOLDEN_GATE_PARAMETERS_PATH = Path(__file__).resolve().parents[2] / "data" / "parameters" / "golden_gate.json"
 _GOLDEN_GATE_BUNDLE = None
+_GIBSON_PARAMETERS_PATH = Path(__file__).resolve().parents[2] / "data" / "parameters" / "gibson.json"
+_GIBSON_BUNDLE = None
 
 
 def _growth_bundle():
@@ -78,6 +82,13 @@ def _golden_gate_bundle():
     if _GOLDEN_GATE_BUNDLE is None:
         _GOLDEN_GATE_BUNDLE = load_golden_gate_parameters(_GOLDEN_GATE_PARAMETERS_PATH)
     return _GOLDEN_GATE_BUNDLE
+
+
+def _gibson_bundle():
+    global _GIBSON_BUNDLE
+    if _GIBSON_BUNDLE is None:
+        _GIBSON_BUNDLE = load_gibson_parameters(_GIBSON_PARAMETERS_PATH)
+    return _GIBSON_BUNDLE
 
 
 def _normalize_choice(value: str) -> str:
@@ -1510,4 +1521,250 @@ def transform_assembly(
         "notes": notes,
     }
     state.log_event("transform_assembly", payload)
+    return payload
+
+
+def _ensure_gibson_substrates(state: LabState) -> None:
+    """Seed the two Gibson fragments (linearised backbone + PCR insert) with homology overlaps."""
+    if state.gibson_substrates_initialized:
+        return
+    bundle = _gibson_bundle()
+    insert_length = bundle.integer("insert_length_bp")
+    overlap = bundle.integer("minimum_overlap_length_bp")
+    backbone = DnaFragment(
+        fragment_id="gibson_backbone_linear",
+        name="Linearised Gibson destination vector (20 bp homology overhangs)",
+        length_bp=3200,
+        concentration_ng_ul=40.0,
+        is_circular=False,
+        end_5_prime="homology_overlap_upstream_{}bp".format(overlap),
+        end_3_prime="homology_overlap_downstream_{}bp".format(overlap),
+        recognition_sites=[],
+        notes=["Linear vector with {} bp homology overhangs at each end.".format(overlap)],
+    )
+    insert = DnaFragment(
+        fragment_id="gibson_insert_pcr",
+        name="PCR insert with 20 bp Gibson homology overhangs",
+        length_bp=insert_length,
+        concentration_ng_ul=20.0,
+        is_circular=False,
+        end_5_prime="homology_overlap_upstream_{}bp".format(overlap),
+        end_3_prime="homology_overlap_downstream_{}bp".format(overlap),
+        recognition_sites=[],
+        notes=["PCR product with {} bp homology overhangs matching the linearised backbone.".format(overlap)],
+    )
+    state.dna_fragments[backbone.fragment_id] = backbone
+    state.dna_fragments[insert.fragment_id] = insert
+    state.gibson_substrates_initialized = True
+
+
+def list_gibson_substrates(state: LabState) -> Dict[str, object]:
+    """Return the two Gibson starting fragments."""
+    _ensure_gibson_substrates(state)
+    fragments = [
+        {
+            "fragment_id": fragment.fragment_id,
+            "name": fragment.name,
+            "length_bp": int(fragment.length_bp),
+            "concentration_ng_ul": float(fragment.concentration_ng_ul),
+            "end_5_prime": fragment.end_5_prime,
+            "end_3_prime": fragment.end_3_prime,
+        }
+        for fragment in state.dna_fragments.values()
+        if fragment.fragment_id.startswith("gibson_")
+    ]
+    payload = {
+        "status": "gibson_substrates_ready",
+        "fragments": fragments,
+        "expected_fragment_count": 2,
+    }
+    state.log_event("list_gibson_substrates", payload)
+    return payload
+
+
+def gibson_assembly(
+    state: LabState,
+    fragment_ids: List[str],
+    master_mix_name: str,
+    temperature_c: float,
+    duration_minutes: int,
+    overlap_length_bp: int = 20,
+) -> Dict[str, object]:
+    """Simulate a Gibson isothermal overlap assembly."""
+    _ensure_gibson_substrates(state)
+    bundle = _gibson_bundle()
+    accepted_mixes = {_normalize_choice(m) for m in bundle.choices("accepted_master_mixes")}
+    optimal_temp = bundle.value("optimal_temperature_c")
+    min_duration = bundle.integer("minimum_duration_minutes_two_fragments")
+    min_overlap = bundle.integer("minimum_overlap_length_bp")
+    base_efficiency = bundle.value("base_assembly_efficiency")
+
+    for fragment_id in fragment_ids:
+        if fragment_id not in state.dna_fragments:
+            raise ValueError(
+                "Unknown fragment_id '{:s}'. Available: {:s}".format(
+                    fragment_id, ", ".join(sorted(state.dna_fragments))
+                )
+            )
+
+    notes: List[str] = []
+    status = "assembled"
+
+    normalized_mix = _normalize_choice(master_mix_name)
+    mix_ok = any(normalized_mix == a or a in normalized_mix or normalized_mix in a for a in accepted_mixes)
+    if not mix_ok:
+        status = "wrong_master_mix"
+        notes.append(
+            "Master mix '{}' is not a recognised Gibson master mix (T5 exonuclease + Phusion polymerase + Taq ligase).".format(
+                master_mix_name
+            )
+        )
+
+    efficiency_multiplier = 1.0
+    if abs(float(temperature_c) - optimal_temp) > 2.0:
+        notes.append("Incubation temperature deviated from the 50 C Gibson optimum.")
+        efficiency_multiplier *= 0.4
+    if int(duration_minutes) < min_duration:
+        notes.append(
+            "Incubation duration {:d} min is below the recommended minimum {:d} min.".format(
+                int(duration_minutes), min_duration
+            )
+        )
+        efficiency_multiplier *= 0.5
+    if int(overlap_length_bp) < min_overlap:
+        notes.append(
+            "Overlap length {:d} bp is below the recommended minimum {:d} bp.".format(
+                int(overlap_length_bp), min_overlap
+            )
+        )
+        efficiency_multiplier *= 0.3
+
+    if status == "assembled":
+        effective_efficiency = base_efficiency * efficiency_multiplier
+    else:
+        effective_efficiency = base_efficiency * 0.08
+
+    effective_efficiency = max(0.0, min(1.0, float(effective_efficiency)))
+    expected_transformant_yield = 500.0 * efficiency_multiplier if status == "assembled" else 40.0
+
+    gibson_id = state.next_gibson_id()
+    output_fragment_id = None
+    if status == "assembled":
+        output_fragment_id = state.next_fragment_id()
+        total_length = sum(state.dna_fragments[f].length_bp for f in fragment_ids)
+        output = DnaFragment(
+            fragment_id=output_fragment_id,
+            name="Gibson assembled construct ({})".format(gibson_id),
+            length_bp=int(total_length),
+            concentration_ng_ul=15.0,
+            is_circular=True,
+            end_5_prime="circular",
+            end_3_prime="circular",
+            recognition_sites=[],
+            notes=["Circular Gibson-assembled construct."],
+        )
+        state.dna_fragments[output_fragment_id] = output
+
+    reaction = GibsonReaction(
+        gibson_id=gibson_id,
+        fragment_ids=list(fragment_ids),
+        master_mix_name=master_mix_name,
+        temperature_c=float(temperature_c),
+        duration_minutes=int(duration_minutes),
+        overlap_length_bp=int(overlap_length_bp),
+        status=status,
+        effective_assembly_efficiency=float(effective_efficiency),
+        expected_transformant_yield=float(expected_transformant_yield),
+        output_fragment_id=output_fragment_id,
+        notes=list(notes),
+    )
+    state.gibson_reactions[gibson_id] = reaction
+    payload = {
+        "status": status,
+        "gibson_id": gibson_id,
+        "fragment_ids": list(fragment_ids),
+        "fragment_count": len(fragment_ids),
+        "master_mix_name": master_mix_name,
+        "master_mix_normalized": normalized_mix,
+        "temperature_c": float(temperature_c),
+        "duration_minutes": int(duration_minutes),
+        "overlap_length_bp": int(overlap_length_bp),
+        "output_fragment_id": output_fragment_id,
+        "effective_assembly_efficiency": float(effective_efficiency),
+        "expected_transformant_yield": float(expected_transformant_yield),
+        "notes": list(notes),
+    }
+    state.log_event("gibson_assembly", payload)
+    return payload
+
+
+def _resolve_gibson_id(state: LabState, gibson_id: str) -> str:
+    requested = str(gibson_id).strip()
+    if requested in state.gibson_reactions:
+        return requested
+    suffix_match = re.search(r"(\d+)$", requested)
+    if suffix_match:
+        canonical = "gibson_{:03d}".format(int(suffix_match.group(1)))
+        if canonical in state.gibson_reactions:
+            return canonical
+    available = sorted(state.gibson_reactions)
+    raise ValueError(
+        "Unknown gibson_id '{:s}'. Available: {:s}".format(
+            requested, ", ".join(available) if available else "none"
+        )
+    )
+
+
+def transform_gibson(
+    state: LabState,
+    gibson_id: str,
+    heat_shock_seconds: int = 30,
+    recovery_minutes: int = 60,
+    outgrowth_media: str = "SOC",
+    shaking: bool = True,
+    ice_incubation_minutes: int = 30,
+) -> Dict[str, object]:
+    """Transform a Gibson-assembled construct into competent E. coli."""
+    resolved_id = _resolve_gibson_id(state, gibson_id)
+    gibson = state.gibson_reactions[resolved_id]
+
+    expected_yield = float(gibson.expected_transformant_yield)
+    if int(heat_shock_seconds) != int(
+        state.parameters.get("heat_shock_duration_seconds")["parameters"]["optimal"]
+    ):
+        expected_yield *= 0.5
+    if outgrowth_media.upper() != "SOC":
+        expected_yield *= 0.5
+    if not shaking:
+        expected_yield *= 0.7
+
+    culture_id = state.next_culture_id()
+    notes = list(gibson.notes)
+    culture = TransformationCulture(
+        culture_id=culture_id,
+        plasmid_mass_pg=float(expected_yield * 1000.0),
+        base_efficiency_cfu_per_ug=state.base_efficiency_cfu_per_ug,
+        adjusted_efficiency_cfu_per_ug=state.base_efficiency_cfu_per_ug,
+        recovery_minutes=int(recovery_minutes),
+        outgrowth_media=outgrowth_media,
+        shaking=bool(shaking),
+        heat_shock_seconds=int(heat_shock_seconds),
+        ice_incubation_minutes=int(ice_incubation_minutes),
+        expected_total_transformants=expected_yield,
+        notes=notes,
+    )
+    state.cultures[culture_id] = culture
+    payload = {
+        "status": "transformed",
+        "culture_id": culture_id,
+        "gibson_id": resolved_id,
+        "gibson_status": gibson.status,
+        "effective_assembly_efficiency": float(gibson.effective_assembly_efficiency),
+        "expected_transformants": float(expected_yield),
+        "heat_shock_seconds": int(heat_shock_seconds),
+        "recovery_minutes": int(recovery_minutes),
+        "outgrowth_media": outgrowth_media,
+        "notes": notes,
+    }
+    state.log_event("transform_gibson", payload)
     return payload

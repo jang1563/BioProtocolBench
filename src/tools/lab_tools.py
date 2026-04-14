@@ -10,12 +10,14 @@ from src.environment.observations import render_observation
 from src.environment.operations import (
     count_colonies,
     fit_growth_curve,
+    gibson_assembly,
     golden_gate_assembly,
     incubate,
     inspect_screening_plate,
     inoculate_growth,
     ligate,
     list_cloning_substrates,
+    list_gibson_substrates,
     list_golden_gate_substrates,
     measure_od600,
     plate,
@@ -26,6 +28,7 @@ from src.environment.operations import (
     run_pcr,
     transform,
     transform_assembly,
+    transform_gibson,
     transform_ligation,
 )
 from src.environment.state import reset_lab_state
@@ -345,6 +348,57 @@ async def transform_assembly_call(
         )
     except ValueError as exc:
         return _tool_error_observation("transform_assembly", exc)
+    return render_observation(payload)
+
+
+async def list_gibson_substrates_call() -> str:
+    state = _current_state()
+    return render_observation(list_gibson_substrates(state=state))
+
+
+async def gibson_assembly_call(
+    fragment_ids: list[str],
+    master_mix_name: str,
+    temperature_c: float,
+    duration_minutes: int,
+    overlap_length_bp: int = 20,
+) -> str:
+    state = _current_state()
+    try:
+        payload = gibson_assembly(
+            state=state,
+            fragment_ids=fragment_ids,
+            master_mix_name=master_mix_name,
+            temperature_c=temperature_c,
+            duration_minutes=duration_minutes,
+            overlap_length_bp=overlap_length_bp,
+        )
+    except ValueError as exc:
+        return _tool_error_observation("gibson_assembly", exc)
+    return render_observation(payload)
+
+
+async def transform_gibson_call(
+    gibson_id: str,
+    heat_shock_seconds: int = 30,
+    recovery_minutes: int = 60,
+    outgrowth_media: str = "SOC",
+    shaking: bool = True,
+    ice_incubation_minutes: int = 30,
+) -> str:
+    state = _current_state()
+    try:
+        payload = transform_gibson(
+            state=state,
+            gibson_id=gibson_id,
+            heat_shock_seconds=heat_shock_seconds,
+            recovery_minutes=recovery_minutes,
+            outgrowth_media=outgrowth_media,
+            shaking=shaking,
+            ice_incubation_minutes=ice_incubation_minutes,
+        )
+    except ValueError as exc:
+        return _tool_error_observation("transform_gibson", exc)
     return render_observation(payload)
 
 
@@ -907,3 +961,94 @@ def transform_assembly_tool():
         return execute
 
     return transform_assembly_tool_impl()
+
+
+def list_gibson_substrates_tool():
+    from inspect_ai.tool import tool
+
+    @tool(name="list_gibson_substrates")
+    def list_gibson_substrates_tool_impl():
+        """List the two Gibson starting fragments (linearised backbone + PCR insert)."""
+
+        async def execute() -> str:
+            """Return the two Gibson substrates and their homology overhang lengths."""
+            return await list_gibson_substrates_call()
+
+        return execute
+
+    return list_gibson_substrates_tool_impl()
+
+
+def gibson_assembly_tool():
+    from inspect_ai.tool import tool
+
+    @tool(name="gibson_assembly")
+    def gibson_assembly_tool_impl():
+        """Run a Gibson isothermal overlap assembly of two or more fragments."""
+
+        async def execute(
+            fragment_ids: list[str],
+            master_mix_name: str,
+            temperature_c: float,
+            duration_minutes: int,
+            overlap_length_bp: int = 20,
+        ) -> str:
+            """Run a Gibson assembly.
+
+            Args:
+                fragment_ids: Fragments to assemble (backbone + insert).
+                master_mix_name: Master mix name (e.g., "Gibson Assembly Master Mix" or "NEBuilder HiFi").
+                temperature_c: Isothermal incubation temperature (50 C optimal).
+                duration_minutes: Incubation duration (>= 15 min for 2-3 fragments).
+                overlap_length_bp: Homology overlap length in bp (>= 20 bp recommended).
+            """
+            return await gibson_assembly_call(
+                fragment_ids=fragment_ids,
+                master_mix_name=master_mix_name,
+                temperature_c=temperature_c,
+                duration_minutes=duration_minutes,
+                overlap_length_bp=overlap_length_bp,
+            )
+
+        return execute
+
+    return gibson_assembly_tool_impl()
+
+
+def transform_gibson_tool():
+    from inspect_ai.tool import tool
+
+    @tool(name="transform_gibson")
+    def transform_gibson_tool_impl():
+        """Transform a Gibson-assembled construct into competent E. coli."""
+
+        async def execute(
+            gibson_id: str,
+            heat_shock_seconds: int = 30,
+            recovery_minutes: int = 60,
+            outgrowth_media: str = "SOC",
+            shaking: bool = True,
+            ice_incubation_minutes: int = 30,
+        ) -> str:
+            """Transform a Gibson assembly into competent cells.
+
+            Args:
+                gibson_id: Gibson identifier from gibson_assembly.
+                heat_shock_seconds: Heat shock duration (30 s standard).
+                recovery_minutes: Post-shock outgrowth duration.
+                outgrowth_media: Outgrowth medium (SOC recommended).
+                shaking: Whether to shake during recovery.
+                ice_incubation_minutes: Pre-shock ice incubation time.
+            """
+            return await transform_gibson_call(
+                gibson_id=gibson_id,
+                heat_shock_seconds=heat_shock_seconds,
+                recovery_minutes=recovery_minutes,
+                outgrowth_media=outgrowth_media,
+                shaking=shaking,
+                ice_incubation_minutes=ice_incubation_minutes,
+            )
+
+        return execute
+
+    return transform_gibson_tool_impl()

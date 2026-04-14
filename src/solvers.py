@@ -278,3 +278,51 @@ def configure_golden_gate_sample():
         return state
 
     return solve
+
+
+def build_gibson_solver():
+    """Build the Gibson-01 solver chain with isothermal Gibson + transform + plate tools."""
+    from inspect_ai.agent import AgentPrompt, react
+
+    from .tools.lab_tools import (
+        count_colonies_tool,
+        gibson_assembly_tool,
+        list_gibson_substrates_tool,
+        plate_tool,
+        prepare_media_tool,
+        transform_gibson_tool,
+    )
+    from .tools.reference import check_safety_tool, lookup_reagent_tool
+
+    return react(
+        prompt=AgentPrompt(
+            instructions=LABCRAFT_SYSTEM_PROMPT,
+            assistant_prompt=(
+                "\nBe concise between tool calls. Inspect the Gibson substrates, set up "
+                "a Gibson assembly with an appropriate master mix (Gibson Assembly Master "
+                "Mix or NEBuilder HiFi) at 50 C for at least 15 min, transform the "
+                "construct, plate on LB + ampicillin, and count transformants.\n"
+            ),
+        ),
+        tools=[
+            lookup_reagent_tool(),
+            check_safety_tool(),
+            list_gibson_substrates_tool(),
+            gibson_assembly_tool(),
+            prepare_media_tool(),
+            transform_gibson_tool(),
+            plate_tool(),
+            count_colonies_tool(),
+        ],
+    )
+
+
+@solver
+def configure_gibson_sample():
+    """Initialize per-sample LabCraft state before the Gibson solver runs."""
+
+    async def solve(state, generate):
+        set_active_sample(state.sample_id)
+        return state
+
+    return solve

@@ -8,6 +8,8 @@ from pathlib import Path
 from src.trajectory_scorer import (
     score_clone_task_success,
     score_clone_trajectory,
+    score_gibson_task_success,
+    score_gibson_trajectory,
     score_golden_gate_task_success,
     score_golden_gate_trajectory,
     score_growth_task_success,
@@ -28,6 +30,9 @@ SCREEN_GROUND_TRUTH_PATH = Path(__file__).resolve().parents[1] / "task_data" / "
 CLONE_GROUND_TRUTH_PATH = Path(__file__).resolve().parents[1] / "task_data" / "clone_01" / "ground_truth.json"
 GOLDEN_GATE_GROUND_TRUTH_PATH = (
     Path(__file__).resolve().parents[1] / "task_data" / "golden_gate_01" / "ground_truth.json"
+)
+GIBSON_GROUND_TRUTH_PATH = (
+    Path(__file__).resolve().parents[1] / "task_data" / "gibson_01" / "ground_truth.json"
 )
 TARGET_MASSES = [10, 100, 1000, 10000]
 
@@ -983,3 +988,100 @@ def test_golden_gate_wrong_ligase_fails_decision_quality():
         ground_truth_path=str(GOLDEN_GATE_GROUND_TRUTH_PATH),
     )
     assert scores["decision_scores"]["uses_t4_dna_ligase"] == 0.0
+
+
+def _good_gibson_transcript():
+    gibson_call = {
+        "type": "tool_call",
+        "tool_name": "gibson_assembly",
+        "arguments": {
+            "gibson_id": "gibson_001",
+            "fragment_ids": ["gibson_backbone_linear", "gibson_insert_pcr"],
+            "fragment_count": 2,
+            "master_mix_name": "Gibson Assembly Master Mix",
+            "master_mix_normalized": "gibson assembly master mix",
+            "temperature_c": 50.0,
+            "duration_minutes": 15,
+            "overlap_length_bp": 20,
+            "output_fragment_id": "fragment_020",
+            "status": "assembled",
+            "effective_assembly_efficiency": 0.80,
+            "expected_transformant_yield": 500.0,
+        },
+    }
+    prepare = {
+        "type": "tool_call",
+        "tool_name": "prepare_media",
+        "arguments": {
+            "medium": "LB agar",
+            "antibiotic": "ampicillin",
+            "antibiotic_concentration_ug_ml": 100,
+            "plate_count": 1,
+        },
+    }
+    transform_call = {
+        "type": "tool_call",
+        "tool_name": "transform_gibson",
+        "arguments": {
+            "gibson_id": "gibson_001",
+            "culture_id": "culture_001",
+            "status": "transformed",
+        },
+    }
+    plate_call = {
+        "type": "tool_call",
+        "tool_name": "plate",
+        "arguments": {
+            "culture_id": "culture_001",
+            "plate_id": "plate_001",
+            "dilution_factor": 1.0,
+            "volume_ul": 100,
+        },
+    }
+    count = {
+        "type": "tool_call",
+        "tool_name": "count_colonies",
+        "arguments": {
+            "plating_id": "plating_001",
+            "observed_colonies": 250,
+            "status": "plated",
+        },
+    }
+    return [gibson_call, prepare, transform_call, plate_call, count]
+
+
+def _good_gibson_answer() -> str:
+    return (
+        "Assembly method: Gibson\n"
+        "Master mix: Gibson Assembly Master Mix\n"
+        "Temperature: 50 C\n"
+        "Duration: 15 min\n"
+        "Fragment count: 2\n"
+        "Overlap length: 20 bp\n"
+        "Transformants observed: 250\n"
+        "Interpretation: Gibson assembly completed successfully."
+    )
+
+
+def test_good_gibson_trajectory_scores_high():
+    scores = score_gibson_trajectory(
+        final_answer=_good_gibson_answer(),
+        transcript=_good_gibson_transcript(),
+        ground_truth_path=str(GIBSON_GROUND_TRUTH_PATH),
+    )
+    assert scores["task_success"] == 1.0
+    assert scores["decision_quality"] == 1.0
+    assert scores["overall"] >= 0.9
+
+
+def test_gibson_wrong_master_mix_triggers_troubleshooting_requirement():
+    transcript = _good_gibson_transcript()
+    transcript[0]["arguments"]["master_mix_normalized"] = "t4 dna ligase buffer"
+    transcript[0]["arguments"]["status"] = "wrong_master_mix"
+    scores = score_gibson_trajectory(
+        final_answer=_good_gibson_answer(),
+        transcript=transcript,
+        ground_truth_path=str(GIBSON_GROUND_TRUTH_PATH),
+    )
+    assert scores["troubleshooting"] < 1.0
+    assert scores["task_success"] == 0.0

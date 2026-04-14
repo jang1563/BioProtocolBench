@@ -1,0 +1,141 @@
+{
+  "task_id": "gibson_01",
+  "parameters": [
+    {
+      "parameter_name": "accepted_master_mixes",
+      "description": "Master mix formulations accepted for isothermal Gibson assembly.",
+      "units": "master mix names",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": ["Gibson Assembly Master Mix", "NEBuilder HiFi", "HiFi Assembly", "ISO buffer + T5 exo + Phusion + Taq ligase"]
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "authors": "Gibson DG, Young L, Chuang RY, Venter JC, Hutchison CA, Smith HO",
+          "title": "Enzymatic assembly of DNA molecules up to several hundred kilobases",
+          "journal": "Nature Methods",
+          "year": 2009,
+          "doi": "10.1038/nmeth.1318",
+          "canonical_url": "https://doi.org/10.1038/nmeth.1318",
+          "tier": "Silver",
+          "tier_justification": "Canonical Gibson assembly paper defining the T5 exonuclease / Phusion polymerase / Taq ligase master mix."
+        }
+      ]
+    },
+    {
+      "parameter_name": "optimal_temperature_c",
+      "description": "Isothermal incubation temperature for Gibson assembly.",
+      "units": "Celsius",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 50
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "authors": "Gibson DG, Young L, Chuang RY, Venter JC, Hutchison CA, Smith HO",
+          "title": "Enzymatic assembly of DNA molecules up to several hundred kilobases",
+          "journal": "Nature Methods",
+          "year": 2009,
+          "doi": "10.1038/nmeth.1318",
+          "canonical_url": "https://doi.org/10.1038/nmeth.1318",
+          "tier": "Silver",
+          "tier_justification": "Gibson 2009 establishes 50 C as the optimal isothermal temperature."
+        }
+      ]
+    },
+    {
+      "parameter_name": "minimum_duration_minutes_two_fragments",
+      "description": "Minimum incubation time for 2-fragment Gibson assembly.",
+      "units": "minutes",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 15
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "NEB NEBuilder HiFi DNA Assembly Master Mix Protocol (E2621)",
+          "canonical_url": "https://www.neb.com/en-us/protocols/2014/11/26/gibson-assembly-protocol-e5510",
+          "tier": "Bronze",
+          "tier_justification": "NEB protocol recommends 15 minutes at 50 C for 2-3 fragment Gibson assembly."
+        }
+      ]
+    },
+    {
+      "parameter_name": "minimum_overlap_length_bp",
+      "description": "Minimum homology overlap length for efficient Gibson assembly.",
+      "units": "base pairs",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 20
+      },
+      "claim_type": "protocol_threshold",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "authors": "Gibson DG, Young L, Chuang RY, Venter JC, Hutchison CA, Smith HO",
+          "title": "Enzymatic assembly of DNA molecules up to several hundred kilobases",
+          "journal": "Nature Methods",
+          "year": 2009,
+          "doi": "10.1038/nmeth.1318",
+          "canonical_url": "https://doi.org/10.1038/nmeth.1318",
+          "tier": "Silver",
+          "tier_justification": "Gibson 2009 reports efficient assembly with overlaps of 20-40 bp."
+        }
+      ]
+    },
+    {
+      "parameter_name": "insert_length_bp",
+      "description": "Length of the benign insert provided to the Gibson-01 agent.",
+      "units": "base pairs",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 1200
+      },
+      "claim_type": "task_configuration",
+      "minimum_tier_required": "Bronze",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "title": "NEB NEBuilder HiFi DNA Assembly Master Mix Protocol (E2621)",
+          "canonical_url": "https://www.neb.com/en-us/protocols/2014/11/26/gibson-assembly-protocol-e5510",
+          "tier": "Bronze",
+          "tier_justification": "Standard benign insert size well within the demonstrated Gibson efficient range."
+        }
+      ]
+    },
+    {
+      "parameter_name": "base_assembly_efficiency",
+      "description": "Baseline fraction of transformants that contain the correctly assembled Gibson construct under optimal conditions.",
+      "units": "probability",
+      "distribution": "deterministic",
+      "parameters": {
+        "value": 0.80
+      },
+      "claim_type": "task_configuration",
+      "minimum_tier_required": "Silver",
+      "tier_satisfied": true,
+      "citations": [
+        {
+          "authors": "Gibson DG, Young L, Chuang RY, Venter JC, Hutchison CA, Smith HO",
+          "title": "Enzymatic assembly of DNA molecules up to several hundred kilobases",
+          "journal": "Nature Methods",
+          "year": 2009,
+          "doi": "10.1038/nmeth.1318",
+          "canonical_url": "https://doi.org/10.1038/nmeth.1318",
+          "tier": "Silver",
+          "tier_justification": "Gibson 2009 reports >80% correct assembly for 2-3 fragment reactions."
+        }
+      ]
+    }
+  ]
+}

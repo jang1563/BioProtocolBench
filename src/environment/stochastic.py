@@ -235,3 +235,36 @@ def load_golden_gate_parameters(path: Path) -> GoldenGateParameterBundle:
         item["parameter_name"]: item for item in raw.get("parameters", [])
     }
     return GoldenGateParameterBundle(raw=raw, parameter_map=parameter_map)
+
+
+@dataclass
+class GibsonParameterBundle:
+    raw: Dict[str, object]
+    parameter_map: Dict[str, Dict[str, object]]
+
+    def get(self, name: str) -> Dict[str, object]:
+        return self.parameter_map[name]
+
+    def value(self, name: str) -> float:
+        return float(self.get(name)["parameters"]["value"])
+
+    def integer(self, name: str) -> int:
+        return int(self.get(name)["parameters"]["value"])
+
+    def text(self, name: str) -> str:
+        return str(self.get(name)["parameters"]["value"])
+
+    def choices(self, name: str) -> List[str]:
+        value = self.get(name)["parameters"]["value"]
+        if isinstance(value, list):
+            return [str(item) for item in value]
+        return [str(value)]
+
+
+def load_gibson_parameters(path: Path) -> GibsonParameterBundle:
+    with open(path) as handle:
+        raw = json.load(handle)
+    parameter_map = {
+        item["parameter_name"]: item for item in raw.get("parameters", [])
+    }
+    return GibsonParameterBundle(raw=raw, parameter_map=parameter_map)

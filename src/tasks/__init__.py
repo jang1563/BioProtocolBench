@@ -2,6 +2,7 @@
 
 from .base import TaskPaths
 from .clone_01 import CLONE_01_GROUND_TRUTH, CLONE_01_RUBRIC, build_clone_01_sample
+from .gibson_01 import GIBSON_01_GROUND_TRUTH, GIBSON_01_RUBRIC, build_gibson_01_sample
 from .golden_gate_01 import (
     GOLDEN_GATE_01_GROUND_TRUTH,
     GOLDEN_GATE_01_RUBRIC,
@@ -21,6 +22,9 @@ __all__ = [
     "CLONE_01_GROUND_TRUTH",
     "CLONE_01_RUBRIC",
     "build_clone_01_sample",
+    "GIBSON_01_GROUND_TRUTH",
+    "GIBSON_01_RUBRIC",
+    "build_gibson_01_sample",
     "GOLDEN_GATE_01_GROUND_TRUTH",
     "GOLDEN_GATE_01_RUBRIC",
     "build_golden_gate_01_sample",
