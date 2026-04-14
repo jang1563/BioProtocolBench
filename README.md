@@ -163,9 +163,18 @@ Tests cover the stochastic environment (determinism under seed, sample isolation
 
 ## Related work
 
-- [PaperBench](https://openai.com/index/paperbench/) (OpenAI, 2025) — introduced hierarchical rubric trees for AI evaluation.
-- [ProtocolQA / LAB-Bench](https://arxiv.org/abs/2407.10362) (FutureHouse, 2024) — multiple-choice protocol troubleshooting.
-- [BioProBench](https://github.com/YuyangSunshine/bioprotocolbench) (Liu et al., 2025) — large-scale NLP corpus; different scope from this agent environment.
+See **[results/positioning.md](results/positioning.md)** for a full literature-grounded comparison against 11 biology-agent and protocol benchmarks published in 2024–2026, including where this repo is genuinely novel (interactive simulator + deterministic multi-axis rubric) and where it is honestly weaker (scale, real wet-lab grounding, human baselines).
+
+Key references:
+
+- [LAB-Bench / ProtocolQA](https://arxiv.org/abs/2407.10362) (FutureHouse, 2024) — 2,400 text-only MCQ.
+- [BioLP-bench](https://www.biorxiv.org/content/10.1101/2024.08.21.608694v1) (Ivanov, 2024) — mistake-identification on real lab protocols.
+- [BioProBench](https://arxiv.org/abs/2505.07889) (Liu et al., 2025) — 556K text instances across 5 tasks on 27K protocols.
+- [BoxingGym](https://arxiv.org/abs/2501.01540) (Gandhi/Goodman et al., 2025) — interactive probabilistic environments scored by expected information gain.
+- [BioAgent Bench](https://arxiv.org/abs/2601.21800) (Fa et al., 2026) — end-to-end bioinformatics pipelines scored by LLM-as-judge.
+- [OpenAI × Red Queen Bio wet-lab framework](https://openai.com/index/accelerating-biological-research-in-the-wet-lab/) (2025) — GPT-5 iteratively optimised a real molecular-cloning protocol, scored by physical assay (79× efficiency gain).
+- [GPT-5 System Card](https://cdn.openai.com/gpt-5-system-card.pdf) — ProtocolQA Open-Ended (108 questions) + TroubleshootingBench (52 non-public protocols × 3 questions; 80th-percentile PhD expert scores 36.4%).
+- [PaperBench](https://openai.com/index/paperbench/) (OpenAI, 2025) — hierarchical rubric-tree methodology this repo's scorer follows.
 - [Inspect AI](https://inspect.aisi.org.uk/) (UK AISI) — the evaluation framework this benchmark plugs into.
 
 ## License
