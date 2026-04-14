@@ -18,31 +18,32 @@ The agent must plan the experiment, call tools in the right order, interpret obs
 
 ## Results
 
-45 runs · 5 tasks · 3 models · 3 seeds · April 2026 · total API cost ~$0.70
+100 runs · 5 tasks · 4 frontier models · 5 stochastic seeds · April 2026 · total API cost ~$2.50
 
-See **[results/analysis.md](results/analysis.md)** for per-task failure-mode analysis and interpretation, [results/results.md](results/results.md) for per-sample scores, and [results/logs/](results/logs/) for the raw Inspect trajectories.
+See **[results/analysis.md](results/analysis.md)** for per-task failure-mode analysis, [results/results.md](results/results.md) for per-sample scores, and [results/logs/](results/logs/) for the raw Inspect trajectories.
 
-**Overall score by model × task** (mean ± stddev across 3 seeds, scored in [0, 1]):
+**Overall score by model × task** (mean ± stddev across 5 seeds, scored in [0, 1]):
 
-| Task | gpt-4o-mini | gpt-4o | claude-haiku-4-5 |
-|---|---:|---:|---:|
-| `transform_01` | 0.550 ± 0.050 | 0.483 ± 0.076 | 0.533 ± 0.236 |
-| `growth_01` | 0.600 ± 0.000 | 0.700 ± 0.000 | 0.817 ± 0.318 |
-| `pcr_01` | 0.967 ± 0.029 | 0.950 ± 0.000 | 0.925 ± 0.043 |
-| `screen_01` | 0.967 ± 0.029 | 0.817 ± 0.318 | 0.867 ± 0.231 |
-| `clone_01` | 0.853 ± 0.185 | 0.933 ± 0.029 | 0.933 ± 0.029 |
-| **Mean across tasks** | **0.787** | **0.777** | **0.815** |
+| Task | gpt-4o-mini | gpt-4o | claude-haiku-4-5 | claude-sonnet-4-5 |
+|---|---:|---:|---:|---:|
+| `transform_01` | 0.570 ± 0.045 | 0.440 ± 0.108 | 0.500 ± 0.197 | 0.480 ± 0.179 |
+| `growth_01` | 0.560 ± 0.152 | 0.580 ± 0.217 | 0.890 ± 0.246 | 0.880 ± 0.241 |
+| `pcr_01` | 0.970 ± 0.027 | 0.950 ± 0.000 | 0.950 ± 0.000 | 0.950 ± 0.000 |
+| `screen_01` | 0.900 ± 0.197 | 0.840 ± 0.219 | 1.000 ± 0.000 | 1.000 ± 0.000 |
+| `clone_01` | 0.722 ± 0.397 | 0.904 ± 0.103 | 0.940 ± 0.022 | 0.950 ± 0.000 |
+| **Mean across tasks** | **0.744** | **0.743** | **0.856** | **0.852** |
 
 Headline findings (detail in [analysis.md](results/analysis.md)):
-- The benchmark **discriminates**: scores span 0.48 – 0.97 and no single model wins all five tasks.
-- `transform_01` is the hardest task for every model (~0.5) because it has a *compound requirement* — report CFU/µg for all four DNA masses, keep colony counts in the countable range, and note internal consistency. Only 1 / 9 seeds across all models cleared every requirement.
-- On `growth_01`, GPT models score perfect task_success but **zero on troubleshooting** across all 6 runs; `claude-haiku-4-5` catches the late-time-course growth issue every time. This is a real model-behaviour gap, not noise.
-- The eval **surfaced a latent bug** in the simulator: gpt-4o consistently confused `digest_001` with the output fragment id when calling `ligate`, raising an uncaught `ValueError`. Fixed in [src/environment/operations.py](src/environment/operations.py) by adding a digest-id resolver, mirroring the PCR-id shorthand introduced in Phase 2.
+- **Provider, not tier, is what separates the pack.** Both Anthropic models (haiku and sonnet) land at ~0.85; both OpenAI models (mini and gpt-4o) land at ~0.74. The gap is driven almost entirely by `growth_01` troubleshooting (Claude explains the late-time-course dilution issue every time; GPT never does).
+- **`sonnet` barely beats `haiku`** on this benchmark (0.852 vs. 0.856 — haiku actually edges out). For these five lab-reasoning tasks, paying 6× more for `sonnet` over `haiku` buys nothing measurable.
+- **`transform_01` is the hardest task for every model (~0.5).** It has a *compound requirement* — report CFU/µg for all four DNA masses, keep colony counts in the countable range, and note internal consistency. Only 2 / 20 seeds across all models cleared every gate.
+- The eval **surfaced two latent bugs** in the simulator, both fixed in-repo: (1) `ligate` didn't accept `digest_NNN` shorthand, which killed gpt-4o's first clone_01 run; (2) tool-layer `ValueError`s propagated through Inspect as fatal errors instead of agent-visible observations — now wrapped to return structured error payloads, so a single bad argument no longer nukes an entire 5-seed cell.
 
 Reproduce locally:
 
 ```bash
-SEEDS=3 ./scripts/run_portfolio_eval.sh          # 5 tasks × 3 models × 3 seeds = 45 runs
+SEEDS=5 MODELS="openai/gpt-4o-mini openai/gpt-4o anthropic/claude-haiku-4-5 anthropic/claude-sonnet-4-5" \
+  ./scripts/run_portfolio_eval.sh
 python3 scripts/aggregate_eval_results.py        # results/logs/*.eval → results/results.md
 ```
 

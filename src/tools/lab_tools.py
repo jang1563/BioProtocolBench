@@ -183,12 +183,25 @@ async def run_colony_pcr_call(
     primer_pair: str = "M13/pUC flank primers",
 ) -> str:
     state = _current_state()
-    return render_observation(
-        run_colony_pcr(
+    try:
+        payload = run_colony_pcr(
             state=state,
             colony_ids=colony_ids,
             primer_pair=primer_pair,
         )
+    except ValueError as exc:
+        return _tool_error_observation("run_colony_pcr", exc)
+    return render_observation(payload)
+
+
+def _tool_error_observation(tool_name: str, exc: Exception) -> str:
+    return render_observation(
+        {
+            "status": "tool_error",
+            "tool_name": tool_name,
+            "error_type": type(exc).__name__,
+            "message": str(exc),
+        }
     )
 
 
@@ -207,8 +220,8 @@ async def restriction_digest_call(
     heat_inactivation_temperature_c: float = 65.0,
 ) -> str:
     state = _current_state()
-    return render_observation(
-        restriction_digest(
+    try:
+        payload = restriction_digest(
             state=state,
             fragment_id=fragment_id,
             enzyme_names=enzyme_names,
@@ -218,7 +231,9 @@ async def restriction_digest_call(
             heat_inactivate_after=heat_inactivate_after,
             heat_inactivation_temperature_c=heat_inactivation_temperature_c,
         )
-    )
+    except ValueError as exc:
+        return _tool_error_observation("restriction_digest", exc)
+    return render_observation(payload)
 
 
 async def ligate_call(
@@ -231,8 +246,8 @@ async def ligate_call(
     buffer: str = "T4 DNA ligase buffer",
 ) -> str:
     state = _current_state()
-    return render_observation(
-        ligate(
+    try:
+        payload = ligate(
             state=state,
             vector_fragment_id=vector_fragment_id,
             insert_fragment_ids=insert_fragment_ids,
@@ -242,7 +257,9 @@ async def ligate_call(
             duration_minutes=duration_minutes,
             buffer=buffer,
         )
-    )
+    except ValueError as exc:
+        return _tool_error_observation("ligate", exc)
+    return render_observation(payload)
 
 
 async def transform_ligation_call(
@@ -254,8 +271,8 @@ async def transform_ligation_call(
     ice_incubation_minutes: int = 30,
 ) -> str:
     state = _current_state()
-    return render_observation(
-        transform_ligation(
+    try:
+        payload = transform_ligation(
             state=state,
             ligation_id=ligation_id,
             heat_shock_seconds=heat_shock_seconds,
@@ -264,7 +281,9 @@ async def transform_ligation_call(
             shaking=shaking,
             ice_incubation_minutes=ice_incubation_minutes,
         )
-    )
+    except ValueError as exc:
+        return _tool_error_observation("transform_ligation", exc)
+    return render_observation(payload)
 
 
 def prepare_media_tool():

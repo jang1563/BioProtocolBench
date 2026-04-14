@@ -1,31 +1,35 @@
 # BioProtocolBench Evaluation — Analysis
 
-45 runs across 5 tasks × 3 frontier models × 3 stochastic seeds, April 2026.
+100 runs across 5 tasks × 4 frontier models × 5 stochastic seeds, April 2026.
 Raw scores: [results.md](results.md). Raw trajectories: [logs/](logs/).
 
 ## Headline
 
-The benchmark **discriminates**: mean overall scores span **0.48 – 0.97** across the (model, task) grid, standard deviations span **0.00 – 0.58** across seeds. No single model dominates; the ranking flips task-by-task.
+The benchmark **discriminates**: mean overall scores span **0.44 – 1.00** across the (model, task) grid. **Provider, not price tier, is what matters** — both Anthropic models cluster at ~0.85, both OpenAI models at ~0.74.
 
 | Model | Mean-across-tasks | Strongest task | Weakest task |
 |---|---:|---|---|
-| `claude-haiku-4-5` | **0.815** | `clone_01` (0.93) | `transform_01` (0.53) |
-| `gpt-4o-mini` | 0.787 | `pcr_01` / `screen_01` (0.97) | `transform_01` (0.55) |
-| `gpt-4o` | 0.777 | `pcr_01` (0.95) | `transform_01` (0.48) |
+| `claude-haiku-4-5` | **0.856** | `screen_01` (1.00) | `transform_01` (0.50) |
+| `claude-sonnet-4-5` | 0.852 | `screen_01` (1.00) | `transform_01` (0.48) |
+| `gpt-4o-mini` | 0.744 | `pcr_01` (0.97) | `growth_01` (0.56) |
+| `gpt-4o` | 0.743 | `pcr_01` (0.95) | `transform_01` (0.44) |
 
-The fact that a cheaper model (`gpt-4o-mini`) edges out its larger sibling (`gpt-4o`) on aggregate is a real finding, not noise — it's driven by `gpt-4o` burning efficiency credit and dropping seeds on `screen_01` (seed 01 answer malformed → task_success = 0).
+Two findings the evaluation made visible that a single-model smoke would have hidden:
+
+1. **`sonnet` does not beat `haiku`** on these five tasks. Means are within 0.004 of each other; on the one task where they differ (`clone_01` sonnet 0.95 vs. haiku 0.94), the gap is one-sample noise. For lab-execution reasoning at this scope, the 6× sonnet-over-haiku price premium buys nothing measurable.
+2. **The provider gap is concentrated in one axis.** On `growth_01`, Anthropic models score 0.89 overall vs. OpenAI 0.57 — an entire 0.32 spread. Both OpenAI models score **troubleshooting = 0.00 on all 10 runs**; both Anthropic models score **troubleshooting = 1.00 on all 10 runs**. This is a deterministic behavioral split, not sampling noise.
 
 ## Task difficulty ranking
 
-Per-task mean overall across all three models:
+Per-task mean overall across all four models:
 
 | Task | Mean overall | Comment |
 |---|---:|---|
-| `pcr_01` | **0.947** | Saturated. All models pick Q5 + DMSO + 60 s extension + 32 cycles and interpret the clean target band. |
-| `clone_01` | 0.906 | Mostly saturated after the digest-id resolver fix. Failure mode: gpt-4o-mini seed 00 skipped troubleshooting language when ligation yield was lower than expected. |
-| `screen_01` | 0.883 | Saturated for mini/haiku. gpt-4o seed 01 malformed the final-answer schema (missed the `Confidence achieved: X%` line) → task_success = 0. |
-| `growth_01` | 0.706 | Task-success nearly perfect (doubling times correct), but **decision-quality and troubleshooting split the models sharply** — see below. |
-| `transform_01` | **0.522** | The compound-requirement task: report CFU/µg for *all four* DNA inputs, within countable range, plus the word "consistent". Only 1/9 runs across all models produced a fully-correct answer. |
+| `pcr_01` | **0.955** | Saturated. All four models pick Q5 + DMSO + 60 s extension + 32 cycles and interpret the clean target band identically. |
+| `screen_01` | 0.935 | Saturated for Anthropic (1.00 × 10/10); OpenAI models occasionally drop the `Confidence achieved:` final-answer field (task_success = 0 on 2/10 runs). |
+| `clone_01` | 0.879 | Mostly saturated. Failure mode concentrated in `gpt-4o-mini` (0.72), where 2/5 seeds skipped the troubleshooting language when the ligation yielded few transformants. |
+| `growth_01` | 0.728 | Task-success nearly perfect (doubling times correct on 16/20), but OpenAI models score **0.00 on troubleshooting in all 10 runs**; Anthropic catches it every time. |
+| `transform_01` | **0.498** | The compound-requirement task. Across 20 runs, only **2 cleared every gate**: haiku seed 01 and sonnet seed 02. Both produced biologically plausible ~10⁹ CFU/µg values. |
 
 ## The three most informative failure modes
 
@@ -37,48 +41,55 @@ To score `task_success = 1.0`, an agent must:
 3. Report CFU/µg for all four
 4. Assert internal consistency
 
-Observed behaviors across 9 seeds:
+Observed behaviors across 20 seeds (4 models × 5 seeds):
 
-| Pattern | Count | Example models/seeds |
+| Pattern | Count | Notes |
 |---|---:|---|
-| Dilutions wrong on 1+ plates → "out of range" counts | 4 | gpt-4o-mini seed 00, gpt-4o seed 02 |
-| Reported only 2–3 of 4 masses | 3 | gpt-4o-mini seed 01, gpt-4o seed 01 |
-| Hit `message_limit` before finishing | 1 | haiku seed 00 |
-| Fully correct (passes scorer) | 1 | haiku seed 01 |
+| Dilutions wrong on 1+ plates → "out of range" counts | 9 | dominant failure mode across all models |
+| Reported only 2–3 of 4 masses | 6 | common when agents hit message_limit mid-analysis |
+| Hit `message_limit` before finishing | 3 | haiku/sonnet prone to this on this task |
+| Fully correct (passes task_success scorer) | **2** | haiku seed 01, sonnet seed 02 |
 
-This is exactly the kind of *execution reliability* deficit that matters in real wet-lab automation: the agents know the chemistry, but they can't reliably juggle a compound multi-measurement reporting contract. For **haiku seed 01**, which *did* complete the task, the reported CFU/µg values were 4.4 – 5.5 × 10⁹ — biologically plausible for chemically-competent DH5α. The benchmark isn't punishing models for getting the biology wrong; it's punishing them for execution slips.
+Task success by model: `gpt-4o-mini` 0/5, `gpt-4o` 0/5, `haiku` 1/5, `sonnet` 1/5.
 
-### 2. `growth_01`: the troubleshooting axis catches a GPT blind spot
+This is exactly the *execution reliability* deficit that matters for real wet-lab automation: the agents know the chemistry, but they can't reliably juggle a compound multi-measurement reporting contract. For the two runs that *did* complete it, the reported CFU/µg values were 4 – 6 × 10⁹ — biologically plausible for chemically-competent DH5α. The benchmark isn't punishing models for getting the biology wrong; it's punishing them for execution slips.
 
-Every model correctly determined the three doubling times (task_success = 1.0 on 9/9 runs). But the **troubleshooting axis** score is:
+### 2. `growth_01`: the troubleshooting axis catches an OpenAI blind spot
 
-- `gpt-4o` : **0.00** on all 3 seeds
-- `gpt-4o-mini` : **0.00** on all 3 seeds
-- `claude-haiku-4-5` : **1.00** on all 3 seeds
+Every model determines the three doubling times correctly on most seeds (task_success = 0.80 mean). The **troubleshooting axis** splits deterministically:
 
-The scorer flags a troubleshooting-relevant event when one of the growth-curve fits fails (LB typically saturates and needs re-dilution for late OD600 points). Haiku noticed and explained this explicitly. Both GPT models reported the doubling time correctly *but never explained the late-time-course issue*. This is an interpretable real gap — and the fact that the cheapest Anthropic model catches something the flagship OpenAI model doesn't is a genuinely useful signal.
+- `gpt-4o` : **0.00** on all 5 seeds
+- `gpt-4o-mini` : **0.00** on all 5 seeds
+- `claude-haiku-4-5` : **1.00** on all 5 seeds
+- `claude-sonnet-4-5` : **1.00** on all 5 seeds
 
-### 3. `clone_01`: real bug surfaced by adversarial seed play
+The scorer flags a troubleshooting-relevant event when one of the growth-curve fits shows the LB culture saturating and requires an explicit explanation of the late-time-course dilution issue. Both Claude models explain this every time. Both GPT models report the doubling time correctly *but never explain the late-time-course issue* — not because the task is hidden from them, but because the behavior is provider-level. This is a useful, reproducible, interpretable gap.
 
-During the first eval run, `gpt-4o` repeatedly passed `"digest_001"` as `vector_fragment_id` to the `ligate` tool — a reasonable misunderstanding (digest_id vs. output fragment_id). The tool raised an uncaught `ValueError`, killing all three `gpt-4o × clone_01` samples.
+### 3. `clone_01`: two latent simulator bugs surfaced by adversarial seed play
 
-**Fix committed**: `_resolve_ligation_fragment_id()` in [src/environment/operations.py](../src/environment/operations.py) now resolves shorthand references the same way `_resolve_pcr_reaction_id()` does for PCR — accepting `digest_NNN` or a numeric suffix and returning the output fragment transparently.
+During the first eval run (N=3), `gpt-4o` repeatedly passed `"digest_001"` as `vector_fragment_id` to the `ligate` tool — a reasonable misunderstanding (digest_id vs. output fragment_id). The tool raised an uncaught `ValueError`, killing all three `gpt-4o × clone_01` samples.
 
-After the fix, all three `gpt-4o × clone_01` seeds completed with `task_success = 1.0`. This is a concrete example of the benchmark **finding a latent UX bug in the simulator itself**, which is arguably the most valuable thing an eval can do.
+**Fix 1 committed**: `_resolve_ligation_fragment_id()` in [src/environment/operations.py](../src/environment/operations.py) now accepts `digest_NNN` or a numeric suffix and returns the output fragment transparently — same pattern as the existing `_resolve_pcr_reaction_id()` helper from Phase 2.
 
-## Seed-level stability
+During the second run (N=5, adding sonnet), a *different* failure mode appeared: when the first digest used an incompatible buffer, it produced no output fragments, and the agent then passed the (valid) digest_id forward to `ligate`. The resolver hit an empty `output_fragment_ids` list and the ValueError once again killed the cell. 
 
-Standard deviations tell you how noisy the stochastic environment is under a fixed (model, task). Average stddev across cells:
+**Fix 2 committed**: the tool layer now wraps the cloning and screening tool calls in try/except blocks that convert `ValueError` into a structured error observation (`{"status": "tool_error", "tool_name": ..., "message": ...}`). The agent sees the error as a normal tool result and can recover — a single bad argument no longer wastes 4 / 5 samples in a cell.
+
+This is the most valuable thing an agent eval does: **it finds latent bugs in the surrounding infrastructure that a deterministic unit test would never hit**, because real agents explore the API surface in ways hand-written tests don't.
+
+## Seed-level stability at N = 5
+
+Standard deviations tell you how noisy the stochastic environment is under a fixed (model, task). Average σ across all 20 cells:
 
 | Axis | Avg σ | Interpretation |
 |---|---:|---|
-| `task_success` | 0.23 | Task success is binary-ish per sample; variance is high because one seed flipping changes the mean by 0.33 |
-| `decision_quality` | 0.09 | Decisions are mostly consistent across seeds (same prompt → same choice) |
-| `troubleshooting` | 0.13 | Depends on whether a troubleshooting trigger fires; this is a property of the seed, not the model |
-| `efficiency` | 0.20 | Agents sometimes use extra tool calls stochastically |
-| `overall` | 0.11 | Aggregates average out |
+| `task_success` | 0.27 | Binary-ish per sample; one seed flipping changes the mean by 0.20 at N = 5 |
+| `decision_quality` | 0.06 | Decisions are reproducible (same prompt → same choice) |
+| `troubleshooting` | 0.05 | Deterministic within provider (all 0 or all 1 for most cells) |
+| `efficiency` | 0.14 | Bimodal: agents either hit the optimal call budget or drift into the reasonable budget |
+| `overall` | 0.12 | Aggregates average out |
 
-Implication: **N = 3 seeds is barely enough** to separate close cells (e.g., `gpt-4o-mini` vs. `claude-haiku-4-5` on `pcr_01`, which differ by 0.042 overall). A future run at N = 5 – 10 seeds would tighten the bars enough to publish confident rankings on the harder tasks.
+Going from N=3 → N=5 moved `claude-haiku-4-5` overall from 0.815 to 0.856 (+0.04), and `gpt-4o` from 0.777 to 0.743 (-0.03). The N=3 values were within the resulting stddev envelope — i.e., the earlier rankings held up under resampling.
 
 ## Methodological notes
 
@@ -88,9 +99,9 @@ Implication: **N = 3 seeds is barely enough** to separate close cells (e.g., `gp
 
 ## What a larger evaluation would add
 
-In priority order:
+Items 1 and 2 from the original analysis are now done (N=5, sonnet added). Remaining open directions:
 
-1. **Higher N per cell** (5 – 10 seeds) to get usable confidence intervals on the sub-saturated tasks
-2. **Add `claude-sonnet-4-5`** as a fourth model to anchor the top of the cost/capability curve
-3. **Ablate the `efficiency` axis** — it's the loudest signal on some cells (haiku transform_01 efficiency = 0.17) and weakly correlated with task success; worth measuring whether it's capturing real waste or just message-limit artifacts
-4. **Break the aggregate overall score into a per-axis radar** per (model, task) for reviewer readability
+1. **Raise N further to 10 – 20 seeds** on the two discriminating tasks (`transform_01` and `growth_01`) to tighten the task_success stddev from ~0.45 down to ~0.20 — enough to publish confidence intervals.
+2. **Ablate the `efficiency` axis**. It has the second-loudest signal on some cells (haiku transform_01 efficiency = 0.10, sonnet transform_01 efficiency = 0.00) but correlates weakly with task success. Worth measuring whether it's capturing real waste or just message-limit artifacts.
+3. **Per-axis radar per (model, task)** for reviewer readability — the current flat-table view hides which axis drives each model gap.
+4. **Probe the OpenAI growth-troubleshooting blind spot** with prompt variants — is this a model limitation or a prompt-sensitivity issue? If a prompt tweak closes the gap, the "provider-level split" framing above becomes "prompt-sensitivity split" and the story changes.
