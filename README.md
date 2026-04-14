@@ -16,6 +16,36 @@ Each task gives the agent:
 
 The agent must plan the experiment, call tools in the right order, interpret observations, and report quantitative results. A trajectory scorer inspects the full interaction (tool calls, results, final answer) and grades it against a hierarchical rubric.
 
+## Results
+
+45-run evaluation across 5 tasks × 3 frontier models × 3 stochastic seeds (see [results/results.md](results/results.md) for per-sample detail).
+
+**Overall score by model × task** (mean of [0, 1] across 3 seeds):
+
+| Task | gpt-4o-mini | gpt-4o | claude-haiku-4-5 |
+|---|---:|---:|---:|
+| `transform_01` | 0.550 ± 0.050 | 0.483 ± 0.076 | 0.533 ± 0.236 |
+| `growth_01` | 0.600 ± 0.000 | 0.700 ± 0.000 | 0.817 ± 0.318 |
+| `pcr_01` | 0.967 ± 0.029 | 0.950 ± 0.000 | 0.925 ± 0.043 |
+| `screen_01` | 0.967 ± 0.029 | 0.817 ± 0.318 | 0.867 ± 0.231 |
+| `clone_01` | 0.853 ± 0.185 | 0.933 ± 0.029 | 0.933 ± 0.029 |
+| **Mean across tasks** | **0.787** | **0.777** | **0.815** |
+
+Key findings:
+- `pcr_01`, `screen_01`, and `clone_01` are saturated (≥ 0.85 across all three models) — agents reliably pick correct polymerases/buffers/ligases and interpret gels and colony-PCR bands.
+- `transform_01` is the hardest task — all three models score ~0.5 mean. The common failure mode is reporting CFU/µg for only three of four DNA masses, or losing consistency across masses.
+- `growth_01` splits the models: gpt-4o and gpt-4o-mini consistently miss the troubleshooting axis, while `claude-haiku-4-5` handles it (1.0 across 3 seeds).
+- Rankings depend heavily on task — no single model dominates. haiku wins on the mean but is the most variable (largest stddev on `transform_01`, `screen_01`, `clone_01`).
+
+Reproduce the evaluation locally:
+
+```bash
+SEEDS=3 ./scripts/run_portfolio_eval.sh          # runs 5 × 3 × 3 = 45 cells
+python3 scripts/aggregate_eval_results.py        # aggregates results/logs/*.eval → results/results.md
+```
+
+Raw Inspect logs for every run are committed under [results/logs/](results/logs/).
+
 ## Tasks
 
 | Task | Domain | Objective |

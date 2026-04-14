@@ -51,6 +51,5 @@ reports/
 research/
 archive/
 
-# Inspect eval logs
-logs/
-*.eval
+# Ad-hoc Inspect eval logs (results/logs/ IS tracked for reproducibility)
+/logs/

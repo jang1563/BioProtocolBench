@@ -934,6 +934,36 @@ def restriction_digest(
     return payload
 
 
+def _resolve_ligation_fragment_id(state: LabState, fragment_id: str) -> str:
+    """Resolve a fragment reference that may be a fragment_id or a digest_id shorthand."""
+    requested = str(fragment_id).strip()
+    if requested in state.dna_fragments:
+        return requested
+    if requested in state.digest_reactions:
+        outputs = state.digest_reactions[requested].output_fragment_ids
+        if outputs:
+            return outputs[0]
+    suffix_match = re.search(r"(\d+)$", requested)
+    if suffix_match:
+        canonical_digest = "digest_{:03d}".format(int(suffix_match.group(1)))
+        if canonical_digest in state.digest_reactions:
+            outputs = state.digest_reactions[canonical_digest].output_fragment_ids
+            if outputs:
+                return outputs[0]
+        canonical_fragment = "fragment_{:03d}".format(int(suffix_match.group(1)))
+        if canonical_fragment in state.dna_fragments:
+            return canonical_fragment
+    available_frags = sorted(state.dna_fragments)
+    available_digests = sorted(state.digest_reactions)
+    raise ValueError(
+        "Unknown fragment reference '{:s}'. Available fragment IDs: {:s}. Available digest IDs: {:s}.".format(
+            requested,
+            ", ".join(available_frags) if available_frags else "none",
+            ", ".join(available_digests) if available_digests else "none",
+        )
+    )
+
+
 def ligate(
     state: LabState,
     vector_fragment_id: str,
@@ -946,11 +976,10 @@ def ligate(
 ) -> Dict[str, object]:
     """Simulate a ligation reaction and return a ligation id."""
     _ensure_cloning_substrates(state)
-    if vector_fragment_id not in state.dna_fragments:
-        raise ValueError("Unknown vector_fragment_id '{:s}'.".format(vector_fragment_id))
-    for insert_id in insert_fragment_ids:
-        if insert_id not in state.dna_fragments:
-            raise ValueError("Unknown insert fragment_id '{:s}'.".format(insert_id))
+    vector_fragment_id = _resolve_ligation_fragment_id(state, vector_fragment_id)
+    insert_fragment_ids = [
+        _resolve_ligation_fragment_id(state, insert_id) for insert_id in insert_fragment_ids
+    ]
 
     bundle = _cloning_bundle()
     required_ligase = bundle.text("preferred_ligase_name")

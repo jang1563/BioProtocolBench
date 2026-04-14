@@ -47,22 +47,38 @@ async def _cleanup_transform_sample(state):
     cleanup_sample(state.sample_id)
 
 
+def _expand_seeds(base_sample: dict, seeds: int):
+    if seeds <= 1:
+        return [base_sample]
+    expanded = []
+    for idx in range(seeds):
+        suffix = "_seed_{:02d}".format(idx)
+        cloned = dict(base_sample)
+        cloned["id"] = base_sample["id"] + suffix
+        cloned["metadata"] = dict(base_sample.get("metadata", {}))
+        cloned["metadata"]["seed_index"] = idx
+        expanded.append(cloned)
+    return expanded
+
+
+def _samples(base_sample: dict, seeds: int):
+    return [
+        Sample(
+            input=s["input"],
+            target=s["target"],
+            id=s["id"],
+            metadata=s["metadata"],
+        )
+        for s in _expand_seeds(base_sample, seeds)
+    ]
+
+
 @task
-def transform_01():
+def transform_01(seeds: int = 1):
     if Task is None or MemoryDataset is None or Sample is None:
         raise ImportError("inspect_ai is required to instantiate LabCraft tasks.")
-    sample = build_transform_01_sample()
     return Task(
-        dataset=MemoryDataset(
-            samples=[
-                Sample(
-                    input=sample["input"],
-                    target=sample["target"],
-                    id=sample["id"],
-                    metadata=sample["metadata"],
-                )
-            ]
-        ),
+        dataset=MemoryDataset(samples=_samples(build_transform_01_sample(), seeds)),
         setup=configure_transform_sample(),
         solver=build_labcraft_solver(),
         scorer=build_transform_trajectory_scorer(),
@@ -72,21 +88,11 @@ def transform_01():
 
 
 @task
-def growth_01():
+def growth_01(seeds: int = 1):
     if Task is None or MemoryDataset is None or Sample is None:
         raise ImportError("inspect_ai is required to instantiate LabCraft tasks.")
-    sample = build_growth_01_sample()
     return Task(
-        dataset=MemoryDataset(
-            samples=[
-                Sample(
-                    input=sample["input"],
-                    target=sample["target"],
-                    id=sample["id"],
-                    metadata=sample["metadata"],
-                )
-            ]
-        ),
+        dataset=MemoryDataset(samples=_samples(build_growth_01_sample(), seeds)),
         setup=configure_growth_sample(),
         solver=build_growth_solver(),
         scorer=build_growth_trajectory_scorer(),
@@ -96,21 +102,11 @@ def growth_01():
 
 
 @task
-def pcr_01():
+def pcr_01(seeds: int = 1):
     if Task is None or MemoryDataset is None or Sample is None:
         raise ImportError("inspect_ai is required to instantiate LabCraft tasks.")
-    sample = build_pcr_01_sample()
     return Task(
-        dataset=MemoryDataset(
-            samples=[
-                Sample(
-                    input=sample["input"],
-                    target=sample["target"],
-                    id=sample["id"],
-                    metadata=sample["metadata"],
-                )
-            ]
-        ),
+        dataset=MemoryDataset(samples=_samples(build_pcr_01_sample(), seeds)),
         setup=configure_pcr_sample(),
         solver=build_pcr_solver(),
         scorer=build_pcr_trajectory_scorer(),
@@ -120,21 +116,11 @@ def pcr_01():
 
 
 @task
-def screen_01():
+def screen_01(seeds: int = 1):
     if Task is None or MemoryDataset is None or Sample is None:
         raise ImportError("inspect_ai is required to instantiate LabCraft tasks.")
-    sample = build_screen_01_sample()
     return Task(
-        dataset=MemoryDataset(
-            samples=[
-                Sample(
-                    input=sample["input"],
-                    target=sample["target"],
-                    id=sample["id"],
-                    metadata=sample["metadata"],
-                )
-            ]
-        ),
+        dataset=MemoryDataset(samples=_samples(build_screen_01_sample(), seeds)),
         setup=configure_screen_sample(),
         solver=build_screen_solver(),
         scorer=build_screen_trajectory_scorer(),
@@ -144,21 +130,11 @@ def screen_01():
 
 
 @task
-def clone_01():
+def clone_01(seeds: int = 1):
     if Task is None or MemoryDataset is None or Sample is None:
         raise ImportError("inspect_ai is required to instantiate LabCraft tasks.")
-    sample = build_clone_01_sample()
     return Task(
-        dataset=MemoryDataset(
-            samples=[
-                Sample(
-                    input=sample["input"],
-                    target=sample["target"],
-                    id=sample["id"],
-                    metadata=sample["metadata"],
-                )
-            ]
-        ),
+        dataset=MemoryDataset(samples=_samples(build_clone_01_sample(), seeds)),
         setup=configure_clone_sample(),
         solver=build_clone_solver(),
         scorer=build_clone_trajectory_scorer(),
