@@ -18,9 +18,11 @@ The agent must plan the experiment, call tools in the right order, interpret obs
 
 ## Results
 
-45-run evaluation across 5 tasks × 3 frontier models × 3 stochastic seeds (see [results/results.md](results/results.md) for per-sample detail).
+45 runs · 5 tasks · 3 models · 3 seeds · April 2026 · total API cost ~$0.70
 
-**Overall score by model × task** (mean of [0, 1] across 3 seeds):
+See **[results/analysis.md](results/analysis.md)** for per-task failure-mode analysis and interpretation, [results/results.md](results/results.md) for per-sample scores, and [results/logs/](results/logs/) for the raw Inspect trajectories.
+
+**Overall score by model × task** (mean ± stddev across 3 seeds, scored in [0, 1]):
 
 | Task | gpt-4o-mini | gpt-4o | claude-haiku-4-5 |
 |---|---:|---:|---:|
@@ -31,20 +33,18 @@ The agent must plan the experiment, call tools in the right order, interpret obs
 | `clone_01` | 0.853 ± 0.185 | 0.933 ± 0.029 | 0.933 ± 0.029 |
 | **Mean across tasks** | **0.787** | **0.777** | **0.815** |
 
-Key findings:
-- `pcr_01`, `screen_01`, and `clone_01` are saturated (≥ 0.85 across all three models) — agents reliably pick correct polymerases/buffers/ligases and interpret gels and colony-PCR bands.
-- `transform_01` is the hardest task — all three models score ~0.5 mean. The common failure mode is reporting CFU/µg for only three of four DNA masses, or losing consistency across masses.
-- `growth_01` splits the models: gpt-4o and gpt-4o-mini consistently miss the troubleshooting axis, while `claude-haiku-4-5` handles it (1.0 across 3 seeds).
-- Rankings depend heavily on task — no single model dominates. haiku wins on the mean but is the most variable (largest stddev on `transform_01`, `screen_01`, `clone_01`).
+Headline findings (detail in [analysis.md](results/analysis.md)):
+- The benchmark **discriminates**: scores span 0.48 – 0.97 and no single model wins all five tasks.
+- `transform_01` is the hardest task for every model (~0.5) because it has a *compound requirement* — report CFU/µg for all four DNA masses, keep colony counts in the countable range, and note internal consistency. Only 1 / 9 seeds across all models cleared every requirement.
+- On `growth_01`, GPT models score perfect task_success but **zero on troubleshooting** across all 6 runs; `claude-haiku-4-5` catches the late-time-course growth issue every time. This is a real model-behaviour gap, not noise.
+- The eval **surfaced a latent bug** in the simulator: gpt-4o consistently confused `digest_001` with the output fragment id when calling `ligate`, raising an uncaught `ValueError`. Fixed in [src/environment/operations.py](src/environment/operations.py) by adding a digest-id resolver, mirroring the PCR-id shorthand introduced in Phase 2.
 
-Reproduce the evaluation locally:
+Reproduce locally:
 
 ```bash
-SEEDS=3 ./scripts/run_portfolio_eval.sh          # runs 5 × 3 × 3 = 45 cells
-python3 scripts/aggregate_eval_results.py        # aggregates results/logs/*.eval → results/results.md
+SEEDS=3 ./scripts/run_portfolio_eval.sh          # 5 tasks × 3 models × 3 seeds = 45 runs
+python3 scripts/aggregate_eval_results.py        # results/logs/*.eval → results/results.md
 ```
-
-Raw Inspect logs for every run are committed under [results/logs/](results/logs/).
 
 ## Tasks
 
