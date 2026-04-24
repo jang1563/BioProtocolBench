@@ -1,0 +1,140 @@
+{
+  "completed_session_count": 0,
+  "coverage": [
+    {
+      "human_sessions": 0,
+      "human_sessions_by_prompt": {},
+      "operators": "-",
+      "operators_by_prompt": {},
+      "prompt_breakdown_display": "-",
+      "sample_id": "transform_01_seeded_seed_00",
+      "seed_index": 0,
+      "selection_rationale": "Only claude-sonnet-4-5 reaches task_success on this seed, making it a clean first check for whether the task is easy for a human or unusually brittle to execution completeness and answer formatting.",
+      "snapshot_best_model": "claude-sonnet-4-5",
+      "snapshot_best_overall": 0.8,
+      "snapshot_mean_overall": 0.5625,
+      "snapshot_range_display": "0.400-0.800",
+      "snapshot_scores_by_model": {
+        "claude-haiku-4-5": 0.4,
+        "claude-sonnet-4-5": 0.8,
+        "gpt-4o": 0.45,
+        "gpt-4o-mini": 0.6
+      },
+      "task_id": "transform_01"
+    },
+    {
+      "human_sessions": 0,
+      "human_sessions_by_prompt": {},
+      "operators": "-",
+      "operators_by_prompt": {},
+      "prompt_breakdown_display": "-",
+      "sample_id": "transform_01_seeded_seed_02",
+      "seed_index": 2,
+      "selection_rationale": "Strong disagreement case on the hardest snapshot task; useful for testing whether the model spread reflects genuine ambiguity or agent-formatting fragility.",
+      "snapshot_best_model": "claude-haiku-4-5",
+      "snapshot_best_overall": 0.85,
+      "snapshot_mean_overall": 0.5625,
+      "snapshot_range_display": "0.400-0.850",
+      "snapshot_scores_by_model": {
+        "claude-haiku-4-5": 0.85,
+        "claude-sonnet-4-5": 0.4,
+        "gpt-4o": 0.5,
+        "gpt-4o-mini": 0.5
+      },
+      "task_id": "transform_01"
+    },
+    {
+      "human_sessions": 0,
+      "human_sessions_by_prompt": {},
+      "operators": "-",
+      "operators_by_prompt": {},
+      "prompt_breakdown_display": "-",
+      "sample_id": "transform_01_seeded_seed_04",
+      "seed_index": 4,
+      "selection_rationale": "Failure-rich transform stress case with a visible troubleshooting and efficiency collapse for gpt-4o.",
+      "snapshot_best_model": "gpt-4o-mini",
+      "snapshot_best_overall": 0.6,
+      "snapshot_mean_overall": 0.425,
+      "snapshot_range_display": "0.250-0.600",
+      "snapshot_scores_by_model": {
+        "claude-haiku-4-5": 0.45,
+        "claude-sonnet-4-5": 0.4,
+        "gpt-4o": 0.25,
+        "gpt-4o-mini": 0.6
+      },
+      "task_id": "transform_01"
+    },
+    {
+      "human_sessions": 0,
+      "human_sessions_by_prompt": {},
+      "operators": "-",
+      "operators_by_prompt": {},
+      "prompt_breakdown_display": "-",
+      "sample_id": "growth_01_seeded_seed_01",
+      "seed_index": 1,
+      "selection_rationale": "Clean provider split where OpenAI misses the troubleshooting narrative while Anthropic mostly clears it.",
+      "snapshot_best_model": "claude-haiku-4-5",
+      "snapshot_best_overall": 1.0,
+      "snapshot_mean_overall": 0.7875,
+      "snapshot_range_display": "0.600-1.000",
+      "snapshot_scores_by_model": {
+        "claude-haiku-4-5": 1.0,
+        "claude-sonnet-4-5": 0.95,
+        "gpt-4o": 0.6,
+        "gpt-4o-mini": 0.6
+      },
+      "task_id": "growth_01"
+    },
+    {
+      "human_sessions": 0,
+      "human_sessions_by_prompt": {},
+      "operators": "-",
+      "operators_by_prompt": {},
+      "prompt_breakdown_display": "-",
+      "sample_id": "growth_01_seeded_seed_02",
+      "seed_index": 2,
+      "selection_rationale": "Broadest cross-model spread on growth_01, with all four frontier models landing in different overall-score bands.",
+      "snapshot_best_model": "claude-sonnet-4-5",
+      "snapshot_best_overall": 1.0,
+      "snapshot_mean_overall": 0.6125,
+      "snapshot_range_display": "0.300-1.000",
+      "snapshot_scores_by_model": {
+        "claude-haiku-4-5": 0.45,
+        "claude-sonnet-4-5": 1.0,
+        "gpt-4o": 0.7,
+        "gpt-4o-mini": 0.3
+      },
+      "task_id": "growth_01"
+    },
+    {
+      "human_sessions": 0,
+      "human_sessions_by_prompt": {},
+      "operators": "-",
+      "operators_by_prompt": {},
+      "prompt_breakdown_display": "-",
+      "sample_id": "growth_01_seeded_seed_03",
+      "seed_index": 3,
+      "selection_rationale": "Best single targeted miss for gpt-4o on growth_01 and a good robustness check on awkward or undersampled growth data.",
+      "snapshot_best_model": "claude-sonnet-4-5",
+      "snapshot_best_overall": 1.0,
+      "snapshot_mean_overall": 0.725,
+      "snapshot_range_display": "0.200-1.000",
+      "snapshot_scores_by_model": {
+        "claude-haiku-4-5": 1.0,
+        "claude-sonnet-4-5": 1.0,
+        "gpt-4o": 0.2,
+        "gpt-4o-mini": 0.7
+      },
+      "task_id": "growth_01"
+    }
+  ],
+  "deduped_older_session_count": 0,
+  "generated_at": "2026-04-20T21:40:40.718402+00:00",
+  "has_completed_sessions": false,
+  "human_vs_snapshot": [],
+  "seed_plan_path": "results/human_baseline_seed_plan.json",
+  "session_dir": "results/human_baseline_sessions",
+  "sessions": [],
+  "snapshot_results_path": "results/results.md",
+  "summary": []
+}

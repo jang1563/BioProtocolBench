@@ -1,0 +1,34 @@
+{
+  "pilot_entries": [
+    {
+      "task_id": "transform_01",
+      "seed_index": 0,
+      "selection_rationale": "Only claude-sonnet-4-5 reaches task_success on this seed, making it a clean first check for whether the task is easy for a human or unusually brittle to execution completeness and answer formatting."
+    },
+    {
+      "task_id": "transform_01",
+      "seed_index": 2,
+      "selection_rationale": "Strong disagreement case on the hardest snapshot task; useful for testing whether the model spread reflects genuine ambiguity or agent-formatting fragility."
+    },
+    {
+      "task_id": "transform_01",
+      "seed_index": 4,
+      "selection_rationale": "Failure-rich transform stress case with a visible troubleshooting and efficiency collapse for gpt-4o."
+    },
+    {
+      "task_id": "growth_01",
+      "seed_index": 1,
+      "selection_rationale": "Clean provider split where OpenAI misses the troubleshooting narrative while Anthropic mostly clears it."
+    },
+    {
+      "task_id": "growth_01",
+      "seed_index": 2,
+      "selection_rationale": "Broadest cross-model spread on growth_01, with all four frontier models landing in different overall-score bands."
+    },
+    {
+      "task_id": "growth_01",
+      "seed_index": 3,
+      "selection_rationale": "Best single targeted miss for gpt-4o on growth_01 and a good robustness check on awkward or undersampled growth data."
+    }
+  ]
+}
