@@ -1,0 +1,98 @@
+{
+  "task_id": "followup_01",
+  "task_title": "Targeted follow-up after an ambiguous chloramphenicol-growth result",
+  "source": "LabCraft Followup-01",
+  "num_errors_introduced": 0,
+  "total_leaf_nodes": 7,
+  "rubric": {
+    "name": "Task Evaluation",
+    "weight": 1.0,
+    "is_leaf": false,
+    "children": [
+      {
+        "name": "Task Success",
+        "weight": 0.4,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Reports the focused follow-up result and correct conclusion",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "task_success",
+            "requirement": "The final answer reports the analyzable doubling time for LB + chloramphenicol (1.8 uM) and concludes that the slowdown is real rather than an artifact.",
+            "grading_notes": "Requires the exact follow-up condition label, a transcript-consistent doubling time, and a conclusion that explicitly treats the slowdown as real."
+          }
+        ]
+      },
+      {
+        "name": "Decision Quality",
+        "weight": 0.3,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Targets only the ambiguous condition",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "The follow-up inoculation(s) focus on LB + chloramphenicol (1.8 uM) rather than rerunning already-resolved controls.",
+            "grading_notes": "Measured from inoculate_growth tool arguments."
+          },
+          {
+            "name": "Uses the cited starting OD600",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Each inoculation starts at OD600 0.05.",
+            "grading_notes": "Measured from inoculate_growth tool arguments."
+          },
+          {
+            "name": "Uses the cited measurement interval",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Incubation intervals between OD600 measurements are 15 minutes.",
+            "grading_notes": "Measured from incubate tool arguments."
+          },
+          {
+            "name": "Ends with an analyzable follow-up fit",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "The last growth-fit call returns an analyzable result for the follow-up condition.",
+            "grading_notes": "Measured from the final fit_growth_curve call."
+          }
+        ]
+      },
+      {
+        "name": "Troubleshooting",
+        "weight": 0.2,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Explains the earlier undersampling problem if encountered",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "troubleshooting",
+            "requirement": "If any fit attempt reports insufficient points, the final answer explains that the earlier trajectory was undersampled and that the ambiguity came from inadequate usable OD600 coverage.",
+            "grading_notes": "Defaults to full credit when no insufficient_points trigger occurs."
+          }
+        ]
+      },
+      {
+        "name": "Efficiency",
+        "weight": 0.1,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Uses a focused follow-up tool-call budget",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "efficiency",
+            "requirement": "The trajectory stays within the targeted follow-up tool-call budget rather than rerunning all growth conditions.",
+            "grading_notes": "Full credit at or under the optimal call budget, partial credit within the reasonable budget, zero for wasteful rerun-everything trajectories."
+          }
+        ]
+      }
+    ]
+  }
+}

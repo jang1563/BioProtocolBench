@@ -1,0 +1,165 @@
+{
+  "task_id": "target_prioritize_01",
+  "decision_points": [
+    {
+      "id": "inspect_tgt_a",
+      "description": "Inspect the strongest balanced candidate profile.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "lookup_target_profile",
+        "argument": "target_id",
+        "occurrence": "any"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": "TGT_A"
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "Validating therapeutic targets through human genetics",
+          "doi": "10.1038/nrd4051",
+          "canonical_url": "https://doi.org/10.1038/nrd4051",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed review supporting prioritization of targets by translational and patient-relevant evidence."
+        }
+      ]
+    },
+    {
+      "id": "inspect_tgt_b",
+      "description": "Inspect the high-risk candidate profile before ruling it out.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "lookup_target_profile",
+        "argument": "target_id",
+        "occurrence": "any"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": "TGT_B"
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "Using human genetics to improve safety assessment of therapeutics",
+          "doi": "10.1038/s41573-022-00561-w",
+          "canonical_url": "https://doi.org/10.1038/s41573-022-00561-w",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed review supporting liability-aware target triage before advancement."
+        }
+      ]
+    },
+    {
+      "id": "inspect_tgt_c",
+      "description": "Inspect the ambiguous candidate profile before deciding where it sits in the stack rank.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "lookup_target_profile",
+        "argument": "target_id",
+        "occurrence": "any"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": "TGT_C"
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "Open Targets Platform: supporting systematic drug-target identification and prioritisation",
+          "doi": "10.1093/nar/gkaa1027",
+          "canonical_url": "https://doi.org/10.1093/nar/gkaa1027",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed platform paper supporting context-aware synthesis across target-disease evidence sources."
+        }
+      ]
+    },
+    {
+      "id": "inspect_tgt_d",
+      "description": "Inspect the backup candidate profile rather than deciding from the shortlist alone.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "lookup_target_profile",
+        "argument": "target_id",
+        "occurrence": "any"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": "TGT_D"
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "Perturb-Seq: Dissecting Molecular Circuits with Scalable Single-Cell RNA Profiling of Pooled Genetic Screens",
+          "doi": "10.1016/j.cell.2016.11.038",
+          "canonical_url": "https://doi.org/10.1016/j.cell.2016.11.038",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed perturbation-screening paper supporting perturbation-driven candidate ranking and follow-up."
+        }
+      ]
+    }
+  ],
+  "failure_diagnosis_map": {},
+  "efficiency_reference": {
+    "optimal_tool_calls": 5,
+    "max_reasonable_tool_calls": 7,
+    "reagent_budget": {
+      "candidate_lookups": 4,
+      "validation_assays": 0
+    }
+  },
+  "expected_outcome": {
+    "top_target": "TGT_A",
+    "do_not_advance_target": "TGT_B",
+    "required_target_lookups": [
+      "TGT_A",
+      "TGT_B",
+      "TGT_C",
+      "TGT_D"
+    ],
+    "advance_reason_marker_groups": [
+      [
+        "signal",
+        "perturbation",
+        "screen score",
+        "activity"
+      ],
+      [
+        "context consistency",
+        "context",
+        "disease context"
+      ],
+      [
+        "patient",
+        "translation",
+        "translational",
+        "genetic",
+        "support",
+        "relevance"
+      ],
+      [
+        "low viability",
+        "low risk",
+        "low liability",
+        "minimal viability",
+        "minimal liability",
+        "manageable liability"
+      ]
+    ],
+    "main_risk_marker_groups": [
+      [
+        "context",
+        "consistency",
+        "generaliz",
+        "broader settings"
+      ],
+      [
+        "translation",
+        "translational",
+        "literature",
+        "mechanism",
+        "mechanistic",
+        "therapeutic window"
+      ]
+    ]
+  }
+}

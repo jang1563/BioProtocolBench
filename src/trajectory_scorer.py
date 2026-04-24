@@ -6,6 +6,11 @@ import json
 import re
 from typing import Any, Dict, Iterable, List
 
+from src.tools.discovery import (
+    assay_primary_readout,
+    validation_result_label,
+)
+
 TARGET_MASSES_PG = (10, 100, 1000, 10000)
 TASK_SUCCESS_RELATIVE_TOLERANCE = 0.2
 GROWTH_CONDITIONS = (
@@ -14,6 +19,8 @@ GROWTH_CONDITIONS = (
     "LB + chloramphenicol (1.8 uM)",
 )
 GROWTH_TASK_SUCCESS_RELATIVE_TOLERANCE = 0.15
+FOLLOWUP_CONDITION = "LB + chloramphenicol (1.8 uM)"
+FOLLOWUP_TASK_SUCCESS_RELATIVE_TOLERANCE = 0.15
 PCR_TARGET_BAND_REGEX = re.compile(r"(single\s+clean[\s\S]{0,40}(?:2(?:\.0)?\s*kb|2000\s*bp))|((?:2(?:\.0)?\s*kb|2000\s*bp)[\s\S]{0,40}single\s+clean)", re.IGNORECASE)
 SCREEN_CONFIDENCE_ABSOLUTE_TOLERANCE = 0.2
 
@@ -552,6 +559,139 @@ def score_growth_trajectory(
     }
 
 
+def _normalize_followup_condition_label(value: str) -> str:
+    normalized = re.sub(r"\s+", " ", value).strip()
+    if re.search(
+        r"lb\s*\+\s*chloramphenicol\s*\(1\.8\s*[uµμ]m\)",
+        normalized,
+        flags=re.IGNORECASE,
+    ):
+        return FOLLOWUP_CONDITION
+    return normalized
+
+
+def _extract_reported_followup_summary(final_answer: str) -> Dict[str, Any]:
+    summary: Dict[str, Any] = {}
+    condition_match = re.search(r"(?im)^Follow-up condition:\s*(.+)$", final_answer)
+    doubling_match = re.search(
+        r"(?im)^Follow-up doubling time:\s*([-+]?\d[\d,]*(?:\.\d+)?)\s*(?:min|minutes)\s*$",
+        final_answer,
+    )
+    conclusion_match = re.search(r"(?im)^Conclusion:\s*(.+)$", final_answer)
+    interpretation_match = re.search(r"(?im)^Interpretation:\s*(.+)$", final_answer)
+
+    if condition_match:
+        summary["condition"] = _normalize_followup_condition_label(condition_match.group(1))
+    if doubling_match:
+        summary["doubling_time_minutes"] = _parse_scientific_number(doubling_match.group(1))
+    if conclusion_match:
+        summary["conclusion"] = conclusion_match.group(1).strip()
+    if interpretation_match:
+        summary["interpretation"] = interpretation_match.group(1).strip()
+    return summary
+
+
+def _conclusion_supports_real_slowdown(value: str) -> bool:
+    conclusion_lower = value.lower()
+    if "not an artifact" in conclusion_lower or "not artifact" in conclusion_lower:
+        return True
+    return (
+        ("real" in conclusion_lower or "true" in conclusion_lower)
+        and ("slowdown" in conclusion_lower or "slower" in conclusion_lower)
+    )
+
+
+def score_followup_task_success(final_answer: str, tool_calls: List[Dict[str, Any]]) -> float:
+    reported = _extract_reported_followup_summary(final_answer)
+    if {"condition", "doubling_time_minutes", "conclusion", "interpretation"} - set(reported):
+        return 0.0
+    if reported["condition"] != FOLLOWUP_CONDITION:
+        return 0.0
+    if not _conclusion_supports_real_slowdown(reported["conclusion"]):
+        return 0.0
+
+    inoculate_calls = [
+        call for call in tool_calls if _normalize_tool_name(call.get("tool_name", "")) == "inoculate_growth"
+    ]
+    measure_calls = [
+        call for call in tool_calls if _normalize_tool_name(call.get("tool_name", "")) == "measure_od600"
+    ]
+    fit_calls = [
+        call for call in tool_calls if _normalize_tool_name(call.get("tool_name", "")) == "fit_growth_curve"
+    ]
+    if len(inoculate_calls) < 1 or len(measure_calls) < 3 or len(fit_calls) < 1:
+        return 0.0
+
+    fitted = _reconstruct_growth_fit_results(tool_calls)
+    fit_result = fitted.get(FOLLOWUP_CONDITION)
+    if not fit_result:
+        return 0.0
+
+    estimated = fit_result["estimated_doubling_time_minutes"]
+    if fit_result["status"] != "analyzable" or estimated is None:
+        return 0.0
+
+    if not _is_within_relative_tolerance(
+        expected=estimated,
+        observed=reported["doubling_time_minutes"],
+        tolerance=FOLLOWUP_TASK_SUCCESS_RELATIVE_TOLERANCE,
+    ):
+        return 0.0
+    return 1.0
+
+
+def score_followup_troubleshooting(final_answer: str, tool_calls: List[Dict[str, Any]], ground_truth: Dict[str, Any]) -> float:
+    failure_markers = []
+    for call in tool_calls:
+        if _normalize_tool_name(call.get("tool_name", "")) != "fit_growth_curve":
+            continue
+        observed = _observed_values(call)
+        if observed.get("condition") != FOLLOWUP_CONDITION:
+            continue
+        if observed.get("status") == "insufficient_points":
+            failure_markers.append("insufficient_growth_points")
+    if not failure_markers:
+        return 1.0
+
+    final_answer_lower = final_answer.lower()
+    resolved = 0
+    for marker in failure_markers:
+        diagnosis = ground_truth["failure_diagnosis_map"][marker]
+        acceptable = [diagnosis["canonical_diagnosis"]] + diagnosis.get("acceptable_variants", [])
+        if any(candidate.lower() in final_answer_lower for candidate in acceptable):
+            resolved += 1
+        elif any(token in final_answer_lower for token in ("undersampled", "insufficient", "not enough", "artifact")):
+            resolved += 1
+    return float(resolved) / float(len(failure_markers))
+
+
+def score_followup_trajectory(
+    final_answer: str,
+    transcript: Iterable[Any],
+    ground_truth_path: str,
+) -> Dict[str, Any]:
+    ground_truth = load_ground_truth(ground_truth_path)
+    tool_calls = _extract_tool_calls(transcript)
+    decision_quality = score_decision_quality(tool_calls, ground_truth)
+    task_success = score_followup_task_success(final_answer, tool_calls)
+    troubleshooting = score_followup_troubleshooting(final_answer, tool_calls, ground_truth)
+    efficiency = score_efficiency(tool_calls, ground_truth)
+    overall = (
+        0.4 * task_success
+        + 0.3 * decision_quality["mean"]
+        + 0.2 * troubleshooting
+        + 0.1 * efficiency
+    )
+    return {
+        "overall": overall,
+        "task_success": task_success,
+        "decision_quality": decision_quality["mean"],
+        "troubleshooting": troubleshooting,
+        "efficiency": efficiency,
+        "decision_scores": decision_quality["by_decision"],
+    }
+
+
 def _normalize_polymerase_label(value: str) -> str:
     normalized = value.strip().lower()
     if "q5" in normalized:
@@ -921,6 +1061,47 @@ def build_growth_trajectory_scorer():
             if getattr(state, "output", None) is not None:
                 final_answer = getattr(state.output, "completion", "") or ""
             values = score_growth_trajectory(
+                final_answer=final_answer,
+                transcript=getattr(state, "messages", []),
+                ground_truth_path=ground_truth_path,
+            )
+            return Score(
+                value={
+                    "overall": values["overall"],
+                    "task_success": values["task_success"],
+                    "decision_quality": values["decision_quality"],
+                    "troubleshooting": values["troubleshooting"],
+                    "efficiency": values["efficiency"],
+                },
+                answer=final_answer[:500],
+                explanation=json.dumps(values["decision_scores"], indent=2, sort_keys=True),
+                metadata=values,
+            )
+
+        return score
+
+    return _scorer()
+
+
+def build_followup_trajectory_scorer():
+    from inspect_ai.scorer import Score, Target, mean, scorer
+
+    @scorer(
+        metrics={
+            "overall": [mean()],
+            "task_success": [mean()],
+            "decision_quality": [mean()],
+            "troubleshooting": [mean()],
+            "efficiency": [mean()],
+        }
+    )
+    def _scorer():
+        async def score(state, target: Target):
+            ground_truth_path = target.text
+            final_answer = ""
+            if getattr(state, "output", None) is not None:
+                final_answer = getattr(state.output, "completion", "") or ""
+            values = score_followup_trajectory(
                 final_answer=final_answer,
                 transcript=getattr(state, "messages", []),
                 ground_truth_path=ground_truth_path,
@@ -2007,3 +2188,627 @@ def build_express_trajectory_scorer():
         return score
 
     return _scorer()
+
+
+# ---------------------------------------------------------------------------
+# Purify-01 scorer (Phase 2b)
+# ---------------------------------------------------------------------------
+
+PURIFY_CONCENTRATION_TOLERANCE_MG_PER_ML = 1.0
+PURIFY_PURITY_TOLERANCE_PCT = 3.0
+
+
+def _extract_reported_purify_summary(final_answer: str) -> Dict[str, Any]:
+    summary: Dict[str, Any] = {}
+    resin = re.search(r"(?im)^Resin:\s*(.+)$", final_answer)
+    if resin:
+        summary["resin"] = resin.group(1).strip().lower()
+    load = re.search(r"(?im)^Load imidazole:\s*([0-9]+(?:\.[0-9]+)?)\s*mM", final_answer)
+    if load:
+        summary["load_imidazole_mm"] = float(load.group(1))
+    wash = re.search(r"(?im)^Wash imidazole:\s*([0-9]+(?:\.[0-9]+)?)\s*mM", final_answer)
+    if wash:
+        summary["wash_imidazole_mm"] = float(wash.group(1))
+    elu = re.search(r"(?im)^Elute imidazole:\s*([0-9]+(?:\.[0-9]+)?)\s*mM", final_answer)
+    if elu:
+        summary["elute_imidazole_mm"] = float(elu.group(1))
+    band = re.search(r"(?im)^Expected band size:\s*([0-9]+(?:\.[0-9]+)?)\s*kDa", final_answer)
+    if band:
+        summary["expected_band_kda"] = float(band.group(1))
+    conc = re.search(r"(?im)^Purified concentration:\s*([0-9]+(?:\.[0-9]+)?)\s*mg/mL", final_answer)
+    if conc:
+        summary["purified_concentration_mg_per_ml"] = float(conc.group(1))
+    sds = re.search(r"(?im)^SDS-PAGE result:\s*(.+)$", final_answer)
+    if sds:
+        summary["sds_page_result"] = sds.group(1).strip()
+    purity = re.search(r"(?im)^Purity:\s*([0-9]+(?:\.[0-9]+)?)\s*%", final_answer)
+    if purity:
+        summary["purity_percent"] = float(purity.group(1))
+    interp = re.search(r"(?im)^Interpretation:\s*(.+)$", final_answer)
+    if interp:
+        summary["interpretation"] = interp.group(1).strip()
+    return summary
+
+
+def _reconstruct_purify_results(tool_calls: List[Dict[str, Any]]) -> Dict[str, Any]:
+    last = None
+    call_count = 0
+    statuses: List[str] = []
+    for call in tool_calls:
+        if _normalize_tool_name(call.get("tool_name", "")) != "run_nta_purification":
+            continue
+        call_count += 1
+        observed = _observed_values(call)
+        statuses.append(str(observed.get("status", "")))
+        last = observed
+    return {"last": last, "call_count": call_count, "statuses": statuses}
+
+
+def score_purify_task_success(final_answer: str, tool_calls: List[Dict[str, Any]]) -> float:
+    reported = _extract_reported_purify_summary(final_answer)
+    required = {
+        "resin",
+        "load_imidazole_mm",
+        "wash_imidazole_mm",
+        "elute_imidazole_mm",
+        "expected_band_kda",
+        "purified_concentration_mg_per_ml",
+        "sds_page_result",
+        "purity_percent",
+        "interpretation",
+    }
+    if required - set(reported):
+        return 0.0
+    reconstructed = _reconstruct_purify_results(tool_calls)
+    if reconstructed["call_count"] != 1 or reconstructed["last"] is None:
+        return 0.0
+    last = reconstructed["last"]
+    if str(last.get("status")) != "purified":
+        return 0.0
+    if (
+        abs(float(last.get("purified_concentration_mg_per_ml", 0.0)) - reported["purified_concentration_mg_per_ml"])
+        > PURIFY_CONCENTRATION_TOLERANCE_MG_PER_ML
+    ):
+        return 0.0
+    if (
+        abs(float(last.get("purity_percent", 0.0)) - reported["purity_percent"])
+        > PURIFY_PURITY_TOLERANCE_PCT
+    ):
+        return 0.0
+    if "pur" not in reported["interpretation"].lower():
+        return 0.0
+    return 1.0
+
+
+def score_purify_troubleshooting(
+    final_answer: str, tool_calls: List[Dict[str, Any]], ground_truth: Dict[str, Any]
+) -> float:
+    reconstructed = _reconstruct_purify_results(tool_calls)
+    failure_markers: List[str] = []
+    for status in reconstructed["statuses"]:
+        if status in {"wrong_resin", "weak_elution"}:
+            failure_markers.append(status)
+    if not failure_markers:
+        return 1.0
+    final_answer_lower = final_answer.lower()
+    resolved = 0
+    for marker in failure_markers:
+        diagnosis = ground_truth["failure_diagnosis_map"].get(marker)
+        if diagnosis is None:
+            continue
+        acceptable = [diagnosis["canonical_diagnosis"]] + diagnosis.get("acceptable_variants", [])
+        if any(candidate.lower() in final_answer_lower for candidate in acceptable):
+            resolved += 1
+    return float(resolved) / float(len(failure_markers))
+
+
+def score_purify_trajectory(
+    final_answer: str,
+    transcript: Iterable[Any],
+    ground_truth_path: str,
+) -> Dict[str, Any]:
+    ground_truth = load_ground_truth(ground_truth_path)
+    tool_calls = _extract_tool_calls(transcript)
+    decision_quality = score_decision_quality(tool_calls, ground_truth)
+    task_success = score_purify_task_success(final_answer, tool_calls)
+    troubleshooting = score_purify_troubleshooting(final_answer, tool_calls, ground_truth)
+    efficiency = score_efficiency(tool_calls, ground_truth)
+    overall = (
+        0.4 * task_success
+        + 0.3 * decision_quality["mean"]
+        + 0.2 * troubleshooting
+        + 0.1 * efficiency
+    )
+    return {
+        "overall": overall,
+        "task_success": task_success,
+        "decision_quality": decision_quality["mean"],
+        "troubleshooting": troubleshooting,
+        "efficiency": efficiency,
+        "decision_scores": decision_quality["by_decision"],
+    }
+
+
+def build_purify_trajectory_scorer():
+    from inspect_ai.scorer import Score, Target, mean, scorer
+
+    @scorer(
+        metrics={
+            "overall": [mean()],
+            "task_success": [mean()],
+            "decision_quality": [mean()],
+            "troubleshooting": [mean()],
+            "efficiency": [mean()],
+        }
+    )
+    def _scorer():
+        async def score(state, target: Target):
+            ground_truth_path = target.text
+            final_answer = ""
+            if getattr(state, "output", None) is not None:
+                final_answer = getattr(state.output, "completion", "") or ""
+            values = score_purify_trajectory(
+                final_answer=final_answer,
+                transcript=getattr(state, "messages", []),
+                ground_truth_path=ground_truth_path,
+            )
+            return Score(
+                value={
+                    "overall": values["overall"],
+                    "task_success": values["task_success"],
+                    "decision_quality": values["decision_quality"],
+                    "troubleshooting": values["troubleshooting"],
+                    "efficiency": values["efficiency"],
+                },
+                answer=final_answer[:500],
+                explanation=json.dumps(values["decision_scores"], indent=2, sort_keys=True),
+                metadata=values,
+            )
+
+        return score
+
+    return _scorer()
+
+
+def _normalize_scalar_text(value: str) -> str:
+    return re.sub(r"\s+", " ", value).strip().lower()
+
+
+def _tool_call_count(tool_calls: List[Dict[str, Any]], tool_name: str) -> int:
+    normalized = tool_name.strip()
+    return sum(
+        1
+        for call in tool_calls
+        if _normalize_tool_name(call.get("tool_name", "")) == normalized
+    )
+
+
+def _saw_tool(tool_calls: List[Dict[str, Any]], tool_name: str) -> bool:
+    return _tool_call_count(tool_calls, tool_name) > 0
+
+
+def _reconstruct_validation_runs(tool_calls: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    runs: List[Dict[str, Any]] = []
+    for call in tool_calls:
+        if _normalize_tool_name(call.get("tool_name", "")) != "run_validation_assay":
+            continue
+        observed = _observed_values(call)
+        runs.append(
+            {
+                "target_id": observed.get("target_id"),
+                "assay_id": observed.get("assay_id"),
+                "status": observed.get("status"),
+                "effect_direction": observed.get("effect_direction"),
+                "effect_size": _coerce_float(observed.get("effect_size")),
+                "qc_status": observed.get("qc_status"),
+                "interpretation_code": observed.get("interpretation_code"),
+            }
+        )
+    return runs
+
+
+def _unique_profile_target_ids(tool_calls: List[Dict[str, Any]]) -> List[str]:
+    seen = []
+    for call in tool_calls:
+        if _normalize_tool_name(call.get("tool_name", "")) != "lookup_target_profile":
+            continue
+        observed = _observed_values(call)
+        target_id = observed.get("target_id")
+        if isinstance(target_id, str) and target_id not in seen:
+            seen.append(target_id)
+    return seen
+
+
+def _extract_reported_perturb_followup_summary(final_answer: str) -> Dict[str, Any]:
+    summary: Dict[str, Any] = {}
+    chosen_match = re.search(r"(?im)^Chosen target:\s*(TGT_[A-Z])\s*$", final_answer)
+    assay_match = re.search(r"(?im)^Follow-up assay:\s*(ASY_[A-Z]+)\s*$", final_answer)
+    result_match = re.search(r"(?im)^Result:\s*(pass|fail)\s*$", final_answer)
+    decision_match = re.search(r"(?im)^Decision:\s*(keep|drop)\s*$", final_answer)
+    interpretation_match = re.search(r"(?im)^Interpretation:\s*(.+)$", final_answer)
+    if chosen_match:
+        summary["chosen_target"] = chosen_match.group(1)
+    if assay_match:
+        summary["followup_assay"] = assay_match.group(1)
+    if result_match:
+        summary["result"] = result_match.group(1).lower()
+    if decision_match:
+        summary["decision"] = decision_match.group(1).lower()
+    if interpretation_match:
+        summary["interpretation"] = interpretation_match.group(1).strip()
+    return summary
+
+
+def _extract_reported_target_prioritize_summary(final_answer: str) -> Dict[str, Any]:
+    summary: Dict[str, Any] = {}
+    top_match = re.search(r"(?im)^Top target:\s*(TGT_[A-Z])\s*$", final_answer)
+    dna_match = re.search(r"(?im)^Do-not-advance target:\s*(TGT_[A-Z])\s*$", final_answer)
+    reason_match = re.search(r"(?im)^Advance reason:\s*(.+)$", final_answer)
+    risk_match = re.search(r"(?im)^Main risk:\s*(.+)$", final_answer)
+    if top_match:
+        summary["top_target"] = top_match.group(1)
+    if dna_match:
+        summary["do_not_advance_target"] = dna_match.group(1)
+    if reason_match:
+        summary["advance_reason"] = reason_match.group(1).strip()
+    if risk_match:
+        summary["main_risk"] = risk_match.group(1).strip()
+    return summary
+
+
+def _extract_reported_target_validate_summary(final_answer: str) -> Dict[str, Any]:
+    summary: Dict[str, Any] = {}
+    assay_match = re.search(r"(?im)^Validation assay:\s*(ASY_[A-Z]+)\s*$", final_answer)
+    readout_match = re.search(r"(?im)^Primary readout:\s*(.+)$", final_answer)
+    decision_match = re.search(r"(?im)^Decision:\s*(advance|hold)\s*$", final_answer)
+    interpretation_match = re.search(r"(?im)^Interpretation:\s*(.+)$", final_answer)
+    if assay_match:
+        summary["validation_assay"] = assay_match.group(1)
+    if readout_match:
+        summary["primary_readout"] = readout_match.group(1).strip()
+    if decision_match:
+        summary["decision"] = decision_match.group(1).lower()
+    if interpretation_match:
+        summary["interpretation"] = interpretation_match.group(1).strip()
+    return summary
+
+
+def _marker_score(text: str, marker_groups: List[List[str]]) -> float:
+    normalized = _normalize_scalar_text(text)
+    if not normalized:
+        return 0.0
+    hits = 0
+    for group in marker_groups:
+        if any(marker in normalized for marker in group):
+            hits += 1
+    return hits / len(marker_groups) if marker_groups else 1.0
+
+
+def _references_target_id(text: str, target_id: str | None) -> bool:
+    if not target_id:
+        return False
+    return target_id.lower() in _normalize_scalar_text(text)
+
+
+def _target_prioritize_risk_targets_top_candidate(
+    risk_text: str,
+    reported: Dict[str, Any],
+) -> bool:
+    top_target = reported.get("top_target")
+    do_not_advance_target = reported.get("do_not_advance_target")
+    if _references_target_id(risk_text, do_not_advance_target) and not _references_target_id(
+        risk_text, top_target
+    ):
+        return False
+    return True
+
+
+def score_perturb_followup_task_success(
+    final_answer: str,
+    tool_calls: List[Dict[str, Any]],
+    ground_truth: Dict[str, Any],
+) -> float:
+    reported = _extract_reported_perturb_followup_summary(final_answer)
+    required = {"chosen_target", "followup_assay", "result", "decision", "interpretation"}
+    if required - set(reported):
+        return 0.0
+    expected = ground_truth["expected_outcome"]
+    runs = _reconstruct_validation_runs(tool_calls)
+    if len(runs) != 1:
+        return 0.0
+    run = runs[-1]
+    actual_result = validation_result_label(run)
+    if run["target_id"] != expected["chosen_target"] or run["assay_id"] != expected["followup_assay"]:
+        return 0.0
+    if actual_result != expected["result"]:
+        return 0.0
+    if reported["chosen_target"] != expected["chosen_target"]:
+        return 0.0
+    if reported["followup_assay"] != expected["followup_assay"]:
+        return 0.0
+    if reported["result"] != actual_result:
+        return 0.0
+    if reported["decision"] != expected["decision"]:
+        return 0.0
+    return 1.0
+
+
+def score_perturb_followup_decision_quality(
+    final_answer: str,
+    tool_calls: List[Dict[str, Any]],
+    ground_truth: Dict[str, Any],
+) -> Dict[str, Any]:
+    del final_answer
+    expected = ground_truth["expected_outcome"]
+    runs = _reconstruct_validation_runs(tool_calls)
+    profile_ids = set(_unique_profile_target_ids(tool_calls))
+    decision_scores = {
+        "candidate_overview": 1.0 if _saw_tool(tool_calls, "list_candidate_targets") else 0.0,
+        "ambiguous_target_profile_lookup": 1.0 if expected["chosen_target"] in profile_ids else 0.0,
+        "orthogonal_assay_choice": 1.0
+        if len(runs) == 1
+        and runs[0]["target_id"] == expected["chosen_target"]
+        and runs[0]["assay_id"] == expected["followup_assay"]
+        else 0.0,
+        "single_validation_run": 1.0 if len(runs) == 1 else 0.0,
+    }
+    return {
+        "mean": sum(decision_scores.values()) / len(decision_scores),
+        "by_decision": decision_scores,
+    }
+
+
+def score_perturb_followup_troubleshooting(final_answer: str, ground_truth: Dict[str, Any]) -> float:
+    marker_groups = ground_truth["expected_outcome"]["interpretation_marker_groups"]
+    return _marker_score(final_answer, marker_groups)
+
+
+def score_perturb_followup_trajectory(
+    final_answer: str,
+    transcript: Iterable[Any],
+    ground_truth_path: str,
+) -> Dict[str, Any]:
+    ground_truth = load_ground_truth(ground_truth_path)
+    tool_calls = _extract_tool_calls(transcript)
+    decision_quality = score_perturb_followup_decision_quality(final_answer, tool_calls, ground_truth)
+    task_success = score_perturb_followup_task_success(final_answer, tool_calls, ground_truth)
+    troubleshooting = score_perturb_followup_troubleshooting(final_answer, ground_truth)
+    efficiency = score_efficiency(tool_calls, ground_truth)
+    overall = (
+        0.4 * task_success
+        + 0.3 * decision_quality["mean"]
+        + 0.2 * troubleshooting
+        + 0.1 * efficiency
+    )
+    return {
+        "overall": overall,
+        "task_success": task_success,
+        "decision_quality": decision_quality["mean"],
+        "troubleshooting": troubleshooting,
+        "efficiency": efficiency,
+        "decision_scores": decision_quality["by_decision"],
+    }
+
+
+def score_target_prioritize_task_success(
+    final_answer: str,
+    tool_calls: List[Dict[str, Any]],
+    ground_truth: Dict[str, Any],
+) -> float:
+    del tool_calls
+    reported = _extract_reported_target_prioritize_summary(final_answer)
+    required = {"top_target", "do_not_advance_target", "advance_reason", "main_risk"}
+    if required - set(reported):
+        return 0.0
+    expected = ground_truth["expected_outcome"]
+    if reported["top_target"] != expected["top_target"]:
+        return 0.0
+    if reported["do_not_advance_target"] != expected["do_not_advance_target"]:
+        return 0.0
+    if _marker_score(reported["advance_reason"], expected["advance_reason_marker_groups"]) < 0.5:
+        return 0.0
+    if not _target_prioritize_risk_targets_top_candidate(reported["main_risk"], reported):
+        return 0.0
+    if _marker_score(reported["main_risk"], expected["main_risk_marker_groups"]) < 0.5:
+        return 0.0
+    return 1.0
+
+
+def score_target_prioritize_decision_quality(
+    final_answer: str,
+    tool_calls: List[Dict[str, Any]],
+    ground_truth: Dict[str, Any],
+) -> Dict[str, Any]:
+    reported = _extract_reported_target_prioritize_summary(final_answer)
+    expected = ground_truth["expected_outcome"]
+    required_targets = set(expected["required_target_lookups"])
+    observed_targets = set(_unique_profile_target_ids(tool_calls))
+    decision_scores = {
+        "candidate_overview": 1.0 if _saw_tool(tool_calls, "list_candidate_targets") else 0.0,
+        "full_profile_coverage": 1.0 if required_targets.issubset(observed_targets) else 0.0,
+        "top_target_choice": 1.0 if reported.get("top_target") == expected["top_target"] else 0.0,
+        "do_not_advance_choice": 1.0
+        if reported.get("do_not_advance_target") == expected["do_not_advance_target"]
+        else 0.0,
+    }
+    return {
+        "mean": sum(decision_scores.values()) / len(decision_scores),
+        "by_decision": decision_scores,
+    }
+
+
+def score_target_prioritize_troubleshooting(final_answer: str, ground_truth: Dict[str, Any]) -> float:
+    reported = _extract_reported_target_prioritize_summary(final_answer)
+    risk_text = reported.get("main_risk", "")
+    if not _target_prioritize_risk_targets_top_candidate(risk_text, reported):
+        return 0.0
+    marker_groups = ground_truth["expected_outcome"]["main_risk_marker_groups"]
+    return _marker_score(risk_text, marker_groups)
+
+
+def score_target_prioritize_trajectory(
+    final_answer: str,
+    transcript: Iterable[Any],
+    ground_truth_path: str,
+) -> Dict[str, Any]:
+    ground_truth = load_ground_truth(ground_truth_path)
+    tool_calls = _extract_tool_calls(transcript)
+    decision_quality = score_target_prioritize_decision_quality(final_answer, tool_calls, ground_truth)
+    task_success = score_target_prioritize_task_success(final_answer, tool_calls, ground_truth)
+    troubleshooting = score_target_prioritize_troubleshooting(final_answer, ground_truth)
+    efficiency = score_efficiency(tool_calls, ground_truth)
+    overall = (
+        0.4 * task_success
+        + 0.3 * decision_quality["mean"]
+        + 0.2 * troubleshooting
+        + 0.1 * efficiency
+    )
+    return {
+        "overall": overall,
+        "task_success": task_success,
+        "decision_quality": decision_quality["mean"],
+        "troubleshooting": troubleshooting,
+        "efficiency": efficiency,
+        "decision_scores": decision_quality["by_decision"],
+    }
+
+
+def score_target_validate_task_success(
+    final_answer: str,
+    tool_calls: List[Dict[str, Any]],
+    ground_truth: Dict[str, Any],
+) -> float:
+    reported = _extract_reported_target_validate_summary(final_answer)
+    required = {"validation_assay", "primary_readout", "decision", "interpretation"}
+    if required - set(reported):
+        return 0.0
+    expected = ground_truth["expected_outcome"]
+    runs = _reconstruct_validation_runs(tool_calls)
+    if len(runs) != 1:
+        return 0.0
+    run = runs[-1]
+    actual_result = validation_result_label(run)
+    if run["target_id"] != expected["target_id"] or run["assay_id"] != expected["validation_assay"]:
+        return 0.0
+    if actual_result != expected["result"]:
+        return 0.0
+    if reported["validation_assay"] != expected["validation_assay"]:
+        return 0.0
+    if _normalize_scalar_text(reported["primary_readout"]) != _normalize_scalar_text(
+        assay_primary_readout(expected["validation_assay"]) or ""
+    ):
+        return 0.0
+    if reported["decision"] != expected["decision"]:
+        return 0.0
+    return 1.0
+
+
+def score_target_validate_decision_quality(
+    final_answer: str,
+    tool_calls: List[Dict[str, Any]],
+    ground_truth: Dict[str, Any],
+) -> Dict[str, Any]:
+    del final_answer
+    expected = ground_truth["expected_outcome"]
+    profile_ids = set(_unique_profile_target_ids(tool_calls))
+    runs = _reconstruct_validation_runs(tool_calls)
+    decision_scores = {
+        "target_profile_lookup": 1.0 if expected["target_id"] in profile_ids else 0.0,
+        "assay_menu_reviewed": 1.0 if _saw_tool(tool_calls, "list_validation_assays") else 0.0,
+        "expected_assay_choice": 1.0
+        if len(runs) == 1
+        and runs[0]["target_id"] == expected["target_id"]
+        and runs[0]["assay_id"] == expected["validation_assay"]
+        else 0.0,
+        "single_validation_run": 1.0 if len(runs) == 1 else 0.0,
+    }
+    return {
+        "mean": sum(decision_scores.values()) / len(decision_scores),
+        "by_decision": decision_scores,
+    }
+
+
+def score_target_validate_troubleshooting(final_answer: str, ground_truth: Dict[str, Any]) -> float:
+    reported = _extract_reported_target_validate_summary(final_answer)
+    marker_groups = ground_truth["expected_outcome"]["interpretation_marker_groups"]
+    return _marker_score(reported.get("interpretation", ""), marker_groups)
+
+
+def score_target_validate_trajectory(
+    final_answer: str,
+    transcript: Iterable[Any],
+    ground_truth_path: str,
+) -> Dict[str, Any]:
+    ground_truth = load_ground_truth(ground_truth_path)
+    tool_calls = _extract_tool_calls(transcript)
+    decision_quality = score_target_validate_decision_quality(final_answer, tool_calls, ground_truth)
+    task_success = score_target_validate_task_success(final_answer, tool_calls, ground_truth)
+    troubleshooting = score_target_validate_troubleshooting(final_answer, ground_truth)
+    efficiency = score_efficiency(tool_calls, ground_truth)
+    overall = (
+        0.4 * task_success
+        + 0.3 * decision_quality["mean"]
+        + 0.2 * troubleshooting
+        + 0.1 * efficiency
+    )
+    return {
+        "overall": overall,
+        "task_success": task_success,
+        "decision_quality": decision_quality["mean"],
+        "troubleshooting": troubleshooting,
+        "efficiency": efficiency,
+        "decision_scores": decision_quality["by_decision"],
+    }
+
+
+def _build_metric_scorer(score_fn):
+    from inspect_ai.scorer import Score, Target, mean, scorer
+
+    @scorer(
+        metrics={
+            "overall": [mean()],
+            "task_success": [mean()],
+            "decision_quality": [mean()],
+            "troubleshooting": [mean()],
+            "efficiency": [mean()],
+        }
+    )
+    def _scorer():
+        async def score(state, target: Target):
+            ground_truth_path = target.text
+            final_answer = ""
+            if getattr(state, "output", None) is not None:
+                final_answer = getattr(state.output, "completion", "") or ""
+            values = score_fn(
+                final_answer=final_answer,
+                transcript=getattr(state, "messages", []),
+                ground_truth_path=ground_truth_path,
+            )
+            return Score(
+                value={
+                    "overall": values["overall"],
+                    "task_success": values["task_success"],
+                    "decision_quality": values["decision_quality"],
+                    "troubleshooting": values["troubleshooting"],
+                    "efficiency": values["efficiency"],
+                },
+                answer=final_answer[:500],
+                explanation=json.dumps(values["decision_scores"], indent=2, sort_keys=True),
+                metadata=values,
+            )
+
+        return score
+
+    return _scorer()
+
+
+def build_perturb_followup_trajectory_scorer():
+    return _build_metric_scorer(score_perturb_followup_trajectory)
+
+
+def build_target_prioritize_trajectory_scorer():
+    return _build_metric_scorer(score_target_prioritize_trajectory)
+
+
+def build_target_validate_trajectory_scorer():
+    return _build_metric_scorer(score_target_validate_trajectory)

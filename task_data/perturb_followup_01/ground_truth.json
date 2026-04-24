@@ -1,0 +1,109 @@
+{
+  "task_id": "perturb_followup_01",
+  "decision_points": [
+    {
+      "id": "inspect_ambiguous_target_profile",
+      "description": "Inspect the full profile for the ambiguous candidate before committing to a follow-up.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "lookup_target_profile",
+        "argument": "target_id",
+        "occurrence": "any"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": "TGT_C"
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "Open Targets: a platform for therapeutic target identification and validation",
+          "doi": "10.1093/nar/gkw1055",
+          "canonical_url": "https://doi.org/10.1093/nar/gkw1055",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed target-validation platform paper supporting evidence-based profile inspection before prioritization."
+        }
+      ]
+    },
+    {
+      "id": "choose_orthogonal_followup_assay",
+      "description": "Use the pathway-state orthogonal readout to resolve a screen-versus-QC conflict.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "run_validation_assay",
+        "argument": "assay_id",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": "ASY_PATHWAY"
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "Perturb-Seq: Dissecting Molecular Circuits with Scalable Single-Cell RNA Profiling of Pooled Genetic Screens",
+          "doi": "10.1016/j.cell.2016.11.038",
+          "canonical_url": "https://doi.org/10.1016/j.cell.2016.11.038",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed perturbation-screening paper motivating orthogonal readouts for resolving candidate-level effects."
+        }
+      ]
+    },
+    {
+      "id": "stay_on_one_target",
+      "description": "Keep the follow-up focused on the ambiguous target instead of branching into other candidates.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "run_validation_assay",
+        "argument": "target_id",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": "TGT_C"
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "Target validation in drug discovery",
+          "doi": "10.1385/1-59745-217-3:367",
+          "canonical_url": "https://doi.org/10.1385/1-59745-217-3:367",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed methods chapter supporting focused validation of a single molecular target before broader commitment."
+        }
+      ]
+    }
+  ],
+  "failure_diagnosis_map": {},
+  "efficiency_reference": {
+    "optimal_tool_calls": 4,
+    "max_reasonable_tool_calls": 6,
+    "reagent_budget": {
+      "candidate_lookups": 2,
+      "validation_assays": 1
+    }
+  },
+  "expected_outcome": {
+    "chosen_target": "TGT_C",
+    "followup_assay": "ASY_PATHWAY",
+    "result": "fail",
+    "decision": "drop",
+    "interpretation_marker_groups": [
+      [
+        "ambiguous",
+        "screen and qc",
+        "qc disagreement"
+      ],
+      [
+        "qc",
+        "quality"
+      ],
+      [
+        "not support",
+        "did not support",
+        "not reproduced",
+        "orthogonal"
+      ]
+    ]
+  }
+}

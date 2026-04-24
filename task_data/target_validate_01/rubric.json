@@ -1,0 +1,98 @@
+{
+  "task_id": "target_validate_01",
+  "task_title": "Run one orthogonal validation assay on the lead target",
+  "source": "Discovery Decision Track",
+  "num_errors_introduced": 0,
+  "total_leaf_nodes": 7,
+  "rubric": {
+    "name": "Task Evaluation",
+    "weight": 1.0,
+    "is_leaf": false,
+    "children": [
+      {
+        "name": "Task Success",
+        "weight": 0.4,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Reports the correct assay, readout, and advance decision",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "task_success",
+            "requirement": "The final answer uses ASY_CYTOKINE, names its primary readout, and concludes advance for TGT_A.",
+            "grading_notes": "Requires exact assay ID, matching primary readout text, and decision consistency with the transcript."
+          }
+        ]
+      },
+      {
+        "name": "Decision Quality",
+        "weight": 0.3,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Inspects the lead target profile",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "The agent looks up TGT_A before choosing the assay.",
+            "grading_notes": "Measured from lookup_target_profile."
+          },
+          {
+            "name": "Reviews the assay menu",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "The agent inspects the validation assay options before running one.",
+            "grading_notes": "Measured from list_validation_assays."
+          },
+          {
+            "name": "Chooses the best first assay",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "The validation run uses ASY_CYTOKINE on TGT_A.",
+            "grading_notes": "Measured from run_validation_assay."
+          },
+          {
+            "name": "Keeps to one assay run",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "The agent runs exactly one validation assay.",
+            "grading_notes": "Measured from the count of run_validation_assay calls."
+          }
+        ]
+      },
+      {
+        "name": "Troubleshooting",
+        "weight": 0.2,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Interprets the orthogonal validation result correctly",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "troubleshooting",
+            "requirement": "The interpretation explains that the orthogonal assay supports the lead target strongly enough to advance.",
+            "grading_notes": "Measured from interpretation-line keyword coverage."
+          }
+        ]
+      },
+      {
+        "name": "Efficiency",
+        "weight": 0.1,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Uses a compact validation workflow",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "efficiency",
+            "requirement": "The trajectory stays within the expected one-target, one-assay call budget.",
+            "grading_notes": "Full credit at or under the optimal tool-call budget."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "task_id": "target_prioritize_01",
+  "task_title": "Prioritize four perturbation-derived candidate targets",
+  "source": "Discovery Decision Track",
+  "num_errors_introduced": 0,
+  "total_leaf_nodes": 7,
+  "rubric": {
+    "name": "Task Evaluation",
+    "weight": 1.0,
+    "is_leaf": false,
+    "children": [
+      {
+        "name": "Task Success",
+        "weight": 0.4,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Reports the correct advance and do-not-advance targets",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "task_success",
+            "requirement": "The final answer advances TGT_A, rules out TGT_B as the clearest immediate no-go, and provides a plausible reason plus a remaining-risk statement for TGT_A.",
+            "grading_notes": "Requires exact target IDs plus nonempty reason/risk lines that reflect the intended triage logic."
+          }
+        ]
+      },
+      {
+        "name": "Decision Quality",
+        "weight": 0.3,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Inspects the candidate overview",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "The agent inspects the candidate shortlist.",
+            "grading_notes": "Measured from list_candidate_targets."
+          },
+          {
+            "name": "Inspects all four target profiles",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "The agent looks up TGT_A through TGT_D before deciding.",
+            "grading_notes": "Measured from lookup_target_profile coverage."
+          },
+          {
+            "name": "Chooses the correct top target",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "The final answer selects TGT_A as the top target.",
+            "grading_notes": "Measured from the final answer."
+          },
+          {
+            "name": "Chooses the correct do-not-advance target",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "The final answer selects TGT_B as the clearest immediate no-go rather than using the slot for the ambiguous follow-up candidate.",
+            "grading_notes": "Measured from the final answer."
+          }
+        ]
+      },
+      {
+        "name": "Troubleshooting",
+        "weight": 0.2,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Names the main remaining risk for the top target",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "troubleshooting",
+            "requirement": "The final answer acknowledges that the top target still carries a context, translational, or mechanistic generalization risk.",
+            "grading_notes": "Measured from risk-line keyword coverage and whether the risk statement stays focused on the top target."
+          }
+        ]
+      },
+      {
+        "name": "Efficiency",
+        "weight": 0.1,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Uses a compact prioritization workflow",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "efficiency",
+            "requirement": "The trajectory stays within the expected lookup-only call budget.",
+            "grading_notes": "Full credit at or under the optimal tool-call budget."
+          }
+        ]
+      }
+    ]
+  }
+}

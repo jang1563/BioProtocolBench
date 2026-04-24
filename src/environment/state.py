@@ -240,6 +240,26 @@ class ProteinExpression:
 
 
 @dataclass
+class NtaPurification:
+    """Ni-NTA affinity purification of a His-tagged benign protein."""
+
+    purification_id: str
+    resin_name: str
+    load_imidazole_mm: float
+    wash_imidazole_mm: float
+    elute_imidazole_mm: float
+    flow_rate_ml_per_min: float
+    column_bed_volume_ml: float
+    target_protein_name: str
+    expected_band_kda: float
+    status: str
+    purified_concentration_mg_per_ml: float
+    purity_percent: float
+    sds_page_result: str
+    notes: List[str] = field(default_factory=list)
+
+
+@dataclass
 class LabState:
     sample_id: str
     seed: int
@@ -260,6 +280,7 @@ class LabState:
     gibson_reactions: Dict[str, GibsonReaction] = field(default_factory=dict)
     miniprep_samples: Dict[str, MiniprepSample] = field(default_factory=dict)
     protein_expressions: Dict[str, ProteinExpression] = field(default_factory=dict)
+    nta_purifications: Dict[str, NtaPurification] = field(default_factory=dict)
     event_log: List[Dict[str, Any]] = field(default_factory=list)
     plate_counter: int = 0
     culture_counter: int = 0
@@ -275,6 +296,7 @@ class LabState:
     gibson_counter: int = 0
     miniprep_counter: int = 0
     expression_counter: int = 0
+    nta_purification_counter: int = 0
     cloning_substrates_initialized: bool = False
     golden_gate_substrates_initialized: bool = False
     gibson_substrates_initialized: bool = False
@@ -334,6 +356,10 @@ class LabState:
     def next_expression_id(self) -> str:
         self.expression_counter += 1
         return "expression_{:03d}".format(self.expression_counter)
+
+    def next_nta_purification_id(self) -> str:
+        self.nta_purification_counter += 1
+        return "purification_{:03d}".format(self.nta_purification_counter)
 
     def log_event(self, kind: str, payload: Dict[str, Any]) -> None:
         self.event_log.append({"kind": kind, "payload": payload})

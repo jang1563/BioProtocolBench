@@ -1,0 +1,107 @@
+{
+  "task_id": "target_validate_01",
+  "decision_points": [
+    {
+      "id": "inspect_lead_target_profile",
+      "description": "Inspect the lead target profile before selecting a first validation experiment.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "lookup_target_profile",
+        "argument": "target_id",
+        "occurrence": "any"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": "TGT_A"
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "Open Targets: a platform for therapeutic target identification and validation",
+          "doi": "10.1093/nar/gkw1055",
+          "canonical_url": "https://doi.org/10.1093/nar/gkw1055",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed target-validation platform paper supporting target-profile inspection before experiment selection."
+        }
+      ]
+    },
+    {
+      "id": "choose_best_first_validation_assay",
+      "description": "Select the orthogonal cytokine-response assay as the best first de-risking experiment for the leading target.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "run_validation_assay",
+        "argument": "assay_id",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": "ASY_CYTOKINE"
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "Target validation in drug discovery",
+          "doi": "10.1385/1-59745-217-3:367",
+          "canonical_url": "https://doi.org/10.1385/1-59745-217-3:367",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed methods chapter supporting selection of the most informative first validation experiment."
+        }
+      ]
+    },
+    {
+      "id": "stay_on_the_lead_target",
+      "description": "Keep the validation run focused on the lead target rather than drifting across the candidate set.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "run_validation_assay",
+        "argument": "target_id",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": "TGT_A"
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "Validating therapeutic targets through human genetics",
+          "doi": "10.1038/nrd4051",
+          "canonical_url": "https://doi.org/10.1038/nrd4051",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed review supporting focused target validation against therapeutic hypotheses before broader branching."
+        }
+      ]
+    }
+  ],
+  "failure_diagnosis_map": {},
+  "efficiency_reference": {
+    "optimal_tool_calls": 3,
+    "max_reasonable_tool_calls": 5,
+    "reagent_budget": {
+      "candidate_lookups": 1,
+      "validation_assays": 1
+    }
+  },
+  "expected_outcome": {
+    "target_id": "TGT_A",
+    "validation_assay": "ASY_CYTOKINE",
+    "primary_readout": "change in inflammatory cytokine program",
+    "result": "pass",
+    "decision": "advance",
+    "interpretation_marker_groups": [
+      [
+        "orthogonal",
+        "validation"
+      ],
+      [
+        "support",
+        "supported"
+      ],
+      [
+        "advance",
+        "advance it"
+      ]
+    ]
+  }
+}

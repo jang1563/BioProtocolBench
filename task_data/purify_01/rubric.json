@@ -1,0 +1,98 @@
+{
+  "task_id": "purify_01",
+  "task_title": "Ni-NTA affinity purification of a benign His-tagged MBP-GFP fusion",
+  "source": "LabCraft Purify-01",
+  "num_errors_introduced": 0,
+  "total_leaf_nodes": 7,
+  "rubric": {
+    "name": "Task Evaluation",
+    "weight": 1.0,
+    "is_leaf": false,
+    "children": [
+      {
+        "name": "Task Success",
+        "weight": 0.4,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Reports resin, imidazole conditions, band, concentration, purity, interpretation",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "task_success",
+            "requirement": "Final answer contains every required field, concentration matches simulator within 1 mg/mL, purity within 3%, interpretation mentions 'pure' or 'purity' or 'purification'.",
+            "grading_notes": "Measured by score_purify_task_success."
+          }
+        ]
+      },
+      {
+        "name": "Decision Quality",
+        "weight": 0.3,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Uses a Ni-NTA affinity resin",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Resin is an accepted Ni-NTA-family medium.",
+            "grading_notes": "Measured from run_nta_purification.resin_normalized."
+          },
+          {
+            "name": "Load imidazole 10-20 mM",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "10-20 mM imidazole in load buffer.",
+            "grading_notes": "Measured from run_nta_purification.load_imidazole_mm."
+          },
+          {
+            "name": "Wash imidazole 40-60 mM",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "40-60 mM imidazole in wash buffer.",
+            "grading_notes": "Measured from run_nta_purification.wash_imidazole_mm."
+          },
+          {
+            "name": "Elution imidazole >= 200 mM",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "Elution imidazole at least 200 mM.",
+            "grading_notes": "Measured from run_nta_purification.elute_imidazole_mm."
+          }
+        ]
+      },
+      {
+        "name": "Troubleshooting",
+        "weight": 0.2,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Diagnoses wrong resin or weak elution when triggered",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "troubleshooting",
+            "requirement": "If purification reports wrong_resin or weak_elution, final answer explains the corresponding failure.",
+            "grading_notes": "Defaults to 1.0 if no failure is triggered."
+          }
+        ]
+      },
+      {
+        "name": "Efficiency",
+        "weight": 0.1,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Uses a reasonable number of tool calls",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "efficiency",
+            "requirement": "Stays within the reference tool-call budget (optimal = 1 call).",
+            "grading_notes": "Full credit at optimal_tool_calls."
+          }
+        ]
+      }
+    ]
+  }
+}

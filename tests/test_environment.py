@@ -28,6 +28,7 @@ from src.environment.operations import (
     restriction_digest,
     run_colony_pcr,
     run_gel,
+    run_nta_purification,
     run_pcr,
     run_protein_expression,
     transform,
@@ -42,6 +43,7 @@ from src.environment.stochastic import (
     load_gibson_parameters,
     load_golden_gate_parameters,
     load_miniprep_parameters,
+    load_purification_parameters,
     load_screening_parameters,
 )
 from src.tools.lab_tools import (
@@ -869,3 +871,54 @@ def test_run_protein_expression_wrong_ph_flagged():
         lysis_buffer_ph=5.0,
     )
     assert result["status"] in {"wrong_lysis_ph"}
+
+
+PURIFICATION_PARAMETERS_PATH = (
+    Path(__file__).resolve().parents[1] / "data" / "parameters" / "purification.json"
+)
+
+
+def test_purification_parameter_bundle_exposes_required_values():
+    bundle = load_purification_parameters(PURIFICATION_PARAMETERS_PATH)
+    assert "Ni-NTA" in bundle.choices("accepted_resins")
+    load_range = bundle.number_list("load_imidazole_mm_range")
+    assert load_range == [10.0, 20.0]
+    assert bundle.value("elute_imidazole_mm_min") == pytest.approx(200.0)
+
+
+def test_run_nta_purification_happy_path():
+    state = create_lab_state(sample_id="purify-happy", seed=1)
+    result = run_nta_purification(
+        state=state,
+        resin_name="Ni-NTA",
+        load_imidazole_mm=20.0,
+        wash_imidazole_mm=50.0,
+        elute_imidazole_mm=250.0,
+    )
+    assert result["status"] == "purified"
+    assert result["purity_percent"] >= 90.0
+    assert "single_clean_band" in result["sds_page_result"]
+
+
+def test_run_nta_purification_wrong_resin_flagged():
+    state = create_lab_state(sample_id="purify-wrong-resin", seed=1)
+    result = run_nta_purification(
+        state=state,
+        resin_name="glutathione agarose",
+        load_imidazole_mm=20.0,
+        wash_imidazole_mm=50.0,
+        elute_imidazole_mm=250.0,
+    )
+    assert result["status"] == "wrong_resin"
+
+
+def test_run_nta_purification_weak_elution_flagged():
+    state = create_lab_state(sample_id="purify-weak-elution", seed=1)
+    result = run_nta_purification(
+        state=state,
+        resin_name="Ni-NTA",
+        load_imidazole_mm=20.0,
+        wash_imidazole_mm=50.0,
+        elute_imidazole_mm=100.0,
+    )
+    assert result["status"] == "weak_elution"

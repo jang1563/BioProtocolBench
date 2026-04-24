@@ -3,18 +3,18 @@
 
 Scans every .eval archive in the log directory (default results/logs), pulls
 model/task/status and per-axis scores out of each log's header.json and
-samples/*.json, then writes a human-readable Markdown summary with
-per-(model, task) means and standard deviations.
+samples/*.json, deduplicates repeated reruns by keeping the latest archive for
+each (model, task, sample_id), then writes a human-readable Markdown summary
+with per-(model, task) means and standard deviations.
 """
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
 import json
 import os
 import statistics
 import sys
-import tempfile
-import zipfile
 from collections import defaultdict
 from pathlib import Path
 
@@ -25,66 +25,130 @@ DEFAULT_OUT = REPO_ROOT / "results" / "results.md"
 AXES = ("overall", "task_success", "decision_quality", "troubleshooting", "efficiency")
 
 
+def resolve_repo_path(path_str: str) -> Path:
+    path = Path(path_str)
+    if not path.is_absolute():
+        path = REPO_ROOT / path
+    return path.resolve()
+
+
+def repo_relative_display_path(path: Path) -> str:
+    try:
+        return path.relative_to(REPO_ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
+def _is_repo_relative_path(path: Path) -> bool:
+    try:
+        path.relative_to(REPO_ROOT)
+        return True
+    except ValueError:
+        return False
+
+
+def _format_log_dir_reference(log_dir: Path) -> str:
+    rel = repo_relative_display_path(log_dir)
+    if _is_repo_relative_path(log_dir):
+        return "[{rel}](../{rel})".format(rel=rel)
+    return "`{}`".format(rel)
+
+
+def _parse_created_timestamp(value: object) -> datetime:
+    if not isinstance(value, str) or not value.strip():
+        return datetime.min.replace(tzinfo=timezone.utc)
+    normalized = value.strip()
+    if normalized.endswith("Z"):
+        normalized = normalized[:-1] + "+00:00"
+    try:
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError:
+        return datetime.min.replace(tzinfo=timezone.utc)
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
 def extract_scores(eval_path: Path):
     """Return a list of per-sample dicts: {task, model, status, axis -> float, tokens}."""
     rows = []
-    with tempfile.TemporaryDirectory() as tmp:
-        tmp_path = Path(tmp)
-        try:
-            with zipfile.ZipFile(eval_path) as zf:
-                zf.extractall(tmp_path)
-        except zipfile.BadZipFile:
-            return rows
+    try:
+        from inspect_ai.log import read_eval_log
 
-        header_path = tmp_path / "header.json"
-        if not header_path.exists():
-            return rows
-        header = json.loads(header_path.read_text())
-        eval_info = header.get("eval", {})
-        model = eval_info.get("model", "unknown")
-        task = eval_info.get("task", "unknown")
-        status = header.get("status", "unknown")
+        log = read_eval_log(str(eval_path))
+    except Exception:
+        return rows
 
-        token_stats = (
-            header.get("stats", {})
-            .get("model_usage", {})
-            .get(model, {})
-        )
-        tokens = {
-            "input": token_stats.get("input_tokens"),
-            "output": token_stats.get("output_tokens"),
-            "total": token_stats.get("total_tokens"),
-            "input_cache_read": token_stats.get("input_tokens_cache_read"),
+    model = getattr(getattr(log, "eval", None), "model", "unknown")
+    task = getattr(getattr(log, "eval", None), "task", "unknown")
+    status = getattr(log, "status", "unknown")
+    created = getattr(getattr(log, "eval", None), "created", "") or ""
+
+    model_usage = getattr(getattr(log, "stats", None), "model_usage", {}) or {}
+    token_stats = model_usage.get(model)
+    tokens = {
+        "input": getattr(token_stats, "input_tokens", None),
+        "output": getattr(token_stats, "output_tokens", None),
+        "total": getattr(token_stats, "total_tokens", None),
+        "input_cache_read": getattr(token_stats, "input_tokens_cache_read", None),
+    }
+
+    for sample in getattr(log, "samples", []) or []:
+        scores = getattr(sample, "scores", {}) or {}
+        value_block = None
+        for scorer_info in scores.values():
+            candidate = getattr(scorer_info, "value", None)
+            if isinstance(candidate, dict):
+                value_block = candidate
+                break
+        if value_block is None:
+            continue
+        row = {
+            "model": model,
+            "task": task,
+            "status": status,
+            "sample_id": getattr(sample, "id", eval_path.stem),
+            "eval_log": eval_path.name,
+            "eval_log_path": str(eval_path.resolve()),
+            "created": created,
+            "tokens": tokens,
         }
-
-        samples_dir = tmp_path / "samples"
-        if not samples_dir.exists():
-            return rows
-        for sample_file in sorted(samples_dir.glob("*.json")):
-            data = json.loads(sample_file.read_text())
-            scores = data.get("scores") or {}
-            value_block = None
-            for scorer_name, scorer_info in scores.items():
-                if isinstance(scorer_info, dict) and isinstance(
-                    scorer_info.get("value"), dict
-                ):
-                    value_block = scorer_info["value"]
-                    break
-            if value_block is None:
-                continue
-            sample_id = data.get("id") or sample_file.stem
-            row = {
-                "model": model,
-                "task": task,
-                "status": status,
-                "sample_id": sample_id,
-                "eval_log": eval_path.name,
-                "tokens": tokens,
-            }
-            for axis in AXES:
-                row[axis] = float(value_block.get(axis, 0.0))
-            rows.append(row)
+        for axis in AXES:
+            row[axis] = float(value_block.get(axis, 0.0))
+        rows.append(row)
     return rows
+
+
+def dedupe_rows(rows):
+    """Keep only the latest archive for each (model, task, sample_id)."""
+    latest_by_sample = {}
+    for row in rows:
+        key = (row["model"], row["task"], row["sample_id"])
+        current = latest_by_sample.get(key)
+        row_order_key = (
+            _parse_created_timestamp(row.get("created")),
+            row.get("eval_log", ""),
+            row.get("eval_log_path", ""),
+        )
+        if current is None:
+            latest_by_sample[key] = row
+            continue
+        current_order_key = (
+            _parse_created_timestamp(current.get("created")),
+            current.get("eval_log", ""),
+            current.get("eval_log_path", ""),
+        )
+        if row_order_key >= current_order_key:
+            latest_by_sample[key] = row
+    return sorted(
+        latest_by_sample.values(),
+        key=lambda row: (
+            row["model"],
+            row["task"],
+            row["sample_id"],
+            row.get("eval_log", ""),
+        ),
+    )
 
 
 def aggregate(rows):
@@ -110,21 +174,41 @@ def aggregate(rows):
     return summary
 
 
-def format_markdown(summary, per_sample_rows, out_path: Path, log_dir: Path):
+def format_markdown(
+    summary,
+    per_sample_rows,
+    out_path: Path,
+    log_dirs: list[Path],
+    deduped_count: int,
+):
+    rel_links = [_format_log_dir_reference(log_dir) for log_dir in log_dirs]
     lines = [
         "# BioProtocolBench Evaluation Results",
         "",
-        "Automatically aggregated from Inspect AI `.eval` logs in [{rel}](../{rel}).".format(
-            rel=log_dir.relative_to(REPO_ROOT).as_posix()
+        "Automatically aggregated from Inspect AI `.eval` logs in {}.".format(
+            ", ".join(rel_links)
         ),
         "",
+    ]
+    if deduped_count:
+        lines.extend(
+            [
+                "Repeated reruns with the same `(model, task, sample_id)` are deduplicated by keeping the latest `.eval` archive. {} duplicate sample rows were ignored.".format(
+                    deduped_count
+                ),
+                "",
+            ]
+        )
+    lines.extend(
+        [
         "## Per-model per-task summary",
         "",
         "Mean overall score across the seed samples run for each (model, task) cell. `n` is the number of samples in that cell.",
         "",
         "| Model | Task | n | overall (mean±std) | task_success | decision_quality | troubleshooting | efficiency |",
         "|---|---|---:|---:|---:|---:|---:|---:|",
-    ]
+        ]
+    )
     for entry in summary:
         line = "| {model} | `{task}` | {n} | {ov_mean:.3f} ± {ov_std:.3f} | {ts_mean:.3f} ± {ts_std:.3f} | {dq_mean:.3f} ± {dq_std:.3f} | {tr_mean:.3f} ± {tr_std:.3f} | {ef_mean:.3f} ± {ef_std:.3f} |".format(
             model=entry["model"],
@@ -171,17 +255,24 @@ def format_markdown(summary, per_sample_rows, out_path: Path, log_dir: Path):
 
 def main(argv=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument("--log-dir", default=str(DEFAULT_LOG_DIR))
+    parser.add_argument(
+        "--log-dir",
+        nargs="+",
+        default=[str(DEFAULT_LOG_DIR)],
+        help="One or more directories containing Inspect .eval archives.",
+    )
     parser.add_argument("--out", default=str(DEFAULT_OUT))
     args = parser.parse_args(argv)
 
-    log_dir = Path(args.log_dir)
-    out_path = Path(args.out)
+    log_dirs = [resolve_repo_path(path_str) for path_str in args.log_dir]
+    out_path = resolve_repo_path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    eval_paths = sorted(log_dir.glob("*.eval"))
+    eval_paths = []
+    for log_dir in log_dirs:
+        eval_paths.extend(sorted(log_dir.glob("*.eval")))
     if not eval_paths:
-        print("No .eval files found in {}".format(log_dir), file=sys.stderr)
+        print("No .eval files found in {}".format(", ".join(str(p) for p in log_dirs)), file=sys.stderr)
         return 1
 
     all_rows = []
@@ -191,9 +282,16 @@ def main(argv=None):
         print("No scoreable samples found.", file=sys.stderr)
         return 1
 
-    summary = aggregate(all_rows)
-    format_markdown(summary, all_rows, out_path, log_dir)
-    print("Wrote {} rows to {}".format(len(all_rows), out_path))
+    deduped_rows = dedupe_rows(all_rows)
+    summary = aggregate(deduped_rows)
+    format_markdown(
+        summary,
+        deduped_rows,
+        out_path,
+        log_dirs,
+        deduped_count=len(all_rows) - len(deduped_rows),
+    )
+    print("Wrote {} rows to {}".format(len(deduped_rows), out_path))
     return 0
 
 

@@ -1,0 +1,166 @@
+import importlib.util
+from pathlib import Path
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _load_script_module(module_name: str, relative_path: str):
+    script_path = REPO_ROOT / relative_path
+    spec = importlib.util.spec_from_file_location(module_name, script_path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
+
+
+aggregate_eval_results = _load_script_module(
+    "aggregate_eval_results",
+    "scripts/aggregate_eval_results.py",
+)
+
+plot_scorecard = _load_script_module(
+    "plot_scorecard",
+    "scripts/plot_scorecard.py",
+)
+
+
+def test_dedupe_rows_keeps_latest_rerun_per_sample():
+    older = {
+        "model": "anthropic/claude-haiku-4-5",
+        "task": "express_01",
+        "sample_id": "express_01_seeded_seed_00",
+        "eval_log": "2026-04-16T18-31-19-00-00_express-01_old.eval",
+        "eval_log_path": str(REPO_ROOT / "results" / "current_anthropic_logs" / "old.eval"),
+        "overall": 0.95,
+    }
+    newer = {
+        "model": "anthropic/claude-haiku-4-5",
+        "task": "express_01",
+        "sample_id": "express_01_seeded_seed_00",
+        "eval_log": "2026-04-16T22-06-30-00-00_express-01_new.eval",
+        "eval_log_path": str(REPO_ROOT / "results" / "current_anthropic_logs" / "new.eval"),
+        "overall": 1.0,
+    }
+    distinct = {
+        "model": "anthropic/claude-haiku-4-5",
+        "task": "express_01",
+        "sample_id": "express_01_seeded_seed_01",
+        "eval_log": "2026-04-16T22-06-30-00-00_express-01_new.eval",
+        "eval_log_path": str(REPO_ROOT / "results" / "current_anthropic_logs" / "new.eval"),
+        "overall": 1.0,
+    }
+
+    deduped = aggregate_eval_results.dedupe_rows([older, newer, distinct])
+
+    assert len(deduped) == 2
+    rows_by_sample = {row["sample_id"]: row for row in deduped}
+    assert rows_by_sample["express_01_seeded_seed_00"]["eval_log"] == newer["eval_log"]
+    assert rows_by_sample["express_01_seeded_seed_00"]["overall"] == 1.0
+    assert rows_by_sample["express_01_seeded_seed_01"]["eval_log"] == distinct["eval_log"]
+
+
+def test_dedupe_rows_prefers_newer_created_timestamp_over_filename_order():
+    older_by_time = {
+        "model": "openai/gpt-4o-mini",
+        "task": "transform_01",
+        "sample_id": "transform_01_seeded_seed_00",
+        "created": "2026-04-18T09:00:00+00:00",
+        "eval_log": "zzz_old.eval",
+        "eval_log_path": str(REPO_ROOT / "results" / "tmp" / "zzz_old.eval"),
+        "overall": 0.1,
+    }
+    newer_by_time = {
+        "model": "openai/gpt-4o-mini",
+        "task": "transform_01",
+        "sample_id": "transform_01_seeded_seed_00",
+        "created": "2026-04-18T10:00:00+00:00",
+        "eval_log": "aaa_new.eval",
+        "eval_log_path": str(REPO_ROOT / "results" / "tmp" / "aaa_new.eval"),
+        "overall": 0.9,
+    }
+
+    deduped = aggregate_eval_results.dedupe_rows([older_by_time, newer_by_time])
+
+    assert len(deduped) == 1
+    assert deduped[0]["overall"] == 0.9
+    assert deduped[0]["eval_log"] == "aaa_new.eval"
+
+
+def test_dedupe_rows_treats_invalid_created_as_older_than_valid_iso():
+    invalid = {
+        "model": "openai/gpt-4o-mini",
+        "task": "transform_01",
+        "sample_id": "transform_01_seeded_seed_00",
+        "created": "not-a-time",
+        "eval_log": "zzz_invalid.eval",
+        "eval_log_path": str(REPO_ROOT / "results" / "tmp" / "zzz_invalid.eval"),
+        "overall": 0.1,
+    }
+    valid = {
+        "model": "openai/gpt-4o-mini",
+        "task": "transform_01",
+        "sample_id": "transform_01_seeded_seed_00",
+        "created": "2026-04-18T10:00:00+00:00",
+        "eval_log": "aaa_valid.eval",
+        "eval_log_path": str(REPO_ROOT / "results" / "tmp" / "aaa_valid.eval"),
+        "overall": 0.9,
+    }
+
+    deduped = aggregate_eval_results.dedupe_rows([invalid, valid])
+
+    assert len(deduped) == 1
+    assert deduped[0]["overall"] == 0.9
+
+
+def test_plot_scorecard_dedupe_matches_aggregate_timestamp_logic():
+    rows = [
+        {
+            "model": "openai/gpt-4o-mini",
+            "task": "transform_01",
+            "sample_id": "transform_01_seeded_seed_00",
+            "created": "2026-04-18T09:00:00+00:00",
+            "eval_log": "zzz_old.eval",
+            "eval_log_path": str(REPO_ROOT / "results" / "tmp" / "zzz_old.eval"),
+            "overall": 0.1,
+            "task_success": 0.1,
+            "decision_quality": 0.1,
+            "troubleshooting": 0.1,
+            "efficiency": 0.1,
+        },
+        {
+            "model": "openai/gpt-4o-mini",
+            "task": "transform_01",
+            "sample_id": "transform_01_seeded_seed_00",
+            "created": "2026-04-18T10:00:00+00:00",
+            "eval_log": "aaa_new.eval",
+            "eval_log_path": str(REPO_ROOT / "results" / "tmp" / "aaa_new.eval"),
+            "overall": 0.9,
+            "task_success": 0.9,
+            "decision_quality": 0.9,
+            "troubleshooting": 0.9,
+            "efficiency": 0.9,
+        },
+    ]
+
+    deduped = plot_scorecard.dedupe_rows(rows)
+
+    assert len(deduped) == 1
+    assert deduped[0]["overall"] == 0.9
+
+
+def test_format_markdown_uses_plain_path_for_external_log_dir(tmp_path):
+    out_path = tmp_path / "results.md"
+    external_log_dir = Path("/tmp/external_logs_for_test")
+
+    aggregate_eval_results.format_markdown(
+        summary=[],
+        per_sample_rows=[],
+        out_path=out_path,
+        log_dirs=[external_log_dir],
+        deduped_count=0,
+    )
+
+    text = out_path.read_text()
+    assert "`/tmp/external_logs_for_test`" in text
+    assert "(..//tmp/external_logs_for_test)" not in text

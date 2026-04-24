@@ -1,0 +1,125 @@
+{
+  "task_id": "followup_01",
+  "decision_points": [
+    {
+      "id": "followup_targets_ambiguous_condition",
+      "description": "Focus the follow-up on the ambiguous chloramphenicol condition rather than rerunning the already-resolved controls.",
+      "minimum_tier_required": "Silver",
+      "matcher": {
+        "tool_name": "inoculate_growth",
+        "argument": "condition",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": "LB + chloramphenicol (1.8 uM)"
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "The E. coli molecular phenotype under different growth conditions",
+          "canonical_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5394689/",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed growth-curve study motivating targeted follow-up on the condition with inadequate usable fitting-window coverage."
+        }
+      ]
+    },
+    {
+      "id": "followup_starting_od600",
+      "description": "Inoculate the follow-up condition at the cited starting OD600 of 0.05.",
+      "minimum_tier_required": "Silver",
+      "matcher": {
+        "tool_name": "inoculate_growth",
+        "argument": "starting_od600",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": 0.05
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "RqcH supports survival in the absence of non-stop ribosome rescue factors",
+          "canonical_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8006063/",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed E. coli growth-curve protocol using a starting OD600 of 0.05."
+        }
+      ]
+    },
+    {
+      "id": "followup_measurement_interval",
+      "description": "Use the cited 15-minute OD600 measurement interval for the follow-up trajectory.",
+      "minimum_tier_required": "Silver",
+      "matcher": {
+        "tool_name": "incubate",
+        "argument": "duration_minutes",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": 15
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "RqcH supports survival in the absence of non-stop ribosome rescue factors",
+          "canonical_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8006063/",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed E. coli growth-curve protocol collecting OD600 measurements every 15 minutes."
+        }
+      ]
+    },
+    {
+      "id": "followup_curve_analyzable",
+      "description": "The final growth-fit attempt returns an analyzable result for the follow-up condition.",
+      "minimum_tier_required": "Silver",
+      "matcher": {
+        "tool_name": "fit_growth_curve",
+        "argument": "status",
+        "occurrence": "last"
+      },
+      "acceptable_values": {
+        "type": "exact",
+        "value": "analyzable"
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "The E. coli molecular phenotype under different growth conditions",
+          "canonical_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5394689/",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed E. coli growth study fitting doubling times only when enough points fall inside the cited OD600 window."
+        }
+      ]
+    }
+  ],
+  "failure_diagnosis_map": {
+    "insufficient_growth_points": {
+      "canonical_diagnosis": "The earlier chloramphenicol trajectory was undersampled and did not contain enough OD600 measurements in the usable fitting range.",
+      "acceptable_variants": [
+        "The prior chloramphenicol fit was undersampled.",
+        "There were not enough usable OD600 points to decide whether the slowdown was real.",
+        "The earlier pilot could not distinguish a real slowdown from an artifact because it lacked enough points in the fitting window."
+      ],
+      "judge_strategy": "substring_any",
+      "minimum_tier_required": "Silver",
+      "citations": [
+        {
+          "title": "The E. coli molecular phenotype under different growth conditions",
+          "canonical_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5394689/",
+          "tier": "Silver",
+          "tier_justification": "Peer-reviewed growth study explicitly constraining the OD600 window used for doubling-time estimation."
+        }
+      ]
+    }
+  },
+  "efficiency_reference": {
+    "optimal_tool_calls": 12,
+    "max_reasonable_tool_calls": 18,
+    "reagent_budget": {
+      "growth_conditions": 1,
+      "measurements_per_condition": 5
+    }
+  }
+}

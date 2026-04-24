@@ -1,0 +1,134 @@
+[
+  {
+    "target_id": "TGT_A",
+    "disease_context": "Inflammatory tissue-damage program with convergent omics and patient relevance.",
+    "perturbation_score": 0.86,
+    "viability_risk": "low",
+    "context_consistency": "high",
+    "genetic_support": "strong",
+    "patient_signal": "strong",
+    "literature_support": "moderate",
+    "summary": "Balanced efficacy and translation profile with the cleanest perturbation signal in the set.",
+    "priority_rank": 1,
+    "advance_recommendation": "advance",
+    "validation_matrix": {
+      "ASY_CYTOKINE": {
+        "effect_direction": "supportive",
+        "base_effect_size": 0.82,
+        "qc_status": "pass",
+        "interpretation_code": "validated_signal"
+      },
+      "ASY_PATHWAY": {
+        "effect_direction": "supportive",
+        "base_effect_size": 0.57,
+        "qc_status": "pass",
+        "interpretation_code": "moderate_support"
+      },
+      "ASY_VIABILITY": {
+        "effect_direction": "neutral",
+        "base_effect_size": 0.19,
+        "qc_status": "pass",
+        "interpretation_code": "manageable_liability"
+      }
+    }
+  },
+  {
+    "target_id": "TGT_B",
+    "disease_context": "Inflammatory program with a strong screen score but broad stress liability.",
+    "perturbation_score": 0.79,
+    "viability_risk": "high",
+    "context_consistency": "mixed",
+    "genetic_support": "moderate",
+    "patient_signal": "weak",
+    "literature_support": "moderate",
+    "summary": "Looks active in the primary screen, but the phenotype is entangled with a strong viability penalty and is the clearest immediate no-go in the set.",
+    "priority_rank": 4,
+    "advance_recommendation": "do_not_advance",
+    "validation_matrix": {
+      "ASY_CYTOKINE": {
+        "effect_direction": "mixed",
+        "base_effect_size": 0.33,
+        "qc_status": "pass",
+        "interpretation_code": "risk_dominated_signal"
+      },
+      "ASY_PATHWAY": {
+        "effect_direction": "mixed",
+        "base_effect_size": 0.27,
+        "qc_status": "pass",
+        "interpretation_code": "risk_dominated_signal"
+      },
+      "ASY_VIABILITY": {
+        "effect_direction": "liability",
+        "base_effect_size": -0.71,
+        "qc_status": "pass",
+        "interpretation_code": "viability_liability"
+      }
+    }
+  },
+  {
+    "target_id": "TGT_C",
+    "disease_context": "Promising perturbation hit whose primary-screen gain conflicts with QC and cross-context stability, making it better suited for orthogonal follow-up than immediate commit-or-stop triage.",
+    "perturbation_score": 0.74,
+    "viability_risk": "moderate",
+    "context_consistency": "low",
+    "genetic_support": "weak",
+    "patient_signal": "weak",
+    "literature_support": "limited",
+    "summary": "The main ambiguous candidate: attractive primary readout, but the confidence picture is unstable and better resolved with orthogonal follow-up than immediate triage.",
+    "priority_rank": 3,
+    "advance_recommendation": "drop_after_followup",
+    "validation_matrix": {
+      "ASY_CYTOKINE": {
+        "effect_direction": "mixed",
+        "base_effect_size": 0.24,
+        "qc_status": "borderline",
+        "interpretation_code": "qc_conflict"
+      },
+      "ASY_PATHWAY": {
+        "effect_direction": "not_supported",
+        "base_effect_size": -0.18,
+        "qc_status": "pass",
+        "interpretation_code": "qc_artifact_not_supported"
+      },
+      "ASY_VIABILITY": {
+        "effect_direction": "liability",
+        "base_effect_size": -0.42,
+        "qc_status": "pass",
+        "interpretation_code": "viability_liability"
+      }
+    }
+  },
+  {
+    "target_id": "TGT_D",
+    "disease_context": "Backup candidate with moderate efficacy and acceptable but not exceptional translation support.",
+    "perturbation_score": 0.67,
+    "viability_risk": "low",
+    "context_consistency": "moderate",
+    "genetic_support": "moderate",
+    "patient_signal": "moderate",
+    "literature_support": "moderate",
+    "summary": "A sensible backup target: cleaner than TGT_C, but materially weaker than TGT_A.",
+    "priority_rank": 2,
+    "advance_recommendation": "backup_only",
+    "validation_matrix": {
+      "ASY_CYTOKINE": {
+        "effect_direction": "supportive",
+        "base_effect_size": 0.48,
+        "qc_status": "pass",
+        "interpretation_code": "moderate_support"
+      },
+      "ASY_PATHWAY": {
+        "effect_direction": "supportive",
+        "base_effect_size": 0.44,
+        "qc_status": "pass",
+        "interpretation_code": "moderate_support"
+      },
+      "ASY_VIABILITY": {
+        "effect_direction": "neutral",
+        "base_effect_size": 0.21,
+        "qc_status": "pass",
+        "interpretation_code": "manageable_liability"
+      }
+    }
+  }
+]

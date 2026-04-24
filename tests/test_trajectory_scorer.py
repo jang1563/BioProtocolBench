@@ -10,6 +10,8 @@ from src.trajectory_scorer import (
     score_clone_trajectory,
     score_express_task_success,
     score_express_trajectory,
+    score_followup_task_success,
+    score_followup_trajectory,
     score_gibson_task_success,
     score_gibson_trajectory,
     score_golden_gate_task_success,
@@ -20,15 +22,24 @@ from src.trajectory_scorer import (
     score_miniprep_trajectory,
     score_pcr_task_success,
     score_pcr_trajectory,
+    score_perturb_followup_task_success,
+    score_perturb_followup_trajectory,
+    score_purify_task_success,
+    score_purify_trajectory,
     score_screen_task_success,
     score_screen_trajectory,
     score_task_success,
+    score_target_prioritize_task_success,
+    score_target_prioritize_trajectory,
+    score_target_validate_task_success,
+    score_target_validate_trajectory,
     score_transform_trajectory,
 )
 
 
 TRANSFORM_GROUND_TRUTH_PATH = Path(__file__).resolve().parents[1] / "task_data" / "transform_01" / "ground_truth.json"
 GROWTH_GROUND_TRUTH_PATH = Path(__file__).resolve().parents[1] / "task_data" / "growth_01" / "ground_truth.json"
+FOLLOWUP_GROUND_TRUTH_PATH = Path(__file__).resolve().parents[1] / "task_data" / "followup_01" / "ground_truth.json"
 PCR_GROUND_TRUTH_PATH = Path(__file__).resolve().parents[1] / "task_data" / "pcr_01" / "ground_truth.json"
 SCREEN_GROUND_TRUTH_PATH = Path(__file__).resolve().parents[1] / "task_data" / "screen_01" / "ground_truth.json"
 CLONE_GROUND_TRUTH_PATH = Path(__file__).resolve().parents[1] / "task_data" / "clone_01" / "ground_truth.json"
@@ -43,6 +54,18 @@ MINIPREP_GROUND_TRUTH_PATH = (
 )
 EXPRESS_GROUND_TRUTH_PATH = (
     Path(__file__).resolve().parents[1] / "task_data" / "express_01" / "ground_truth.json"
+)
+PURIFY_GROUND_TRUTH_PATH = (
+    Path(__file__).resolve().parents[1] / "task_data" / "purify_01" / "ground_truth.json"
+)
+PERTURB_FOLLOWUP_GROUND_TRUTH_PATH = (
+    Path(__file__).resolve().parents[1] / "task_data" / "perturb_followup_01" / "ground_truth.json"
+)
+TARGET_PRIORITIZE_GROUND_TRUTH_PATH = (
+    Path(__file__).resolve().parents[1] / "task_data" / "target_prioritize_01" / "ground_truth.json"
+)
+TARGET_VALIDATE_GROUND_TRUTH_PATH = (
+    Path(__file__).resolve().parents[1] / "task_data" / "target_validate_01" / "ground_truth.json"
 )
 TARGET_MASSES = [10, 100, 1000, 10000]
 
@@ -344,6 +367,194 @@ def test_growth_fit_failure_reduces_decision_quality_and_task_success():
     )
     assert scores["task_success"] == 0.0
     assert scores["decision_scores"]["growth_curve_analyzable"] == 0.0
+
+
+def _good_followup_transcript():
+    growth_id = "growth_001"
+    transcript = [
+        {
+            "type": "tool_call",
+            "tool_name": "inoculate_growth",
+            "arguments": {
+                "growth_id": growth_id,
+                "condition": "LB + chloramphenicol (1.8 uM)",
+                "starting_od600": 0.05,
+            },
+        }
+    ]
+    measurements = [
+        (15, 0.065),
+        (30, 0.085),
+        (45, 0.110),
+        (60, 0.145),
+        (75, 0.185),
+    ]
+    for elapsed_minutes, estimated_od600 in measurements:
+        transcript.extend(
+            [
+                {
+                    "type": "tool_call",
+                    "tool_name": "incubate",
+                    "arguments": {
+                        "growth_id": growth_id,
+                        "condition": "LB + chloramphenicol (1.8 uM)",
+                        "duration_minutes": 15,
+                        "elapsed_minutes": elapsed_minutes,
+                    },
+                },
+                {
+                    "type": "tool_call",
+                    "tool_name": "measure_od600",
+                    "arguments": {
+                        "growth_id": growth_id,
+                        "condition": "LB + chloramphenicol (1.8 uM)",
+                        "elapsed_minutes": elapsed_minutes,
+                        "dilution_factor": 1.0,
+                        "observed_od600": estimated_od600,
+                        "estimated_undiluted_od600": estimated_od600,
+                    },
+                },
+            ]
+        )
+    transcript.append(
+        {
+            "type": "tool_call",
+            "tool_name": "fit_growth_curve",
+            "arguments": {
+                "growth_id": growth_id,
+                "condition": "LB + chloramphenicol (1.8 uM)",
+                "status": "analyzable",
+                "qualifying_points": 4,
+                "estimated_doubling_time_minutes": 40.0,
+                "warnings": [],
+            },
+        }
+    )
+    return transcript
+
+
+def _good_followup_answer() -> str:
+    return (
+        "Follow-up condition: LB + chloramphenicol (1.8 uM)\n"
+        "Follow-up doubling time: 40 minutes\n"
+        "Conclusion: real slowdown\n"
+        "Interpretation: The earlier pilot was ambiguous because the chloramphenicol fit was undersampled, and this focused follow-up shows the slowdown is real rather than an artifact."
+    )
+
+
+def test_good_followup_trajectory_scores_high():
+    scores = score_followup_trajectory(
+        final_answer=_good_followup_answer(),
+        transcript=_good_followup_transcript(),
+        ground_truth_path=str(FOLLOWUP_GROUND_TRUTH_PATH),
+    )
+    assert scores["task_success"] == 1.0
+    assert scores["decision_quality"] == 1.0
+    assert scores["troubleshooting"] == 1.0
+    assert scores["efficiency"] == 1.0
+    assert scores["overall"] > 0.99
+
+
+def test_followup_task_success_requires_real_slowdown_conclusion():
+    answer = (
+        "Follow-up condition: LB + chloramphenicol (1.8 uM)\n"
+        "Follow-up doubling time: 40 minutes\n"
+        "Conclusion: artifact\n"
+        "Interpretation: The pilot was ambiguous."
+    )
+    assert score_followup_task_success(answer, _good_followup_transcript()) == 0.0
+
+
+def test_followup_undersampled_without_diagnosis_scores_zero_troubleshooting():
+    transcript = _good_followup_transcript()
+    transcript[-1]["arguments"]["status"] = "insufficient_points"
+    transcript[-1]["arguments"]["qualifying_points"] = 2
+    transcript[-1]["arguments"].pop("estimated_doubling_time_minutes")
+
+    answer = (
+        "Follow-up condition: LB + chloramphenicol (1.8 uM)\n"
+        "Follow-up doubling time: 40 minutes\n"
+        "Conclusion: real slowdown\n"
+        "Interpretation: Follow-up run attempted."
+    )
+    scores = score_followup_trajectory(
+        final_answer=answer,
+        transcript=transcript,
+        ground_truth_path=str(FOLLOWUP_GROUND_TRUTH_PATH),
+    )
+    assert scores["task_success"] == 0.0
+    assert scores["decision_scores"]["followup_curve_analyzable"] == 0.0
+    assert scores["troubleshooting"] == 0.0
+
+
+def test_followup_rerun_everything_loses_focus_and_efficiency_credit():
+    transcript = _good_followup_transcript()
+    for condition in ("LB", "M9 + glucose"):
+        growth_id = "growth_extra_{}".format(condition.lower().replace(" ", "_").replace("+", "plus"))
+        transcript.insert(
+            0,
+            {
+                "type": "tool_call",
+                "tool_name": "inoculate_growth",
+                "arguments": {
+                    "growth_id": growth_id,
+                    "condition": condition,
+                    "starting_od600": 0.05,
+                },
+            },
+        )
+        for idx in range(5):
+            elapsed_minutes = 15 * (idx + 1)
+            transcript.extend(
+                [
+                    {
+                        "type": "tool_call",
+                        "tool_name": "incubate",
+                        "arguments": {
+                            "growth_id": growth_id,
+                            "condition": condition,
+                            "duration_minutes": 15,
+                            "elapsed_minutes": elapsed_minutes,
+                        },
+                    },
+                    {
+                        "type": "tool_call",
+                        "tool_name": "measure_od600",
+                        "arguments": {
+                            "growth_id": growth_id,
+                            "condition": condition,
+                            "elapsed_minutes": elapsed_minutes,
+                            "dilution_factor": 1.0,
+                            "observed_od600": 0.08 + (0.03 * idx),
+                            "estimated_undiluted_od600": 0.08 + (0.03 * idx),
+                        },
+                    },
+                ]
+            )
+        transcript.append(
+            {
+                "type": "tool_call",
+                "tool_name": "fit_growth_curve",
+                "arguments": {
+                    "growth_id": growth_id,
+                    "condition": condition,
+                    "status": "analyzable",
+                    "qualifying_points": 4,
+                    "estimated_doubling_time_minutes": 20.0 if condition == "LB" else 57.0,
+                    "warnings": [],
+                },
+            }
+        )
+
+    scores = score_followup_trajectory(
+        final_answer=_good_followup_answer(),
+        transcript=transcript,
+        ground_truth_path=str(FOLLOWUP_GROUND_TRUTH_PATH),
+    )
+    assert scores["task_success"] == 1.0
+    assert scores["decision_scores"]["followup_targets_ambiguous_condition"] == 0.0
+    assert scores["decision_quality"] < 1.0
+    assert scores["efficiency"] == 0.0
 
 
 def _good_pcr_transcript():
@@ -1219,3 +1430,306 @@ def test_express_wrong_host_triggers_troubleshooting():
     )
     assert scores["troubleshooting"] < 1.0
     assert scores["decision_scores"]["uses_t7_expression_host"] == 0.0
+
+
+def _good_purify_transcript():
+    return [
+        {
+            "type": "tool_call",
+            "tool_name": "run_nta_purification",
+            "arguments": {
+                "purification_id": "purification_001",
+                "resin_name": "Ni-NTA",
+                "resin_normalized": "ni-nta",
+                "load_imidazole_mm": 20.0,
+                "wash_imidazole_mm": 50.0,
+                "elute_imidazole_mm": 250.0,
+                "flow_rate_ml_per_min": 1.0,
+                "column_bed_volume_ml": 1.0,
+                "target_protein_name": "MBP-GFP fusion",
+                "expected_band_kda": 72.0,
+                "purified_concentration_mg_per_ml": 6.12,
+                "purity_percent": 95.0,
+                "sds_page_result": "single_clean_band_at_72_kDa",
+                "eluate_volume_ml": 2.5,
+                "status": "purified",
+            },
+        }
+    ]
+
+
+def _good_purify_answer() -> str:
+    return (
+        "Resin: Ni-NTA\n"
+        "Load imidazole: 20 mM\n"
+        "Wash imidazole: 50 mM\n"
+        "Elute imidazole: 250 mM\n"
+        "Expected band size: 72 kDa\n"
+        "Purified concentration: 6.12 mg/mL\n"
+        "SDS-PAGE result: single_clean_band_at_72_kDa\n"
+        "Purity: 95.0%\n"
+        "Interpretation: Pure recombinant MBP-GFP fusion recovered at high purity."
+    )
+
+
+def test_good_purify_trajectory_scores_high():
+    scores = score_purify_trajectory(
+        final_answer=_good_purify_answer(),
+        transcript=_good_purify_transcript(),
+        ground_truth_path=str(PURIFY_GROUND_TRUTH_PATH),
+    )
+    assert scores["task_success"] == 1.0
+    assert scores["decision_quality"] == 1.0
+    assert scores["overall"] >= 0.9
+
+
+def test_purify_wrong_resin_triggers_troubleshooting():
+    transcript = _good_purify_transcript()
+    transcript[0]["arguments"]["resin_normalized"] = "glutathione agarose"
+    transcript[0]["arguments"]["status"] = "wrong_resin"
+    scores = score_purify_trajectory(
+        final_answer=_good_purify_answer(),
+        transcript=transcript,
+        ground_truth_path=str(PURIFY_GROUND_TRUTH_PATH),
+    )
+    assert scores["decision_scores"]["uses_ni_nta_resin"] == 0.0
+    assert scores["troubleshooting"] < 1.0
+
+
+def _good_perturb_followup_transcript():
+    return [
+        {
+            "type": "tool_call",
+            "tool_name": "list_candidate_targets",
+            "arguments": {},
+        },
+        {
+            "type": "tool_call",
+            "tool_name": "lookup_target_profile",
+            "arguments": {"target_id": "TGT_C"},
+        },
+        {
+            "type": "tool_call",
+            "tool_name": "list_validation_assays",
+            "arguments": {},
+        },
+        {
+            "type": "tool_call",
+            "tool_name": "run_validation_assay",
+            "arguments": {
+                "target_id": "TGT_C",
+                "assay_id": "ASY_PATHWAY",
+                "status": "completed",
+                "effect_direction": "not_supported",
+                "effect_size": -0.181,
+                "qc_status": "pass",
+                "interpretation_code": "qc_artifact_not_supported",
+            },
+        },
+    ]
+
+
+def _good_perturb_followup_answer() -> str:
+    return (
+        "Chosen target: TGT_C\n"
+        "Follow-up assay: ASY_PATHWAY\n"
+        "Result: fail\n"
+        "Decision: drop\n"
+        "Interpretation: The hit was ambiguous because the primary screen and QC disagreed, and the orthogonal assay did not support it."
+    )
+
+
+def test_good_perturb_followup_trajectory_scores_high():
+    scores = score_perturb_followup_trajectory(
+        final_answer=_good_perturb_followup_answer(),
+        transcript=_good_perturb_followup_transcript(),
+        ground_truth_path=str(PERTURB_FOLLOWUP_GROUND_TRUTH_PATH),
+    )
+    assert score_perturb_followup_task_success(
+        _good_perturb_followup_answer(),
+        _good_perturb_followup_transcript(),
+        json.loads(PERTURB_FOLLOWUP_GROUND_TRUTH_PATH.read_text()),
+    ) == 1.0
+    assert scores["task_success"] == 1.0
+    assert scores["decision_quality"] == 1.0
+    assert scores["overall"] >= 0.9
+
+
+def test_wrong_perturb_followup_assay_reduces_score():
+    transcript = _good_perturb_followup_transcript()
+    transcript[-1]["arguments"]["assay_id"] = "ASY_CYTOKINE"
+    scores = score_perturb_followup_trajectory(
+        final_answer=_good_perturb_followup_answer(),
+        transcript=transcript,
+        ground_truth_path=str(PERTURB_FOLLOWUP_GROUND_TRUTH_PATH),
+    )
+    assert scores["task_success"] == 0.0
+    assert scores["decision_scores"]["orthogonal_assay_choice"] == 0.0
+
+
+def _good_target_prioritize_transcript():
+    transcript = [
+        {
+            "type": "tool_call",
+            "tool_name": "list_candidate_targets",
+            "arguments": {},
+        }
+    ]
+    for target_id in ("TGT_A", "TGT_B", "TGT_C", "TGT_D"):
+        transcript.append(
+            {
+                "type": "tool_call",
+                "tool_name": "lookup_target_profile",
+                "arguments": {"target_id": target_id},
+            }
+        )
+    return transcript
+
+
+def _good_target_prioritize_answer() -> str:
+    return (
+        "Top target: TGT_A\n"
+        "Do-not-advance target: TGT_B\n"
+        "Advance reason: TGT_A has the most balanced signal, the strongest patient relevance, and low viability risk.\n"
+        "Main risk: The remaining risk is whether its context consistency and translational support hold up across broader settings."
+    )
+
+
+def test_good_target_prioritize_trajectory_scores_high():
+    scores = score_target_prioritize_trajectory(
+        final_answer=_good_target_prioritize_answer(),
+        transcript=_good_target_prioritize_transcript(),
+        ground_truth_path=str(TARGET_PRIORITIZE_GROUND_TRUTH_PATH),
+    )
+    assert score_target_prioritize_task_success(
+        _good_target_prioritize_answer(),
+        _good_target_prioritize_transcript(),
+        json.loads(TARGET_PRIORITIZE_GROUND_TRUTH_PATH.read_text()),
+    ) == 1.0
+    assert scores["task_success"] == 1.0
+    assert scores["decision_quality"] == 1.0
+    assert scores["overall"] >= 0.9
+
+
+def test_missing_target_profile_coverage_reduces_prioritize_score():
+    transcript = _good_target_prioritize_transcript()[:-1]
+    scores = score_target_prioritize_trajectory(
+        final_answer=_good_target_prioritize_answer(),
+        transcript=transcript,
+        ground_truth_path=str(TARGET_PRIORITIZE_GROUND_TRUTH_PATH),
+    )
+    assert scores["decision_scores"]["full_profile_coverage"] == 0.0
+    assert scores["decision_quality"] < 1.0
+
+
+def test_target_prioritize_task_success_accepts_signal_context_and_liability_reasoning():
+    answer = (
+        "Top target: TGT_A\n"
+        "Do-not-advance target: TGT_B\n"
+        "Advance reason: TGT_A has the strongest perturbation score, high context consistency, and low viability risk.\n"
+        "Main risk: The remaining risk is that the mechanistic and translational picture may not generalize across broader settings."
+    )
+
+    assert (
+        score_target_prioritize_task_success(
+            answer,
+            _good_target_prioritize_transcript(),
+            json.loads(TARGET_PRIORITIZE_GROUND_TRUTH_PATH.read_text()),
+        )
+        == 1.0
+    )
+
+
+def test_target_prioritize_risk_statement_must_not_focus_on_do_not_advance_target():
+    answer = (
+        "Top target: TGT_A\n"
+        "Do-not-advance target: TGT_B\n"
+        "Advance reason: TGT_A has the strongest perturbation score, high context consistency, and low viability risk.\n"
+        "Main risk: TGT_B still carries major literature uncertainty on top of its viability liability."
+    )
+    scores = score_target_prioritize_trajectory(
+        final_answer=answer,
+        transcript=_good_target_prioritize_transcript(),
+        ground_truth_path=str(TARGET_PRIORITIZE_GROUND_TRUTH_PATH),
+    )
+
+    assert scores["task_success"] == 0.0
+    assert scores["troubleshooting"] == 0.0
+
+
+def _good_target_validate_transcript():
+    return [
+        {
+            "type": "tool_call",
+            "tool_name": "lookup_target_profile",
+            "arguments": {"target_id": "TGT_A"},
+        },
+        {
+            "type": "tool_call",
+            "tool_name": "list_validation_assays",
+            "arguments": {},
+        },
+        {
+            "type": "tool_call",
+            "tool_name": "run_validation_assay",
+            "arguments": {
+                "target_id": "TGT_A",
+                "assay_id": "ASY_CYTOKINE",
+                "status": "completed",
+                "effect_direction": "supportive",
+                "effect_size": 0.821,
+                "qc_status": "pass",
+                "interpretation_code": "validated_signal",
+            },
+        },
+    ]
+
+
+def _good_target_validate_answer() -> str:
+    return (
+        "Validation assay: ASY_CYTOKINE\n"
+        "Primary readout: change in inflammatory cytokine program\n"
+        "Decision: advance\n"
+        "Interpretation: The orthogonal validation assay supports the target strongly enough to advance."
+    )
+
+
+def test_good_target_validate_trajectory_scores_high():
+    scores = score_target_validate_trajectory(
+        final_answer=_good_target_validate_answer(),
+        transcript=_good_target_validate_transcript(),
+        ground_truth_path=str(TARGET_VALIDATE_GROUND_TRUTH_PATH),
+    )
+    assert score_target_validate_task_success(
+        _good_target_validate_answer(),
+        _good_target_validate_transcript(),
+        json.loads(TARGET_VALIDATE_GROUND_TRUTH_PATH.read_text()),
+    ) == 1.0
+    assert scores["task_success"] == 1.0
+    assert scores["decision_quality"] == 1.0
+    assert scores["overall"] >= 0.9
+
+
+def test_multiple_validation_runs_reduce_target_validate_score():
+    transcript = _good_target_validate_transcript() + [
+        {
+            "type": "tool_call",
+            "tool_name": "run_validation_assay",
+            "arguments": {
+                "target_id": "TGT_A",
+                "assay_id": "ASY_PATHWAY",
+                "status": "completed",
+                "effect_direction": "supportive",
+                "effect_size": 0.544,
+                "qc_status": "pass",
+                "interpretation_code": "moderate_support",
+            },
+        }
+    ]
+    scores = score_target_validate_trajectory(
+        final_answer=_good_target_validate_answer(),
+        transcript=transcript,
+        ground_truth_path=str(TARGET_VALIDATE_GROUND_TRUTH_PATH),
+    )
+    assert scores["task_success"] == 0.0
+    assert scores["decision_scores"]["single_validation_run"] == 0.0

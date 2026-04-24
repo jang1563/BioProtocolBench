@@ -1,0 +1,98 @@
+{
+  "task_id": "perturb_followup_01",
+  "task_title": "Resolve an ambiguous perturbation hit with one orthogonal follow-up",
+  "source": "Discovery Decision Track",
+  "num_errors_introduced": 0,
+  "total_leaf_nodes": 7,
+  "rubric": {
+    "name": "Task Evaluation",
+    "weight": 1.0,
+    "is_leaf": false,
+    "children": [
+      {
+        "name": "Task Success",
+        "weight": 0.4,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Reports the correct target, assay, result, and keep-drop decision",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "task_success",
+            "requirement": "The final answer names TGT_C, uses ASY_PATHWAY, reports fail, and concludes drop.",
+            "grading_notes": "Requires exact schema compliance and consistency with the single validation run."
+          }
+        ]
+      },
+      {
+        "name": "Decision Quality",
+        "weight": 0.3,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Inspects the candidate overview",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "The agent inspects the candidate shortlist before acting.",
+            "grading_notes": "Measured from list_candidate_targets."
+          },
+          {
+            "name": "Inspects the ambiguous target profile",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "The agent inspects TGT_C before selecting the follow-up.",
+            "grading_notes": "Measured from lookup_target_profile."
+          },
+          {
+            "name": "Chooses the orthogonal pathway readout",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "The validation run uses ASY_PATHWAY on TGT_C.",
+            "grading_notes": "Measured from run_validation_assay."
+          },
+          {
+            "name": "Keeps the workflow to one validation run",
+            "weight": 0.25,
+            "is_leaf": true,
+            "category": "decision_quality",
+            "requirement": "The agent runs exactly one follow-up assay.",
+            "grading_notes": "Measured from the count of run_validation_assay calls."
+          }
+        ]
+      },
+      {
+        "name": "Troubleshooting",
+        "weight": 0.2,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Explains the QC ambiguity and orthogonal non-support",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "troubleshooting",
+            "requirement": "The interpretation explains that the candidate was ambiguous because of a screen-versus-QC conflict and that the orthogonal assay did not support the hit.",
+            "grading_notes": "Measured from interpretation keywords, not strict phrasing."
+          }
+        ]
+      },
+      {
+        "name": "Efficiency",
+        "weight": 0.1,
+        "is_leaf": false,
+        "children": [
+          {
+            "name": "Uses a focused one-pass workflow",
+            "weight": 1.0,
+            "is_leaf": true,
+            "category": "efficiency",
+            "requirement": "The trajectory stays within the focused follow-up call budget.",
+            "grading_notes": "Full credit at or under the optimal tool-call budget."
+          }
+        ]
+      }
+    ]
+  }
+}

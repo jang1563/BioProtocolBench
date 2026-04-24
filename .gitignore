@@ -53,3 +53,6 @@ archive/
 
 # Ad-hoc Inspect eval logs (results/logs/ IS tracked for reproducibility)
 /logs/
+
+# Local plotting cache
+.matplotlib/

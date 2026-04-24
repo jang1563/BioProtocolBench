@@ -26,6 +26,7 @@ from src.environment.operations import (
     restriction_digest,
     run_colony_pcr,
     run_gel,
+    run_nta_purification,
     run_pcr,
     run_protein_expression,
     transform,
@@ -449,6 +450,32 @@ async def run_protein_expression_call(
         )
     except ValueError as exc:
         return _tool_error_observation("run_protein_expression", exc)
+    return render_observation(payload)
+
+
+async def run_nta_purification_call(
+    resin_name: str,
+    load_imidazole_mm: float,
+    wash_imidazole_mm: float,
+    elute_imidazole_mm: float,
+    flow_rate_ml_per_min: float = 1.0,
+    column_bed_volume_ml: float = 1.0,
+    input_mass_mg: float = 18.0,
+) -> str:
+    state = _current_state()
+    try:
+        payload = run_nta_purification(
+            state=state,
+            resin_name=resin_name,
+            load_imidazole_mm=load_imidazole_mm,
+            wash_imidazole_mm=wash_imidazole_mm,
+            elute_imidazole_mm=elute_imidazole_mm,
+            flow_rate_ml_per_min=flow_rate_ml_per_min,
+            column_bed_volume_ml=column_bed_volume_ml,
+            input_mass_mg=input_mass_mg,
+        )
+    except ValueError as exc:
+        return _tool_error_observation("run_nta_purification", exc)
     return render_observation(payload)
 
 
@@ -1180,3 +1207,45 @@ def run_protein_expression_tool():
         return execute
 
     return run_protein_expression_tool_impl()
+
+
+def run_nta_purification_tool():
+    from inspect_ai.tool import tool
+
+    @tool(name="run_nta_purification")
+    def run_nta_purification_tool_impl():
+        """Run a single-pass Ni-NTA affinity purification with SDS-PAGE readout."""
+
+        async def execute(
+            resin_name: str,
+            load_imidazole_mm: float,
+            wash_imidazole_mm: float,
+            elute_imidazole_mm: float,
+            flow_rate_ml_per_min: float = 1.0,
+            column_bed_volume_ml: float = 1.0,
+            input_mass_mg: float = 18.0,
+        ) -> str:
+            """Purify a His-tagged benign protein over Ni-NTA.
+
+            Args:
+                resin_name: Ni-NTA-family resin (e.g., "Ni-NTA", "HisPur Ni-NTA", "HisTrap HP").
+                load_imidazole_mm: Imidazole in load buffer (10-20 mM recommended).
+                wash_imidazole_mm: Imidazole in wash buffer (40-60 mM recommended).
+                elute_imidazole_mm: Imidazole in elution buffer (>= 200 mM).
+                flow_rate_ml_per_min: Column flow rate (1 mL/min standard for 1 mL column).
+                column_bed_volume_ml: Column bed volume in mL.
+                input_mass_mg: Mass of input soluble protein to load in mg.
+            """
+            return await run_nta_purification_call(
+                resin_name=resin_name,
+                load_imidazole_mm=load_imidazole_mm,
+                wash_imidazole_mm=wash_imidazole_mm,
+                elute_imidazole_mm=elute_imidazole_mm,
+                flow_rate_ml_per_min=flow_rate_ml_per_min,
+                column_bed_volume_ml=column_bed_volume_ml,
+                input_mass_mg=input_mass_mg,
+            )
+
+        return execute
+
+    return run_nta_purification_tool_impl()

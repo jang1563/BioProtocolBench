@@ -1,0 +1,151 @@
+{
+  "task_id": "purify_01",
+  "decision_points": [
+    {
+      "id": "uses_ni_nta_resin",
+      "description": "Resin is a Ni-NTA / immobilised-Ni affinity medium.",
+      "minimum_tier_required": "Silver",
+      "matcher": {
+        "tool_name": "run_nta_purification",
+        "argument": "resin_normalized",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "one_of",
+        "values": ["ni-nta", "ni-nta agarose", "ni-nta superflow", "hispur ni-nta", "histrap hp"]
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "authors": "Bornhorst JA, Falke JJ",
+          "title": "Purification of proteins using polyhistidine affinity tags",
+          "journal": "Methods in Enzymology",
+          "year": 2000,
+          "doi": "10.1016/S0076-6879(00)26058-8",
+          "canonical_url": "https://doi.org/10.1016/S0076-6879(00)26058-8",
+          "tier": "Silver",
+          "tier_justification": "Canonical Methods in Enzymology chapter establishing Ni-NTA as the standard His-tag affinity resin."
+        }
+      ]
+    },
+    {
+      "id": "load_imidazole_in_range",
+      "description": "Load buffer imidazole is 10-20 mM to suppress non-specific binding.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "run_nta_purification",
+        "argument": "load_imidazole_mm",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "range",
+        "min": 10.0,
+        "max": 20.0
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "QIAGEN QIAexpressionist Handbook (5th ed.)",
+          "canonical_url": "https://www.qiagen.com/us/resources/resourcedetail?id=79ca2f7d-42fe-4d62-8676-4cfa948c9435",
+          "tier": "Bronze",
+          "tier_justification": "QIAexpressionist recommends 10-20 mM imidazole in load buffer."
+        }
+      ]
+    },
+    {
+      "id": "wash_imidazole_in_range",
+      "description": "Wash buffer imidazole is 40-60 mM for stringent contaminant removal.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "run_nta_purification",
+        "argument": "wash_imidazole_mm",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "range",
+        "min": 40.0,
+        "max": 60.0
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "QIAGEN QIAexpressionist Handbook (5th ed.)",
+          "canonical_url": "https://www.qiagen.com/us/resources/resourcedetail?id=79ca2f7d-42fe-4d62-8676-4cfa948c9435",
+          "tier": "Bronze",
+          "tier_justification": "QIAexpressionist recommends 40-60 mM imidazole wash."
+        }
+      ]
+    },
+    {
+      "id": "elute_imidazole_at_least_200",
+      "description": "Elution imidazole is at least 200 mM to displace the His-tag.",
+      "minimum_tier_required": "Bronze",
+      "matcher": {
+        "tool_name": "run_nta_purification",
+        "argument": "elute_imidazole_mm",
+        "occurrence": "all"
+      },
+      "acceptable_values": {
+        "type": "range",
+        "min": 200.0,
+        "max": 500.0
+      },
+      "scoring_rule": "binary",
+      "citations": [
+        {
+          "title": "QIAGEN QIAexpressionist Handbook (5th ed.)",
+          "canonical_url": "https://www.qiagen.com/us/resources/resourcedetail?id=79ca2f7d-42fe-4d62-8676-4cfa948c9435",
+          "tier": "Bronze",
+          "tier_justification": "QIAexpressionist recommends 200-250 mM imidazole elution."
+        }
+      ]
+    }
+  ],
+  "failure_diagnosis_map": {
+    "wrong_resin": {
+      "canonical_diagnosis": "Resin chosen is not a Ni-NTA / immobilised-Ni affinity medium; His-tag capture cannot proceed.",
+      "acceptable_variants": [
+        "His-tag purification requires Ni-NTA or a close variant; the chosen resin is not compatible.",
+        "The chosen resin has no Ni2+ immobilisation and cannot capture His-tagged protein."
+      ],
+      "judge_strategy": "substring_any",
+      "minimum_tier_required": "Silver",
+      "citations": [
+        {
+          "authors": "Bornhorst JA, Falke JJ",
+          "title": "Purification of proteins using polyhistidine affinity tags",
+          "journal": "Methods in Enzymology",
+          "year": 2000,
+          "doi": "10.1016/S0076-6879(00)26058-8",
+          "canonical_url": "https://doi.org/10.1016/S0076-6879(00)26058-8",
+          "tier": "Silver",
+          "tier_justification": "Bornhorst 2000 on His-tag affinity resins."
+        }
+      ]
+    },
+    "weak_elution": {
+      "canonical_diagnosis": "Elution imidazole is too low; target remains bound to the column.",
+      "acceptable_variants": [
+        "At least 200 mM imidazole is needed to elute His-tagged protein.",
+        "The chosen elution concentration is insufficient to displace the target from Ni-NTA."
+      ],
+      "judge_strategy": "substring_any",
+      "minimum_tier_required": "Bronze",
+      "citations": [
+        {
+          "title": "QIAGEN QIAexpressionist Handbook (5th ed.)",
+          "canonical_url": "https://www.qiagen.com/us/resources/resourcedetail?id=79ca2f7d-42fe-4d62-8676-4cfa948c9435",
+          "tier": "Bronze",
+          "tier_justification": "QIAexpressionist on elution imidazole concentrations."
+        }
+      ]
+    }
+  },
+  "efficiency_reference": {
+    "optimal_tool_calls": 1,
+    "max_reasonable_tool_calls": 5,
+    "reagent_budget": {
+      "purification_runs": 1
+    }
+  }
+}

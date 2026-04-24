@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from .prompts import LABCRAFT_SYSTEM_PROMPT
+from .prompts import DISCOVERY_SYSTEM_PROMPT, LABCRAFT_SYSTEM_PROMPT
+from .tools.discovery import set_active_discovery_sample
 from .tools.lab_tools import set_active_sample
 
 try:
@@ -66,6 +67,39 @@ def build_growth_solver():
                 "Do not restate intermediate observations after each interval. "
                 "Continue directly to the next required tool batch until the "
                 "experiment is complete, then provide the final answer.\n"
+            ),
+        ),
+        tools=[
+            lookup_reagent_tool(),
+            check_safety_tool(),
+            inoculate_growth_tool(),
+            incubate_tool(),
+            measure_od600_tool(),
+            fit_growth_curve_tool(),
+        ],
+    )
+
+
+def build_followup_solver():
+    """Build the Followup-01 solver chain for targeted growth follow-up."""
+    from inspect_ai.agent import AgentPrompt, react
+
+    from .tools.lab_tools import (
+        fit_growth_curve_tool,
+        incubate_tool,
+        inoculate_growth_tool,
+        measure_od600_tool,
+    )
+    from .tools.reference import check_safety_tool, lookup_reagent_tool
+
+    return react(
+        prompt=AgentPrompt(
+            instructions=LABCRAFT_SYSTEM_PROMPT,
+            assistant_prompt=(
+                "\nBe concise between tool calls. Treat this as a targeted follow-up: "
+                "focus on the ambiguous chloramphenicol condition, keep the tool path "
+                "minimal, and continue collecting OD600 data until the final fit is analyzable "
+                "before giving the conclusion.\n"
             ),
         ),
         tools=[
@@ -394,6 +428,81 @@ def configure_expression_sample():
 
     async def solve(state, generate):
         set_active_sample(state.sample_id)
+        return state
+
+    return solve
+
+
+def build_purification_solver():
+    """Build the Purify-01 solver chain."""
+    from inspect_ai.agent import AgentPrompt, react
+
+    from .tools.lab_tools import run_nta_purification_tool
+    from .tools.reference import check_safety_tool, lookup_reagent_tool
+
+    return react(
+        prompt=AgentPrompt(
+            instructions=LABCRAFT_SYSTEM_PROMPT,
+            assistant_prompt=(
+                "\nBe concise. Run a single Ni-NTA affinity purification with a "
+                "10-20 mM imidazole load, 40-60 mM wash, and >= 200 mM elution. "
+                "Report purified concentration, SDS-PAGE band, and purity percent.\n"
+            ),
+        ),
+        tools=[
+            lookup_reagent_tool(),
+            check_safety_tool(),
+            run_nta_purification_tool(),
+        ],
+    )
+
+
+@solver
+def configure_purification_sample():
+    """Initialize per-sample LabCraft state before the purification solver runs."""
+
+    async def solve(state, generate):
+        set_active_sample(state.sample_id)
+        return state
+
+    return solve
+
+
+def build_discovery_solver():
+    """Build the discovery-decision solver chain."""
+    from inspect_ai.agent import AgentPrompt, react
+
+    from .tools.discovery import (
+        list_candidate_targets_tool,
+        list_validation_assays_tool,
+        lookup_target_profile_tool,
+        run_validation_assay_tool,
+    )
+
+    return react(
+        prompt=AgentPrompt(
+            instructions=DISCOVERY_SYSTEM_PROMPT,
+            assistant_prompt=(
+                "\nBe concise between tool calls. Use the discovery tools to inspect only "
+                "the evidence needed, avoid repeated lookups unless the task requires them, "
+                "and make sure the final answer exactly matches the requested schema.\n"
+            ),
+        ),
+        tools=[
+            list_candidate_targets_tool(),
+            lookup_target_profile_tool(),
+            list_validation_assays_tool(),
+            run_validation_assay_tool(),
+        ],
+    )
+
+
+@solver
+def configure_discovery_sample():
+    """Initialize per-sample discovery-track state before the solver runs."""
+
+    async def solve(state, generate):
+        set_active_discovery_sample(state.sample_id)
         return state
 
     return solve

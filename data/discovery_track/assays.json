@@ -1,0 +1,23 @@
+[
+  {
+    "assay_id": "ASY_CYTOKINE",
+    "name": "Orthogonal cytokine-response panel",
+    "primary_readout": "change in inflammatory cytokine program",
+    "description": "Measures whether the perturbation shifts an orthogonal inflammatory-output signature in the desired direction.",
+    "best_use": "Best first validation assay for a strong efficacy candidate with good viability and translation support."
+  },
+  {
+    "assay_id": "ASY_PATHWAY",
+    "name": "Pathway-state orthogonal readout",
+    "primary_readout": "orthogonal pathway-state shift",
+    "description": "Checks whether the primary-screen effect is reproduced by an independent pathway-focused readout.",
+    "best_use": "Best follow-up assay when the primary-screen result is promising but conflicts with QC or context consistency."
+  },
+  {
+    "assay_id": "ASY_VIABILITY",
+    "name": "Cell-state and viability liability panel",
+    "primary_readout": "viability and stress-liability shift",
+    "description": "Measures whether the apparent perturbation gain is dominated by broad stress or viability effects.",
+    "best_use": "Best de-risking assay when a candidate looks active but may be dominated by liability."
+  }
+]
