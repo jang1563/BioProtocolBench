@@ -1,6 +1,7 @@
 # BioProtocolBench Evaluation — Analysis
 
 100 runs across 5 tasks × 4 frontier models × 5 stochastic seeds, April 2026.
+This document analyzes the frozen April 2026 portfolio snapshot only: `transform_01`, `growth_01`, `pcr_01`, `screen_01`, and `clone_01`. The repo now implements additional tasks, including `golden_gate_01`, `gibson_01`, `miniprep_01`, `express_01`, and `purify_01`, but those are not part of the headline tables below. A separate appendix near the end summarizes the newer-task 5-seed frontier extension without merging it into the frozen snapshot. The repo also now includes a human-baseline workflow and pilot reporting for `transform_01` and `growth_01`, but no completed expert sessions are analyzed in this document yet.
 Raw scores: [results.md](results.md). Raw trajectories: [logs/](logs/).
 
 ## Headline
@@ -130,9 +131,56 @@ Added to the final-answer instructions:
 - Prompt engineering for single axes in multi-axis rubrics can be actively harmful. Any future prompt iteration should look at composite scores, not just the axis being targeted.
 - Closing the trouble axis for OpenAI requires either a longer message budget (so the verbose discussion doesn't crowd out task output) or a final-answer template that separates `DOUBLING_TIMES:` from `NOTES:` sections so the task_success parser isn't competing with the troubleshooting narrative.
 
+## Appendix: newer-task frontier extension
+
+The analysis above remains about the published April 2026 five-task snapshot only. Separately, I ran a newer-task cross-provider bundle on `golden_gate_01`, `gibson_01`, `miniprep_01`, `express_01`, and `purify_01`, first at 3 seeds and then as a 5-seed extension using the new `seed_start` task parameter so that seeds `03`-`04` could be added without rerunning seeds `00`-`02`.
+
+See [current_frontier_5seed.md](current_frontier_5seed.md) and [current_frontier_5seed_results.md](current_frontier_5seed_results.md) for the full artifact set. This section is an appendix because those results are intentionally not merged into the frozen portfolio scorecard above.
+
+### 5-seed newer-task summary
+
+| Model | Mean across newer tasks | Non-perfect cells |
+|---|---:|---|
+| `gpt-4o-mini` | **1.000** | none |
+| `gpt-4o` | 0.996 | `gibson_01` = 0.980 (efficiency 0.800) |
+| `claude-haiku-4-5` | 0.976 | `golden_gate_01` = 0.910, `gibson_01` = 0.970 |
+| `claude-sonnet-4-5` | **1.000** | none |
+
+### What the extra seeds changed
+
+The earlier 3-seed frontier slice looked nearly saturated across all four models, with only small efficiency differences on the assembly tasks. The 5-seed extension changed that story in one important way: it showed that `claude-haiku-4-5` is not just slightly less efficient on the assembly tasks, but less stable in final quantitative reporting on `golden_gate_01`.
+
+On `golden_gate_01` seed `04`, `claude-haiku-4-5` made the correct experimental decisions:
+
+- BsaI as the Type IIS enzyme
+- T4 DNA ligase
+- 37 C / 16 C cycling
+- at least 25 cycles
+- all four fragments
+
+So `decision_quality = 1.0`, `troubleshooting = 1.0`, and `efficiency = 1.0`. But the agent saw a low-count plate, back-calculated that to `80` transformants in the final answer, and the deterministic scorer marked `task_success = 0.0`. That single sample drove the 5-seed `golden_gate_01` cell down to:
+
+- `overall = 0.910 ± 0.175`
+- `task_success = 0.800 ± 0.447`
+- `efficiency = 0.900 ± 0.224`
+
+This is a useful contrast with `gpt-4o`, whose remaining non-perfect newer-task cell is still only an efficiency issue (`gibson_01` = 0.980 with `task_success = 1.0` across all 5 seeds).
+
+### Interpretation
+
+The 5-seed newer-task slice sharpens the model ranking:
+
+1. `gpt-4o-mini` and `claude-sonnet-4-5` now look genuinely stable on this task family, not just lucky over three seeds.
+2. `gpt-4o` still appears highly reliable, with its only residual gap on `gibson_01` efficiency.
+3. `claude-haiku-4-5` is the one model where the extra seeds changed the qualitative interpretation: the assembly-task variance is not just wasted tool calls, but also a real final-answer correctness miss.
+
+### Method note
+
+This extension also validated the repo's incremental-seed workflow. [src/inspect_task.py](../src/inspect_task.py) now supports `seed_start`, and [scripts/run_portfolio_eval.sh](../scripts/run_portfolio_eval.sh) threads that through to Inspect. That makes it possible to extend an existing multi-seed bundle without duplicating earlier seeds or contaminating the aggregate with repeated sample IDs.
+
 ## What a larger evaluation would add
 
-Items 1, 2, and 4 from the original analysis are now done (N=5, sonnet added, prompt ablation run above). Remaining open directions:
+Items 1, 2, and 4 from the original analysis are now done for the frozen snapshot (N=5, sonnet added, prompt ablation run above). For the newer-task frontier slice, a separate 5-seed extension is now also complete. Remaining open directions:
 
 1. **Raise N further to 10 – 20 seeds** on the two discriminating tasks (`transform_01` and `growth_01`) to tighten the task_success stddev from ~0.45 down to ~0.20 — enough to publish confidence intervals.
 2. **Ablate the `efficiency` axis**. It has the second-loudest signal on some cells (haiku transform_01 efficiency = 0.10, sonnet transform_01 efficiency = 0.00) but correlates weakly with task success. Worth measuring whether it's capturing real waste or just message-limit artifacts.

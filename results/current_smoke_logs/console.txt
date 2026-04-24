@@ -1,0 +1,95 @@
+Running portfolio eval
+  Task source: explicit
+  Tasks:  golden_gate_01 gibson_01 miniprep_01 express_01 purify_01
+  Models: openai/gpt-4o-mini
+  Seeds:  1
+  Logs:   results/current_smoke_logs
+
+=== task=golden_gate_01 model=openai/gpt-4o-mini seeds=1 ===
+╭──────────────────────────────────────────────────────────────────────────────╮
+│golden_gate_01 (1 sample): openai/gpt-4o-mini                                 │
+╰──────────────────────────────────────────────────────────────────────────────╯
+message_limit: 60, seeds: 1, dataset: (samples)                                 
+                                                                                
+total time:          0:00:12                                                    
+openai/gpt-4o-mini   15,087 tokens [I: 5,095, CW: 0, CR: 9,728, O: 264, R: 0]   
+                                                                                
+overall         task_success         decision_qua…         troubleshooti…       
+mean     1.000  mean          1.000  mean           1.000  mean            1.000
+efficiency                                                                      
+mean        1.000                                                               
+                                                                                
+Log:                                                                            
+results/current_smoke_logs/2026-04-16T17-44-10-00-00_golden-gate-01_jnpC5ZTc7c83
+vDYqepgA7M.eval                                                                 
+                                                                                === task=gibson_01 model=openai/gpt-4o-mini seeds=1 ===
+╭──────────────────────────────────────────────────────────────────────────────╮
+│gibson_01 (1 sample): openai/gpt-4o-mini                                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
+message_limit: 60, seeds: 1, dataset: (samples)                                 
+                                                                                
+total time:          0:00:13                                                    
+openai/gpt-4o-mini   12,205 tokens [I: 3,629, CW: 0, CR: 8,320, O: 256, R: 0]   
+                                                                                
+overall         task_success         decision_qua…         troubleshooti…       
+mean     1.000  mean          1.000  mean           1.000  mean            1.000
+efficiency                                                                      
+mean        1.000                                                               
+                                                                                
+Log:                                                                            
+results/current_smoke_logs/2026-04-16T17-44-37-00-00_gibson-01_6qKqEdPpz5K6DD7JM
+EMBQC.eval                                                                      
+                                                                                === task=miniprep_01 model=openai/gpt-4o-mini seeds=1 ===
+╭──────────────────────────────────────────────────────────────────────────────╮
+│miniprep_01 (1 sample): openai/gpt-4o-mini                                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
+message_limit: 40, seeds: 1, dataset: (samples)                                 
+                                                                                
+total time:            0:00:09                                                  
+openai/gpt-4o-mini     3,286 tokens [I: 3,048, CW: 0, CR: 0, O: 238, R: 0]      
+                                                                                
+overall         task_success         decision_qua…         troubleshooti…       
+mean     1.000  mean          1.000  mean           1.000  mean            1.000
+efficiency                                                                      
+mean        1.000                                                               
+                                                                                
+Log:                                                                            
+results/current_smoke_logs/2026-04-16T17-45-04-00-00_miniprep-01_oCvWhbDTX895yL8
+5tf6L4y.eval                                                                    
+                                                                                === task=express_01 model=openai/gpt-4o-mini seeds=1 ===
+╭──────────────────────────────────────────────────────────────────────────────╮
+│express_01 (1 sample): openai/gpt-4o-mini                                     │
+╰──────────────────────────────────────────────────────────────────────────────╯
+message_limit: 40, seeds: 1, dataset: (samples)                                 
+                                                                                
+total time:            0:00:07                                                  
+openai/gpt-4o-mini     2,358 tokens [I: 2,188, CW: 0, CR: 0, O: 170, R: 0]      
+                                                                                
+overall         task_success         decision_qua…         troubleshooti…       
+mean     1.000  mean          1.000  mean           1.000  mean            1.000
+efficiency                                                                      
+mean        1.000                                                               
+                                                                                
+Log:                                                                            
+results/current_smoke_logs/2026-04-16T17-45-28-00-00_express-01_n2JaWr2n4tPZF8Gr
+CgTuZ6.eval                                                                     
+                                                                                === task=purify_01 model=openai/gpt-4o-mini seeds=1 ===
+╭──────────────────────────────────────────────────────────────────────────────╮
+│purify_01 (1 sample): openai/gpt-4o-mini                                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
+message_limit: 40, seeds: 1, dataset: (samples)                                 
+                                                                                
+total time:           0:00:06                                                   
+openai/gpt-4o-mini    2,418 tokens [I: 1,216, CW: 0, CR: 1,024, O: 178, R: 0]   
+                                                                                
+overall         task_success         decision_qua…         troubleshooti…       
+mean     1.000  mean          1.000  mean           1.000  mean            1.000
+efficiency                                                                      
+mean        1.000                                                               
+                                                                                
+Log:                                                                            
+results/current_smoke_logs/2026-04-16T17-45-47-00-00_purify-01_kGhj6geb2oq74pQjW
+z4KX2.eval                                                                      
+                                                                                
+All runs attempted. Aggregate with:
+  python3 scripts/aggregate_eval_results.py --log-dir "results/current_smoke_logs"

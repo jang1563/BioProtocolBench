@@ -4,7 +4,7 @@ An [Inspect AI](https://inspect.aisi.org.uk/) evaluation environment for measuri
 
 Built on **LabCraft**, the underlying framework in [`src/`](src/). Each task places the agent in a seeded stochastic environment with a fixed tool set, a public protocol, and a citation-backed ground truth.
 
-> Not to be confused with [BioProBench](https://github.com/YuyangSunshine/bioprotocolbench) (Liu et al., 2025), an NLP corpus of 556K instances. BioProtocolBench is an agent evaluation environment with three-axis trajectory scoring.
+> Not to be confused with [BioProBench](https://github.com/YuyangSunshine/bioprotocolbench) (Liu et al., 2025), an NLP corpus of 556K instances. BioProtocolBench is an agent evaluation environment with four-axis trajectory scoring.
 
 ## What the agent does
 
@@ -16,11 +16,40 @@ Each task gives the agent:
 
 The agent must plan the experiment, call tools in the right order, interpret observations, and report quantitative results. A trajectory scorer inspects the full interaction (tool calls, results, final answer) and grades it against a hierarchical rubric.
 
+## Discovery Decision Track
+
+BioProtocolBench now also includes a separate **Discovery Decision Track** for perturbation-driven discovery decisions. Instead of executing a microbiology workflow end to end, these tasks evaluate whether an agent can inspect candidate-target evidence, choose the right next experiment, and interpret one orthogonal follow-up with an auditable scorer.
+
+Current discovery-track tasks:
+
+- `perturb_followup_01` — resolve one ambiguous perturbation hit with a single orthogonal follow-up
+- `target_prioritize_01` — rank four candidate targets for an inflammatory-disease program
+- `target_validate_01` — choose and interpret the best first validation assay for the lead target
+
+This is meant to complement the wet-lab execution tasks, not replace them: the original LabCraft benchmark still measures experimental reliability, while the discovery track measures discovery decision quality.
+
+Quick discovery links:
+
+- [results/discovery_track.md](results/discovery_track.md) for the runnable discovery bundle and headline scores
+- `./scripts/run_discovery_bundle.sh` to rerun the recommended 2-model / 3-seed Discovery bundle in one step
+
 ## Results
 
 100 runs · 5 tasks · 4 frontier models · 5 stochastic seeds · April 2026 · total API cost ~$2.50
 
+This scorecard is a frozen April 2026 portfolio snapshot covering the first five tasks: `transform_01`, `growth_01`, `pcr_01`, `screen_01`, and `clone_01`. The repo now also implements `golden_gate_01`, `gibson_01`, `miniprep_01`, `express_01`, `purify_01`, and `followup_01`; those newer tasks are runnable today but are not yet included in the tables or charts below.
+
 See **[results/analysis.md](results/analysis.md)** for per-task failure-mode analysis, [results/results.md](results/results.md) for per-sample scores, and [results/logs/](results/logs/) for the raw Inspect trajectories.
+
+For a separate sanity-check track on the newer implemented tasks, see **[results/current_smoke.md](results/current_smoke.md)**. That bundle is deliberately not merged into the historical scorecard because it is only a 1-model, 1-seed smoke run.
+
+For a small multi-seed comparable bundle on the newer tasks, see **[results/current_openai.md](results/current_openai.md)**. That track currently covers `gpt-4o-mini` and `gpt-4o` across 3 seeds on `golden_gate_01`, `gibson_01`, `miniprep_01`, `express_01`, and `purify_01`.
+
+For a small cross-provider bundle on the newer tasks, see **[results/current_frontier.md](results/current_frontier.md)**. That track combines `gpt-4o-mini`, `gpt-4o`, `claude-haiku-4-5`, and `claude-sonnet-4-5` across 3 seeds on the same five newer tasks.
+
+For the stronger 5-seed version of that same newer-task cross-provider slice, see **[results/current_frontier_5seed.md](results/current_frontier_5seed.md)**. That bundle combines the original 3-seed runs with an incremental `seed_start=3` extension and gives a more stable view of variance on the assembly tasks.
+
+For the discovery-decision bundle, see **[results/discovery_track.md](results/discovery_track.md)**. That track keeps the frozen microbiology snapshot untouched and adds three perturbation-driven discovery tasks in a shared synthetic environment.
 
 ![Overall score by model and task](results/scorecard.png)
 
@@ -40,10 +69,82 @@ See **[results/analysis.md](results/analysis.md)** for per-task failure-mode ana
 Reproduce locally:
 
 ```bash
+# Reproduce the frozen 5-task April 2026 portfolio snapshot.
 SEEDS=5 MODELS="openai/gpt-4o-mini openai/gpt-4o anthropic/claude-haiku-4-5 anthropic/claude-sonnet-4-5" \
   ./scripts/run_portfolio_eval.sh
 python3 scripts/aggregate_eval_results.py        # results/logs/*.eval → results/results.md
-python3 scripts/plot_scorecard.py                # regenerates scorecard.png and axis_heatmap.png
+python3 scripts/plot_scorecard.py                # default preset = snapshot
+
+# Run the current implemented task bundle into a separate log/output location.
+LOG_DIR=results/current_smoke_logs \
+SEEDS=1 \
+MODELS="openai/gpt-4o-mini" \
+TASKS="golden_gate_01 gibson_01 miniprep_01 express_01 purify_01" \
+  ./scripts/run_portfolio_eval.sh
+python3 scripts/aggregate_eval_results.py \
+  --log-dir results/current_smoke_logs \
+  --out results/current_smoke_results.md
+python3 scripts/plot_scorecard.py \
+  --log-dir results/current_smoke_logs \
+  --out-dir results/current_smoke_plots \
+  --task-preset auto \
+  --models openai/gpt-4o-mini
+
+# Run a small comparable OpenAI bundle on the newer tasks.
+LOG_DIR=results/current_openai_logs \
+SEEDS=3 \
+MODELS="openai/gpt-4o-mini openai/gpt-4o" \
+TASKS="golden_gate_01 gibson_01 miniprep_01 express_01 purify_01" \
+  ./scripts/run_portfolio_eval.sh
+python3 scripts/aggregate_eval_results.py \
+  --log-dir results/current_openai_logs \
+  --out results/current_openai_results.md
+python3 scripts/plot_scorecard.py \
+  --log-dir results/current_openai_logs \
+  --out-dir results/current_openai_plots \
+  --task-preset auto \
+  --models openai/gpt-4o-mini openai/gpt-4o
+
+# Run the matching Anthropic bundle on the newer tasks.
+LOG_DIR=results/current_anthropic_logs \
+SEEDS=3 \
+MODELS="anthropic/claude-haiku-4-5 anthropic/claude-sonnet-4-5" \
+TASKS="golden_gate_01 gibson_01 miniprep_01 express_01 purify_01" \
+  ./scripts/run_portfolio_eval.sh
+
+# Aggregate and plot the combined frontier view from both log directories.
+python3 scripts/aggregate_eval_results.py \
+  --log-dir results/current_openai_logs results/current_anthropic_logs \
+  --out results/current_frontier_results.md
+python3 scripts/plot_scorecard.py \
+  --log-dir results/current_openai_logs results/current_anthropic_logs \
+  --out-dir results/current_frontier_plots \
+  --task-preset auto \
+  --models openai/gpt-4o-mini openai/gpt-4o anthropic/claude-haiku-4-5 anthropic/claude-sonnet-4-5
+
+# Extend the same bundle to 5 total seeds by adding only seeds 03-04.
+LOG_DIR=results/current_openai_logs_seed34 \
+SEEDS=2 \
+SEED_START=3 \
+MODELS="openai/gpt-4o-mini openai/gpt-4o" \
+TASKS="golden_gate_01 gibson_01 miniprep_01 express_01 purify_01" \
+  ./scripts/run_portfolio_eval.sh
+LOG_DIR=results/current_anthropic_logs_seed34 \
+SEEDS=2 \
+SEED_START=3 \
+MODELS="anthropic/claude-haiku-4-5 anthropic/claude-sonnet-4-5" \
+TASKS="golden_gate_01 gibson_01 miniprep_01 express_01 purify_01" \
+  ./scripts/run_portfolio_eval.sh
+python3 scripts/aggregate_eval_results.py \
+  --log-dir results/current_openai_logs results/current_anthropic_logs \
+            results/current_openai_logs_seed34 results/current_anthropic_logs_seed34 \
+  --out results/current_frontier_5seed_results.md
+python3 scripts/plot_scorecard.py \
+  --log-dir results/current_openai_logs results/current_anthropic_logs \
+            results/current_openai_logs_seed34 results/current_anthropic_logs_seed34 \
+  --out-dir results/current_frontier_5seed_plots \
+  --task-preset auto \
+  --models openai/gpt-4o-mini openai/gpt-4o anthropic/claude-haiku-4-5 anthropic/claude-sonnet-4-5
 ```
 
 ## Key findings and limitations
@@ -67,6 +168,8 @@ These limitations are the top of the next-iteration backlog, documented in [resu
 
 ## Tasks
 
+Current implemented task inventory:
+
 | Task | Domain | Objective |
 |---|---|---|
 | `transform_01` | Chemical transformation of *E. coli* | Measure CFU/µg across four DNA masses (10 pg → 10 ng) |
@@ -77,16 +180,23 @@ These limitations are the top of the next-iteration backlog, documented in [resu
 | `golden_gate_01` | Type IIS Golden Gate assembly | One-pot 4-fragment BsaI/T4 ligase assembly with 37 °C / 16 °C cycling, transform |
 | `gibson_01` | Isothermal Gibson overlap assembly | 2-fragment master-mix assembly at 50 °C for 15 min, transform |
 | `miniprep_01` | Alkaline lysis plasmid prep | P1/P2/P3 lysis + silica column; report concentration, A260/A280, yield |
+| `express_01` | Recombinant protein expression | Induce benign His-tagged MBP-GFP expression in a T7 host and report soluble yield |
+| `purify_01` | Ni-NTA affinity purification | Purify a benign His-tagged MBP-GFP fusion and report concentration, band, and purity |
+| `followup_01` | Growth follow-up decision under ambiguous intervention data | Resolve whether a chloramphenicol slowdown is real or an undersampling artifact using the minimum follow-up experiment |
+| `perturb_followup_01` | Perturbation follow-up | Resolve one ambiguous discovery hit with a single orthogonal assay |
+| `target_prioritize_01` | Discovery target triage | Rank four candidate targets by perturbation strength, translation support, and liability risk |
+| `target_validate_01` | Discovery validation | Choose and interpret the best first validation assay for the lead target |
 
 Each task directory (`task_data/<task_id>/`) contains `rubric.json` (hierarchical scoring tree), `ground_truth.json` (expected values with citation metadata), and `SOURCES.md` (citations).
 
 ## Scoring
 
-Trajectory scoring (see [src/trajectory_scorer.py](src/trajectory_scorer.py)) produces three axes per task:
+Trajectory scoring (see [src/trajectory_scorer.py](src/trajectory_scorer.py)) produces four axes per task:
 
 - **Task success** — were the requested values reported, within tolerance of ground truth?
 - **Decision quality** — were the experimental choices (dilutions, controls, replicates) sound?
 - **Troubleshooting** — did the agent recognize and recover from stochastic failures (uncountable plates, contamination, etc.)?
+- **Efficiency** — did the agent solve the task with a reasonable tool-call budget rather than wandering or hitting message-limit artifacts?
 
 Rubrics follow the hierarchical-tree methodology from [PaperBench](https://openai.com/index/paperbench/): leaf nodes are binary pass/fail, internal nodes are weighted averages.
 
@@ -104,22 +214,36 @@ pip install -e ".[dev]"
 
 ```bash
 # Single task
-inspect eval src.inspect_task:transform_01     --model openai/gpt-4o
-inspect eval src.inspect_task:growth_01        --model anthropic/claude-sonnet-4-5
-inspect eval src.inspect_task:pcr_01           --model openai/gpt-4o
-inspect eval src.inspect_task:screen_01        --model openai/gpt-4o-mini
-inspect eval src.inspect_task:clone_01         --model openai/gpt-4o-mini
-inspect eval src.inspect_task:golden_gate_01   --model openai/gpt-4o-mini
-inspect eval src.inspect_task:gibson_01        --model openai/gpt-4o-mini
-inspect eval src.inspect_task:miniprep_01      --model openai/gpt-4o-mini
+inspect eval src/inspect_task.py@transform_01     --model openai/gpt-4o
+inspect eval src/inspect_task.py@growth_01        --model anthropic/claude-sonnet-4-5
+inspect eval src/inspect_task.py@pcr_01           --model openai/gpt-4o
+inspect eval src/inspect_task.py@screen_01        --model openai/gpt-4o-mini
+inspect eval src/inspect_task.py@clone_01         --model openai/gpt-4o-mini
+inspect eval src/inspect_task.py@golden_gate_01   --model openai/gpt-4o-mini
+inspect eval src/inspect_task.py@gibson_01        --model openai/gpt-4o-mini
+inspect eval src/inspect_task.py@miniprep_01      --model openai/gpt-4o-mini
+inspect eval src/inspect_task.py@express_01       --model openai/gpt-4o-mini
+inspect eval src/inspect_task.py@purify_01        --model openai/gpt-4o-mini
+inspect eval src/inspect_task.py@followup_01      --model openai/gpt-4o-mini
+inspect eval src/inspect_task.py@perturb_followup_01   --model openai/gpt-4o-mini
+inspect eval src/inspect_task.py@target_prioritize_01  --model openai/gpt-4o-mini
+inspect eval src/inspect_task.py@target_validate_01    --model openai/gpt-4o-mini
 
 # With a different grader model (trajectory scorer uses LLM-as-judge for some rubric leaves)
-inspect eval src.inspect_task:transform_01 \
+inspect eval src/inspect_task.py@transform_01 \
     --model anthropic/claude-sonnet-4-5 \
     -T grader_model=openai/gpt-4o
+
+# Run the Discovery decision bundle
+TASK_PRESET=discovery \
+SEEDS=3 \
+MODELS="openai/gpt-4o-mini anthropic/claude-sonnet-4-5" \
+  ./scripts/run_portfolio_eval.sh
 ```
 
 Task entry points are registered via the `inspect_ai` plugin in [pyproject.toml](pyproject.toml).
+
+For a minimal manual expert-baseline workflow on the two most informative snapshot tasks, see [docs/human_baseline.md](docs/human_baseline.md). That CLI reuses the same seeded task instances and deterministic scorer for `transform_01` and `growth_01`, now includes a pilot launcher at [scripts/run_human_baseline_pilot.py](scripts/run_human_baseline_pilot.py), and safely resumes `in_progress` session files instead of overwriting them. The recommended first-pass seed set is documented in [results/human_baseline_seed_plan.md](results/human_baseline_seed_plan.md), and aggregated pilot outputs now include [results/human_baseline_pilot.md](results/human_baseline_pilot.md), [results/human_baseline_pilot.json](results/human_baseline_pilot.json), and the companion plots in [results/human_baseline_plots](results/human_baseline_plots).
 
 ## Repository layout
 
@@ -130,7 +254,7 @@ BioProtocolBench/
 ├── SAFETY.md                 # Scope and safety policy
 ├── pyproject.toml
 ├── src/
-│   ├── inspect_task.py       # @task entry points: transform_01, growth_01, pcr_01
+│   ├── inspect_task.py       # @task entry points for all implemented tasks
 │   ├── solvers.py            # Tool-augmented solvers per task
 │   ├── environment/          # Stochastic lab simulator (state, operations, noise)
 │   ├── tasks/                # Per-task prompts and sample builders
@@ -145,8 +269,9 @@ BioProtocolBench/
 │   └── parameters/               # Stochastic parameters with citations
 ├── task_data/
 │   ├── transform_01/         # rubric.json, ground_truth.json, SOURCES.md
-│   ├── growth_01/
-│   └── pcr_01/
+│   ├── ...
+│   ├── express_01/
+│   └── purify_01/
 ├── environments/             # Docker sandbox
 ├── docs/schemas.md           # JSON schema contract
 └── tests/                    # Unit tests (environment, scorer, tools, rubrics)

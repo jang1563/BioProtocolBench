@@ -1,0 +1,187 @@
+Running portfolio eval
+  Task source: explicit
+  Tasks:  golden_gate_01 gibson_01 miniprep_01 express_01 purify_01
+  Models: anthropic/claude-haiku-4-5 anthropic/claude-sonnet-4-5
+  Seeds:  3
+  Logs:   results/current_anthropic_logs
+
+=== task=golden_gate_01 model=anthropic/claude-haiku-4-5 seeds=3 ===
+╭──────────────────────────────────────────────────────────────────────────────╮
+│golden_gate_01 (3 samples): anthropic/claude-haiku-4-5                        │
+╰──────────────────────────────────────────────────────────────────────────────╯
+message_limit: 60, seeds: 3, dataset: (samples)                                 
+                                                                                
+total time:                 0:00:33                                             
+anthropic/claude-haiku-4-5  124,956 tokens [I: 29,928, CW: 17,162, CR: 73,485,  
+                          O: 4,381]                                             
+                                                                                
+overall         task_success         decision_qua…         troubleshooti…       
+mean     0.983  mean          1.000  mean           1.000  mean            1.000
+efficiency                                                                      
+mean        0.833                                                               
+                                                                                
+Log:                                                                            
+results/current_anthropic_logs/2026-04-16T18-27-43-00-00_golden-gate-01_6pj57Ck6
+m6m2DiHfXqfHP9.eval                                                             
+                                                                                === task=golden_gate_01 model=anthropic/claude-sonnet-4-5 seeds=3 ===
+╭──────────────────────────────────────────────────────────────────────────────╮
+│golden_gate_01 (3 samples): anthropic/claude-sonnet-4-5                       │
+╰──────────────────────────────────────────────────────────────────────────────╯
+message_limit: 60, seeds: 3, dataset: (samples)                                 
+                                                                                
+total time:                  0:00:31                                            
+anthropic/claude-sonnet-4-5  74,430 tokens [I: 30, CW: 14,537, CR: 56,923, O:   
+                           2,940]                                               
+                                                                                
+overall         task_success         decision_qua…         troubleshooti…       
+mean     1.000  mean          1.000  mean           1.000  mean            1.000
+efficiency                                                                      
+mean        1.000                                                               
+                                                                                
+Log:                                                                            
+results/current_anthropic_logs/2026-04-16T18-28-30-00-00_golden-gate-01_DJYjvzXu
+sa2PhXQhXmydd2.eval                                                             
+                                                                                === task=gibson_01 model=anthropic/claude-haiku-4-5 seeds=3 ===
+╭──────────────────────────────────────────────────────────────────────────────╮
+│gibson_01 (3 samples): anthropic/claude-haiku-4-5                             │
+╰──────────────────────────────────────────────────────────────────────────────╯
+message_limit: 60, seeds: 3, dataset: (samples)                                 
+                                                                                
+total time:                 0:00:24                                             
+anthropic/claude-haiku-4-5  81,308 tokens [I: 69,055, CW: 4,550, CR: 4,368, O:  
+                          3,335]                                                
+                                                                                
+overall         task_success         decision_qua…         troubleshooti…       
+mean     0.983  mean          1.000  mean           1.000  mean            1.000
+efficiency                                                                      
+mean        0.833                                                               
+                                                                                
+Log:                                                                            
+results/current_anthropic_logs/2026-04-16T18-29-15-00-00_gibson-01_HYTkvcaTSfDQP
+GbfNnPPXq.eval                                                                  
+                                                                                === task=gibson_01 model=anthropic/claude-sonnet-4-5 seeds=3 ===
+╭──────────────────────────────────────────────────────────────────────────────╮
+│gibson_01 (3 samples): anthropic/claude-sonnet-4-5                            │
+╰──────────────────────────────────────────────────────────────────────────────╯
+message_limit: 60, seeds: 3, dataset: (samples)                                 
+                                                                                
+total time:                  0:00:34                                            
+anthropic/claude-sonnet-4-5  71,391 tokens [I: 21, CW: 12,389, CR: 56,337, O:   
+                           2,644]                                               
+                                                                                
+overall         task_success         decision_qua…         troubleshooti…       
+mean     1.000  mean          1.000  mean           1.000  mean            1.000
+efficiency                                                                      
+mean        1.000                                                               
+                                                                                
+Log:                                                                            
+results/current_anthropic_logs/2026-04-16T18-29-54-00-00_gibson-01_cGNeu448iMVAW
+oiedqZPeU.eval                                                                  
+                                                                                === task=miniprep_01 model=anthropic/claude-haiku-4-5 seeds=3 ===
+╭──────────────────────────────────────────────────────────────────────────────╮
+│miniprep_01 (3 samples): anthropic/claude-haiku-4-5                           │
+╰──────────────────────────────────────────────────────────────────────────────╯
+message_limit: 40, seeds: 3, dataset: (samples)                                 
+                                                                                
+total time:                   0:00:08                                           
+anthropic/claude-haiku-4-5    12,735 tokens [I: 11,345, CW: 0, CR: 0, O: 1,390] 
+                                                                                
+overall         task_success         decision_qua…         troubleshooti…       
+mean     1.000  mean          1.000  mean           1.000  mean            1.000
+efficiency                                                                      
+mean        1.000                                                               
+                                                                                
+Log:                                                                            
+results/current_anthropic_logs/2026-04-16T18-30-39-00-00_miniprep-01_PdVVWR8KbLG
+3qhHxoK3U7R.eval                                                                
+                                                                                === task=miniprep_01 model=anthropic/claude-sonnet-4-5 seeds=3 ===
+╭──────────────────────────────────────────────────────────────────────────────╮
+│miniprep_01 (3 samples): anthropic/claude-sonnet-4-5                          │
+╰──────────────────────────────────────────────────────────────────────────────╯
+message_limit: 40, seeds: 3, dataset: (samples)                                 
+                                                                                
+total time:                  0:00:10                                            
+anthropic/claude-sonnet-4-5  12,452 tokens [I: 12, CW: 6,229, CR: 5,094, O:     
+                           1,117]                                               
+                                                                                
+overall         task_success         decision_qua…         troubleshooti…       
+mean     1.000  mean          1.000  mean           1.000  mean            1.000
+efficiency                                                                      
+mean        1.000                                                               
+                                                                                
+Log:                                                                            
+results/current_anthropic_logs/2026-04-16T18-30-59-00-00_miniprep-01_BnV48krhA5V
+WAVHBUp7hmP.eval                                                                
+                                                                                === task=express_01 model=anthropic/claude-haiku-4-5 seeds=3 ===
+╭──────────────────────────────────────────────────────────────────────────────╮
+│express_01 (3 samples): anthropic/claude-haiku-4-5                            │
+╰──────────────────────────────────────────────────────────────────────────────╯
+message_limit: 40, seeds: 3, dataset: (samples)                                 
+                                                                                
+total time:                   0:00:10                                           
+anthropic/claude-haiku-4-5    14,621 tokens [I: 12,833, CW: 0, CR: 0, O: 1,788] 
+                                                                                
+overall         task_success         decision_qua…         troubleshooti…       
+mean     1.000  mean          1.000  mean           1.000  mean            1.000
+efficiency                                                                      
+mean        1.000                                                               
+                                                                                
+Log:                                                                            
+results/current_anthropic_logs/2026-04-16T18-31-19-00-00_express-01_PjJABaNbwLaX
+N4hoZTysgq.eval                                                                 
+                                                                                === task=express_01 model=anthropic/claude-sonnet-4-5 seeds=3 ===
+╭──────────────────────────────────────────────────────────────────────────────╮
+│express_01 (3 samples): anthropic/claude-sonnet-4-5                           │
+╰──────────────────────────────────────────────────────────────────────────────╯
+message_limit: 40, seeds: 3, dataset: (samples)                                 
+                                                                                
+total time:                  0:00:13                                            
+anthropic/claude-sonnet-4-5  15,114 tokens [I: 12, CW: 1,868, CR: 11,418, O:    
+                           1,816]                                               
+                                                                                
+overall         task_success         decision_qua…         troubleshooti…       
+mean     1.000  mean          1.000  mean           1.000  mean            1.000
+efficiency                                                                      
+mean        1.000                                                               
+                                                                                
+Log:                                                                            
+results/current_anthropic_logs/2026-04-16T18-31-40-00-00_express-01_mR7HnYEdyriR
+dLNBXH88Ae.eval                                                                 
+                                                                                === task=purify_01 model=anthropic/claude-haiku-4-5 seeds=3 ===
+╭──────────────────────────────────────────────────────────────────────────────╮
+│purify_01 (3 samples): anthropic/claude-haiku-4-5                             │
+╰──────────────────────────────────────────────────────────────────────────────╯
+message_limit: 40, seeds: 3, dataset: (samples)                                 
+                                                                                
+total time:                   0:00:07                                           
+anthropic/claude-haiku-4-5    14,984 tokens [I: 13,329, CW: 0, CR: 0, O: 1,655] 
+                                                                                
+overall         task_success         decision_qua…         troubleshooti…       
+mean     1.000  mean          1.000  mean           1.000  mean            1.000
+efficiency                                                                      
+mean        1.000                                                               
+                                                                                
+Log:                                                                            
+results/current_anthropic_logs/2026-04-16T18-32-01-00-00_purify-01_SvmvpKUQqdpF5
+6SitWtoLo.eval                                                                  
+                                                                                === task=purify_01 model=anthropic/claude-sonnet-4-5 seeds=3 ===
+╭──────────────────────────────────────────────────────────────────────────────╮
+│purify_01 (3 samples): anthropic/claude-sonnet-4-5                            │
+╰──────────────────────────────────────────────────────────────────────────────╯
+message_limit: 40, seeds: 3, dataset: (samples)                                 
+                                                                                
+total time:                  0:00:12                                            
+anthropic/claude-sonnet-4-5  14,813 tokens [I: 12, CW: 1,657, CR: 11,610, O:    
+                           1,534]                                               
+                                                                                
+overall         task_success         decision_qua…         troubleshooti…       
+mean     1.000  mean          1.000  mean           1.000  mean            1.000
+efficiency                                                                      
+mean        1.000                                                               
+                                                                                
+Log:                                                                            
+results/current_anthropic_logs/2026-04-16T18-32-18-00-00_purify-01_g4HrVmDTT9pNQ
+Y8J3ax5pB.eval                                                                  
+                                                                                
+All runs attempted. Aggregate with:
+  python3 scripts/aggregate_eval_results.py --log-dir "results/current_anthropic_logs"

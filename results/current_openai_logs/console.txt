@@ -1,0 +1,180 @@
+Running portfolio eval
+  Task source: explicit
+  Tasks:  golden_gate_01 gibson_01 miniprep_01 express_01 purify_01
+  Models: openai/gpt-4o-mini openai/gpt-4o
+  Seeds:  3
+  Logs:   results/current_openai_logs
+
+=== task=golden_gate_01 model=openai/gpt-4o-mini seeds=3 ===
+╭──────────────────────────────────────────────────────────────────────────────╮
+│golden_gate_01 (3 samples): openai/gpt-4o-mini                                │
+╰──────────────────────────────────────────────────────────────────────────────╯
+message_limit: 60, seeds: 3, dataset: (samples)                                 
+                                                                                
+total time:          0:00:14                                                    
+openai/gpt-4o-mini   45,378 tokens [I: 9,118, CW: 0, CR: 35,456, O: 804, R: 0]  
+                                                                                
+overall         task_success         decision_qua…         troubleshooti…       
+mean     1.000  mean          1.000  mean           1.000  mean            1.000
+efficiency                                                                      
+mean        1.000                                                               
+                                                                                
+Log:                                                                            
+results/current_openai_logs/2026-04-16T17-57-33-00-00_golden-gate-01_XFcXzokVtha
+B7z866fJM2F.eval                                                                
+                                                                                === task=golden_gate_01 model=openai/gpt-4o seeds=3 ===
+╭──────────────────────────────────────────────────────────────────────────────╮
+│golden_gate_01 (3 samples): openai/gpt-4o                                     │
+╰──────────────────────────────────────────────────────────────────────────────╯
+message_limit: 60, seeds: 3, dataset: (samples)                                 
+                                                                                
+total time:      0:00:15                                                        
+openai/gpt-4o    38,475 tokens [I: 11,526, CW: 0, CR: 26,112, O: 837, R: 0]     
+                                                                                
+overall         task_success         decision_qua…         troubleshooti…       
+mean     1.000  mean          1.000  mean           1.000  mean            1.000
+efficiency                                                                      
+mean        1.000                                                               
+                                                                                
+Log:                                                                            
+results/current_openai_logs/2026-04-16T17-58-03-00-00_golden-gate-01_CAKpNevg6vc
+HUEwKhkqQJV.eval                                                                
+                                                                                === task=gibson_01 model=openai/gpt-4o-mini seeds=3 ===
+╭──────────────────────────────────────────────────────────────────────────────╮
+│gibson_01 (3 samples): openai/gpt-4o-mini                                     │
+╰──────────────────────────────────────────────────────────────────────────────╯
+message_limit: 60, seeds: 3, dataset: (samples)                                 
+                                                                                
+total time:          0:00:14                                                    
+openai/gpt-4o-mini   36,706 tokens [I: 7,265, CW: 0, CR: 28,672, O: 769, R: 0]  
+                                                                                
+overall         task_success         decision_qua…         troubleshooti…       
+mean     1.000  mean          1.000  mean           1.000  mean            1.000
+efficiency                                                                      
+mean        1.000                                                               
+                                                                                
+Log:                                                                            
+results/current_openai_logs/2026-04-16T17-58-33-00-00_gibson-01_oSebBJuTyK7VFEYt
+2udf6Y.eval                                                                     
+                                                                                === task=gibson_01 model=openai/gpt-4o seeds=3 ===
+╭──────────────────────────────────────────────────────────────────────────────╮
+│gibson_01 (3 samples): openai/gpt-4o                                          │
+╰──────────────────────────────────────────────────────────────────────────────╯
+message_limit: 60, seeds: 3, dataset: (samples)                                 
+                                                                                
+total time:      0:00:39                                                        
+openai/gpt-4o    38,435 tokens [I: 14,867, CW: 0, CR: 22,656, O: 912, R: 0]     
+                                                                                
+overall         task_success         decision_qua…         troubleshooti…       
+mean     0.967  mean          1.000  mean           1.000  mean            1.000
+efficiency                                                                      
+mean        0.667                                                               
+                                                                                
+Log:                                                                            
+results/current_openai_logs/2026-04-16T17-59-01-00-00_gibson-01_DVLNQHVxsDo8Spm8
+zGrKhv.eval                                                                     
+                                                                                === task=miniprep_01 model=openai/gpt-4o-mini seeds=3 ===
+╭──────────────────────────────────────────────────────────────────────────────╮
+│miniprep_01 (3 samples): openai/gpt-4o-mini                                   │
+╰──────────────────────────────────────────────────────────────────────────────╯
+message_limit: 40, seeds: 3, dataset: (samples)                                 
+                                                                                
+total time:           0:00:13                                                   
+openai/gpt-4o-mini    8,711 tokens [I: 5,929, CW: 0, CR: 2,048, O: 734, R: 0]   
+                                                                                
+overall         task_success         decision_qua…         troubleshooti…       
+mean     1.000  mean          1.000  mean           1.000  mean            1.000
+efficiency                                                                      
+mean        1.000                                                               
+                                                                                
+Log:                                                                            
+results/current_openai_logs/2026-04-16T17-59-54-00-00_miniprep-01_EuBvzgWauPXYPU
+FUHn2wCP.eval                                                                   
+                                                                                === task=miniprep_01 model=openai/gpt-4o seeds=3 ===
+╭──────────────────────────────────────────────────────────────────────────────╮
+│miniprep_01 (3 samples): openai/gpt-4o                                        │
+╰──────────────────────────────────────────────────────────────────────────────╯
+message_limit: 40, seeds: 3, dataset: (samples)                                 
+                                                                                
+total time:      0:00:11                                                        
+openai/gpt-4o    6,764 tokens [I: 4,927, CW: 0, CR: 1,024, O: 813, R: 0]        
+                                                                                
+overall         task_success         decision_qua…         troubleshooti…       
+mean     1.000  mean          1.000  mean           1.000  mean            1.000
+efficiency                                                                      
+mean        1.000                                                               
+                                                                                
+Log:                                                                            
+results/current_openai_logs/2026-04-16T18-00-20-00-00_miniprep-01_NsssnZgfeCyi4J
+KKsTg2V8.eval                                                                   
+                                                                                === task=express_01 model=openai/gpt-4o-mini seeds=3 ===
+╭──────────────────────────────────────────────────────────────────────────────╮
+│express_01 (3 samples): openai/gpt-4o-mini                                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
+message_limit: 40, seeds: 3, dataset: (samples)                                 
+                                                                                
+total time:           0:00:09                                                   
+openai/gpt-4o-mini    8,485 tokens [I: 5,474, CW: 0, CR: 2,432, O: 579, R: 0]   
+                                                                                
+overall         task_success         decision_qua…         troubleshooti…       
+mean     1.000  mean          1.000  mean           1.000  mean            1.000
+efficiency                                                                      
+mean        1.000                                                               
+                                                                                
+Log:                                                                            
+results/current_openai_logs/2026-04-16T18-00-44-00-00_express-01_Gh86dpuM6Guqwep
+b8cLrHs.eval                                                                    
+                                                                                === task=express_01 model=openai/gpt-4o seeds=3 ===
+╭──────────────────────────────────────────────────────────────────────────────╮
+│express_01 (3 samples): openai/gpt-4o                                         │
+╰──────────────────────────────────────────────────────────────────────────────╯
+message_limit: 40, seeds: 3, dataset: (samples)                                 
+                                                                                
+total time:      0:00:12                                                        
+openai/gpt-4o    8,276 tokens [I: 4,860, CW: 0, CR: 2,304, O: 1,112, R: 0]      
+                                                                                
+overall         task_success         decision_qua…         troubleshooti…       
+mean     1.000  mean          1.000  mean           1.000  mean            1.000
+efficiency                                                                      
+mean        1.000                                                               
+                                                                                
+Log:                                                                            
+results/current_openai_logs/2026-04-16T18-01-07-00-00_express-01_cFUDCHiHi8JfpRr
+Uc8NmQ6.eval                                                                    
+                                                                                === task=purify_01 model=openai/gpt-4o-mini seeds=3 ===
+╭──────────────────────────────────────────────────────────────────────────────╮
+│purify_01 (3 samples): openai/gpt-4o-mini                                     │
+╰──────────────────────────────────────────────────────────────────────────────╯
+message_limit: 40, seeds: 3, dataset: (samples)                                 
+                                                                                
+total time:           0:00:08                                                   
+openai/gpt-4o-mini    7,287 tokens [I: 5,705, CW: 0, CR: 1,024, O: 558, R: 0]   
+                                                                                
+overall         task_success         decision_qua…         troubleshooti…       
+mean     1.000  mean          1.000  mean           1.000  mean            1.000
+efficiency                                                                      
+mean        1.000                                                               
+                                                                                
+Log:                                                                            
+results/current_openai_logs/2026-04-16T18-01-32-00-00_purify-01_GK8kxsBkcN48pK9j
+NEkkzS.eval                                                                     
+                                                                                === task=purify_01 model=openai/gpt-4o seeds=3 ===
+╭──────────────────────────────────────────────────────────────────────────────╮
+│purify_01 (3 samples): openai/gpt-4o                                          │
+╰──────────────────────────────────────────────────────────────────────────────╯
+message_limit: 40, seeds: 3, dataset: (samples)                                 
+                                                                                
+total time:      0:00:08                                                        
+openai/gpt-4o    7,541 tokens [I: 5,817, CW: 0, CR: 1,024, O: 700, R: 0]        
+                                                                                
+overall         task_success         decision_qua…         troubleshooti…       
+mean     1.000  mean          1.000  mean           1.000  mean            1.000
+efficiency                                                                      
+mean        1.000                                                               
+                                                                                
+Log:                                                                            
+results/current_openai_logs/2026-04-16T18-01-53-00-00_purify-01_MqPahdkJFEfaYTWa
+fn6Lgx.eval                                                                     
+                                                                                
+All runs attempted. Aggregate with:
+  python3 scripts/aggregate_eval_results.py --log-dir "results/current_openai_logs"

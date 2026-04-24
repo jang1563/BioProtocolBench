@@ -1,0 +1,17 @@
+╭──────────────────────────────────────────────────────────────────────────────╮
+│purify_01 (1 sample): openai/gpt-4o-mini                                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
+message_limit: 40, dataset: (samples)                                           
+                                                                                
+total time:           0:00:09                                                   
+openai/gpt-4o-mini    2,428 tokens [I: 1,222, CW: 0, CR: 1,024, O: 182, R: 0]   
+                                                                                
+overall         task_success         decision_qua…         troubleshooti…       
+mean     1.000  mean          1.000  mean           1.000  mean            1.000
+efficiency                                                                      
+mean        1.000                                                               
+                                                                                
+Log:                                                                            
+results/smoke_logs/purify_01_2026-04-15_escalated/2026-04-16T16-55-59-00-00_puri
+fy-01_JjdEj7Bab8FTGG6MunF4en.eval                                               
+                                                                                

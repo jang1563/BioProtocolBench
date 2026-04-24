@@ -2,6 +2,8 @@
 
 Short literature-grounded audit placing BioProtocolBench against published biology-agent and lab-protocol benchmarks. The goal is to say clearly (a) what space this repo occupies, (b) where it is genuinely novel, and (c) where it is redundant with stronger prior work that a reviewer will already know about.
 
+Unless noted otherwise, the scale claims in this document refer to the frozen April 2026 evaluated portfolio snapshot (5 tasks). The current codebase now implements 11 runnable tasks, including `express_01`, `purify_01`, and `followup_01`, but those newer tasks were added after the snapshot analyzed here. Separate frontier and discovery-facing extensions now exist as well; this document keeps those extensions clearly separated from the frozen snapshot and uses them only where noted.
+
 ## Comparable benchmarks surveyed
 
 | Benchmark | Year | Modality | Scale | Scoring | Source |
@@ -17,7 +19,7 @@ Short literature-grounded audit placing BioProtocolBench against published biolo
 | **HeurekaBench (sc-HeurekaBench)** | 2026 | Interactive single-cell pipelines | Open-ended research questions | Reference-based + workflow verification | Panigrahi/Brbić et al. ([arXiv:2601.01678](https://arxiv.org/abs/2601.01678)) |
 | **GPT-5 ProtocolQA Open-Ended + TroubleshootingBench** | 2025 | Text QA, some non-public | 108 open-ended + 52 protocols × 3 questions | Human PhD baseline; expert 80th percentile = 36.4% | OpenAI GPT-5 System Card ([PDF](https://cdn.openai.com/gpt-5-system-card.pdf)) |
 | **OpenAI × Red Queen Bio wet-lab framework** | 2025 | **Real wet-lab** molecular cloning | 1 iterative optimisation task | Physical assay (79× cloning efficiency gain) | OpenAI announcement ([link](https://openai.com/index/accelerating-biological-research-in-the-wet-lab/)) |
-| **BioProtocolBench (this repo)** | 2026 | **Interactive stochastic simulator** | 5 tasks × stochastic seeds | Deterministic hierarchical rubric + 4-axis trajectory scorer | This repo |
+| **BioProtocolBench (this repo)** | 2026 | **Interactive stochastic simulator** | 5-task evaluated snapshot; 11 tasks implemented in current repo | Deterministic hierarchical rubric + 4-axis trajectory scorer | This repo |
 
 ## Where BioProtocolBench is genuinely novel
 
@@ -33,10 +35,10 @@ Against the surveyed work, the defensible design points are:
 
 To reviewers at Anthropic / OpenAI / DeepMind who will already know the references above, the honest pre-empts are:
 
-- **Scale is small.** BioProBench has 556K task instances (26K × ~20 derived each); BioProtocolBench has 5 tasks. Scale alone makes BioProBench a stronger test-bed for statistical claims about model capability.
+- **Scale is small.** BioProBench has 556K task instances (26K × ~20 derived each); the evaluated BioProtocolBench snapshot has 5 tasks, and even the current repo's 11 implemented tasks are still small by comparison. Scale alone makes BioProBench a stronger test-bed for statistical claims about model capability.
 - **No real wet-lab grounding.** OpenAI's Red Queen Bio collaboration executed *actual physical molecular cloning experiments* with GPT-5 and measured outcomes by physical assay. BioProtocolBench's stochastic simulator has citation-backed parameters but the agent never touches real biology. For claims about real-world capability uplift this is a hard ceiling.
 - **No human baseline.** TroubleshootingBench was baselined against 12 PhD experts (80th percentile = 36.4%). Every stddev figure in this repo is agent-vs-agent. A single expert-graded seed on each task would contextualise the scores.
-- **Task surface is execution-reliability-heavy.** As the analysis already admits, the hardest task (`transform_01`, mean 0.50) is mostly punishing agents for dropping one of four reported numbers or missing a consistency keyword — not for reasoning depth. BoxingGym and EXP-Bench score scientific reasoning and hypothesis revision, which is a harder and more interesting target.
+- **Task surface is still mostly execution-reliability-heavy.** As the analysis already admits, the hardest task (`transform_01`, mean 0.50) is mostly punishing agents for dropping one of four reported numbers or missing a consistency keyword — not for reasoning depth. The new `followup_01` extension begins to address this by scoring targeted next-experiment choice after ambiguous intervention data, but that slice is still small. BoxingGym and EXP-Bench score broader scientific reasoning and hypothesis revision, which remains a harder target.
 - **Only one prompt-variant ablation so far.** The growth_01 ablation is a good start but a single verbose prompt is not a proper sensitivity sweep. LAB-Bench and BioProBench both include multiple prompt-formatting ablations.
 
 ## What the survey *validates* about the repo
@@ -44,6 +46,31 @@ To reviewers at Anthropic / OpenAI / DeepMind who will already know the referenc
 - The scorer-as-trajectory-parser (not LLM-as-judge) approach is directly validated by AgentRewardBench ([arXiv:2504.08942](https://arxiv.org/abs/2504.08942)), which found rule-based scoring *underreports* success and LLM judges vary substantially. The repo's tradeoff (auditable + reproducible but brittle on final-answer formatting) is a well-known one in the 2025–2026 literature.
 - The ablation finding — that prompt-engineering one axis can move another axis in the opposite direction — is the kind of finding that a text-only benchmark cannot surface because it has only a single scoring axis. This is a genuine contribution.
 - The two latent infrastructure bugs surfaced by adversarial seed exploration ([src/environment/operations.py](../src/environment/operations.py) `_resolve_ligation_fragment_id`, [src/tools/lab_tools.py](../src/tools/lab_tools.py) tool-error wrapping) are exactly the class of failure mode that Multi-Docker-Eval ([arXiv:2512.06915](https://arxiv.org/abs/2512.06915)) argues is the main SWE-agent bottleneck — "environment construction." Finding two such bugs via agent traces is consistent with that literature.
+- The newer-task 5-seed frontier extension ([current_frontier_5seed.md](current_frontier_5seed.md)) is a concrete demonstration of why auditable seeds matter. At 3 seeds, `claude-haiku-4-5` looked only slightly weaker than `claude-sonnet-4-5` on the assembly tasks, mostly via efficiency. At 5 seeds, the same task family exposed a real `golden_gate_01` task-success miss and dropped haiku's newer-task mean to 0.976. That is exactly the sort of "small-slice looks saturated, larger slice reveals instability" effect that deterministic re-runnability is supposed to make visible.
+
+## What the newer-task extension adds
+
+The frozen portfolio snapshot remains the main comparison point in this document, but the newer-task frontier extension is already useful for interpreting the repo's design point.
+
+Across `golden_gate_01`, `gibson_01`, `miniprep_01`, `express_01`, and `purify_01`, the 5-seed cross-provider bundle shows:
+
+- `gpt-4o-mini` and `claude-sonnet-4-5` saturated all five newer tasks across all five seeds.
+- `gpt-4o` remained near-perfect, with its only visible gap still an efficiency penalty on `gibson_01`.
+- `claude-haiku-4-5` became the interesting model on this slice: the extra seeds changed it from "slight assembly efficiency drift" to "assembly-task instability," because one `golden_gate_01` seed produced a final-answer correctness miss despite perfect decision quality.
+
+That extension does not change the headline portfolio framing above, but it does strengthen one methodological claim: the benchmark's multi-axis deterministic scorer is sensitive enough to distinguish "bad plan," "wasted effort," and "correct experiment but wrong final quantitative report" within the same task family.
+
+Separately, the discovery-facing [followup extension](followup_extension.md) adds a small but useful second growth task: `growth_01` measures whether an agent can execute an assay cleanly, while `followup_01` measures whether it can choose the minimum next experiment after an ambiguous intervention result. On a 3-seed slice, `claude-sonnet-4-5` reached `0.933 ± 0.029` and `gpt-4o-mini` reached `0.633 ± 0.227`, with the failures concentrated in conclusion framing and troubleshooting rather than raw doubling-time measurement. That is closer to the sort of discovery-workflow reliability question a biomedical AI reviewer will care about.
+
+## What the Discovery Decision Track adds
+
+The newer Discovery Decision Track pushes the repo beyond protocol execution into a more company-portable biomedical-agent evaluation surface. It does not attempt to recreate an end-to-end autonomous discovery platform. Instead, it isolates one narrower but relevant question:
+
+> Can a biomedical agent inspect perturbation-style evidence, choose the right next experiment, and interpret the result without wasting work?
+
+That is the value of `perturb_followup_01`, `target_prioritize_01`, and `target_validate_01`. They are still small and synthetic, so this repo is not competing with Biomni on breadth, with FutureHouse on full autonomous scientific workflows, or with physical wet-lab systems on real-world execution. What it does offer is a compact, auditable evaluation surface for discovery-decision quality, which is exactly the sort of reliability framing that complements broader biomedical-agent portfolio work.
+
+For the runnable bundle and public score summary, see [results/discovery_track.md](discovery_track.md). Company-specific positioning notes can live separately under `docs/company_briefs/` without constraining the public project framing.
 
 ## Recommended framing for a portfolio reviewer
 
