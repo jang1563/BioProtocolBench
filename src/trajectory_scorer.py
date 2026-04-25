@@ -336,10 +336,16 @@ def score_decision_quality(tool_calls: List[Dict[str, Any]], ground_truth: Dict[
     return {"mean": mean_score, "by_decision": scores}
 
 
+def _has_scorable_progress(tool_calls: List[Dict[str, Any]], ground_truth: Dict[str, Any]) -> bool:
+    if not tool_calls:
+        return False
+    return score_decision_quality(tool_calls, ground_truth)["mean"] > 0.0
+
+
 def score_efficiency(tool_calls: List[Dict[str, Any]], ground_truth: Dict[str, Any]) -> float:
     reference = ground_truth["efficiency_reference"]
     total_calls = len(tool_calls)
-    if total_calls == 0:
+    if total_calls == 0 or not _has_scorable_progress(tool_calls, ground_truth):
         return 0.0
     if total_calls <= reference["optimal_tool_calls"]:
         return 1.0
@@ -348,8 +354,10 @@ def score_efficiency(tool_calls: List[Dict[str, Any]], ground_truth: Dict[str, A
     return 0.0
 
 
-def _score_no_failure_troubleshooting(tool_calls: List[Dict[str, Any]]) -> float:
-    return 1.0 if tool_calls else 0.0
+def _score_no_failure_troubleshooting(
+    tool_calls: List[Dict[str, Any]], ground_truth: Dict[str, Any]
+) -> float:
+    return 1.0 if _has_scorable_progress(tool_calls, ground_truth) else 0.0
 
 
 def score_troubleshooting(final_answer: str, tool_calls: List[Dict[str, Any]], ground_truth: Dict[str, Any]) -> float:
@@ -359,7 +367,7 @@ def score_troubleshooting(final_answer: str, tool_calls: List[Dict[str, Any]], g
         if "selection_failed" in content:
             failure_markers.append("wrong_selection_pressure")
     if not failure_markers:
-        return _score_no_failure_troubleshooting(tool_calls)
+        return _score_no_failure_troubleshooting(tool_calls, ground_truth)
 
     final_answer_lower = final_answer.lower()
     resolved = 0
@@ -524,7 +532,7 @@ def score_growth_troubleshooting(final_answer: str, tool_calls: List[Dict[str, A
         if observed.get("status") == "insufficient_points":
             failure_markers.append("insufficient_growth_points")
     if not failure_markers:
-        return _score_no_failure_troubleshooting(tool_calls)
+        return _score_no_failure_troubleshooting(tool_calls, ground_truth)
 
     final_answer_lower = final_answer.lower()
     resolved = 0
@@ -657,7 +665,7 @@ def score_followup_troubleshooting(final_answer: str, tool_calls: List[Dict[str,
         if observed.get("status") == "insufficient_points":
             failure_markers.append("insufficient_growth_points")
     if not failure_markers:
-        return _score_no_failure_troubleshooting(tool_calls)
+        return _score_no_failure_troubleshooting(tool_calls, ground_truth)
 
     final_answer_lower = final_answer.lower()
     resolved = 0
@@ -824,7 +832,7 @@ def score_pcr_troubleshooting(final_answer: str, tool_calls: List[Dict[str, Any]
                 failure_markers.append("overcycled_pcr")
 
     if not failure_markers:
-        return _score_no_failure_troubleshooting(tool_calls)
+        return _score_no_failure_troubleshooting(tool_calls, ground_truth)
 
     final_answer_lower = final_answer.lower()
     resolved = 0
@@ -968,7 +976,7 @@ def score_screen_troubleshooting(final_answer: str, tool_calls: List[Dict[str, A
             failure_markers.append("undersampled_white_colonies")
 
     if not failure_markers:
-        return _score_no_failure_troubleshooting(tool_calls)
+        return _score_no_failure_troubleshooting(tool_calls, ground_truth)
 
     final_answer_lower = final_answer.lower()
     resolved = 0
@@ -1390,7 +1398,7 @@ def score_clone_troubleshooting(
         failure_markers.append("screened_blue_background")
 
     if not failure_markers:
-        return _score_no_failure_troubleshooting(tool_calls)
+        return _score_no_failure_troubleshooting(tool_calls, ground_truth)
 
     final_answer_lower = final_answer.lower()
     resolved = 0
@@ -1586,7 +1594,7 @@ def score_golden_gate_troubleshooting(
         elif status == "wrong_fragment_count":
             failure_markers.append("wrong_fragment_count")
     if not failure_markers:
-        return _score_no_failure_troubleshooting(tool_calls)
+        return _score_no_failure_troubleshooting(tool_calls, ground_truth)
     final_answer_lower = final_answer.lower()
     resolved = 0
     for marker in failure_markers:
@@ -1763,7 +1771,7 @@ def score_gibson_troubleshooting(
         if status == "wrong_master_mix":
             failure_markers.append("wrong_master_mix")
     if not failure_markers:
-        return _score_no_failure_troubleshooting(tool_calls)
+        return _score_no_failure_troubleshooting(tool_calls, ground_truth)
     final_answer_lower = final_answer.lower()
     resolved = 0
     for marker in failure_markers:
@@ -1945,7 +1953,7 @@ def score_miniprep_troubleshooting(
         }:
             failure_markers.append(status)
     if not failure_markers:
-        return _score_no_failure_troubleshooting(tool_calls)
+        return _score_no_failure_troubleshooting(tool_calls, ground_truth)
     final_answer_lower = final_answer.lower()
     resolved = 0
     for marker in failure_markers:
@@ -2115,7 +2123,7 @@ def score_express_troubleshooting(
         if status in {"wrong_host_strain", "wrong_induction_temperature", "wrong_lysis_ph"}:
             failure_markers.append(status)
     if not failure_markers:
-        return _score_no_failure_troubleshooting(tool_calls)
+        return _score_no_failure_troubleshooting(tool_calls, ground_truth)
     final_answer_lower = final_answer.lower()
     resolved = 0
     for marker in failure_markers:
@@ -2295,7 +2303,7 @@ def score_purify_troubleshooting(
         if status in {"wrong_resin", "weak_elution"}:
             failure_markers.append(status)
     if not failure_markers:
-        return _score_no_failure_troubleshooting(tool_calls)
+        return _score_no_failure_troubleshooting(tool_calls, ground_truth)
     final_answer_lower = final_answer.lower()
     resolved = 0
     for marker in failure_markers:

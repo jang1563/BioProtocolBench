@@ -95,6 +95,27 @@ def test_empty_transcript_has_zero_floor_across_tasks():
         assert scores["efficiency"] == 0.0
 
 
+def test_irrelevant_single_tool_call_gets_no_efficiency_or_troubleshooting_credit():
+    scores = score_transform_trajectory(
+        final_answer="",
+        transcript=[
+            {
+                "type": "tool_call",
+                "tool_name": "lookup_reagent",
+                "arguments": {"reagent_name": "SOC"},
+                "content": '{"status": "found"}',
+            }
+        ],
+        ground_truth_path=str(TRANSFORM_GROUND_TRUTH_PATH),
+    )
+
+    assert scores["decision_quality"] == 0.0
+    assert scores["task_success"] == 0.0
+    assert scores["troubleshooting"] == 0.0
+    assert scores["efficiency"] == 0.0
+    assert scores["overall"] == 0.0
+
+
 def _good_transcript():
     transcript = [
         {

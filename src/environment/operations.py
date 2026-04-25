@@ -60,6 +60,47 @@ _PURIFICATION_PARAMETERS_PATH = Path(__file__).resolve().parents[2] / "data" / "
 _PURIFICATION_BUNDLE = None
 
 
+def _require_finite_float(value: object, field_name: str) -> float:
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("{} must be numeric.".format(field_name)) from exc
+    if not math.isfinite(parsed):
+        raise ValueError("{} must be finite.".format(field_name))
+    return parsed
+
+
+def _require_positive_float(value: object, field_name: str) -> float:
+    parsed = _require_finite_float(value, field_name)
+    if parsed <= 0.0:
+        raise ValueError("{} must be positive.".format(field_name))
+    return parsed
+
+
+def _require_integer(value: object, field_name: str) -> int:
+    try:
+        parsed_float = float(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("{} must be an integer.".format(field_name)) from exc
+    if not math.isfinite(parsed_float) or not parsed_float.is_integer():
+        raise ValueError("{} must be an integer.".format(field_name))
+    return int(parsed_float)
+
+
+def _require_positive_integer(value: object, field_name: str) -> int:
+    parsed = _require_integer(value, field_name)
+    if parsed <= 0:
+        raise ValueError("{} must be positive.".format(field_name))
+    return parsed
+
+
+def _require_nonnegative_integer(value: object, field_name: str) -> int:
+    parsed = _require_integer(value, field_name)
+    if parsed < 0:
+        raise ValueError("{} must be non-negative.".format(field_name))
+    return parsed
+
+
 def _growth_bundle():
     global _GROWTH_BUNDLE
     if _GROWTH_BUNDLE is None:
@@ -223,14 +264,19 @@ def prepare_media(
     plate_count: int = 1,
 ) -> Dict[str, object]:
     """Prepare one or more selection plates."""
+    antibiotic_concentration = _require_positive_float(
+        antibiotic_concentration_ug_ml,
+        "antibiotic_concentration_ug_ml",
+    )
+    plate_count_int = _require_positive_integer(plate_count, "plate_count")
     plates = []
-    for _ in range(plate_count):
+    for _ in range(plate_count_int):
         plate_id = state.next_plate_id()
         plate = PreparedPlate(
             plate_id=plate_id,
             medium=medium,
             antibiotic=antibiotic,
-            antibiotic_concentration_ug_ml=float(antibiotic_concentration_ug_ml),
+            antibiotic_concentration_ug_ml=antibiotic_concentration,
         )
         state.prepared_plates[plate_id] = plate
         plates.append(
@@ -238,7 +284,7 @@ def prepare_media(
                 "plate_id": plate_id,
                 "medium": medium,
                 "antibiotic": antibiotic,
-                "antibiotic_concentration_ug_ml": float(antibiotic_concentration_ug_ml),
+                "antibiotic_concentration_ug_ml": antibiotic_concentration,
             }
         )
     payload = {
@@ -259,10 +305,17 @@ def transform(
     ice_incubation_minutes: int = 30,
 ) -> Dict[str, object]:
     """Simulate a chemical transformation and return a culture identifier."""
+    plasmid_mass = _require_positive_float(plasmid_mass_pg, "plasmid_mass_pg")
+    heat_shock = _require_positive_integer(heat_shock_seconds, "heat_shock_seconds")
+    recovery = _require_nonnegative_integer(recovery_minutes, "recovery_minutes")
+    ice_incubation = _require_nonnegative_integer(
+        ice_incubation_minutes,
+        "ice_incubation_minutes",
+    )
     notes: List[str] = []
     efficiency = state.base_efficiency_cfu_per_ug
-    efficiency *= state.parameters.ice_incubation_penalty(ice_incubation_minutes)
-    efficiency *= state.parameters.recovery_penalty(recovery_minutes)
+    efficiency *= state.parameters.ice_incubation_penalty(ice_incubation)
+    efficiency *= state.parameters.recovery_penalty(recovery)
     if outgrowth_media.upper() == "SOC":
         efficiency *= state.parameters.soc_multiplier()
     else:
@@ -273,21 +326,21 @@ def transform(
     else:
         efficiency *= state.parameters.static_multiplier()
         notes.append("Outgrowth was not shaken.")
-    if int(heat_shock_seconds) != int(state.parameters.get("heat_shock_duration_seconds")["parameters"]["optimal"]):
+    if heat_shock != int(state.parameters.get("heat_shock_duration_seconds")["parameters"]["optimal"]):
         notes.append("Heat shock duration deviated from the protocol optimum.")
 
-    expected_total_transformants = efficiency * (float(plasmid_mass_pg) / 1_000_000.0)
+    expected_total_transformants = efficiency * (plasmid_mass / 1_000_000.0)
     culture_id = state.next_culture_id()
     culture = TransformationCulture(
         culture_id=culture_id,
-        plasmid_mass_pg=float(plasmid_mass_pg),
+        plasmid_mass_pg=plasmid_mass,
         base_efficiency_cfu_per_ug=state.base_efficiency_cfu_per_ug,
         adjusted_efficiency_cfu_per_ug=efficiency,
-        recovery_minutes=int(recovery_minutes),
+        recovery_minutes=recovery,
         outgrowth_media=outgrowth_media,
         shaking=bool(shaking),
-        heat_shock_seconds=int(heat_shock_seconds),
-        ice_incubation_minutes=int(ice_incubation_minutes),
+        heat_shock_seconds=heat_shock,
+        ice_incubation_minutes=ice_incubation,
         expected_total_transformants=expected_total_transformants,
         notes=notes,
     )
@@ -295,9 +348,9 @@ def transform(
     payload = {
         "status": "transformed",
         "culture_id": culture_id,
-        "plasmid_mass_pg": float(plasmid_mass_pg),
-        "heat_shock_seconds": int(heat_shock_seconds),
-        "recovery_minutes": int(recovery_minutes),
+        "plasmid_mass_pg": plasmid_mass,
+        "heat_shock_seconds": heat_shock,
+        "recovery_minutes": recovery,
         "outgrowth_media": outgrowth_media,
         "notes": notes,
     }
@@ -411,13 +464,14 @@ def inoculate_growth(
     }
     if condition not in doubling_time_map:
         raise ValueError("Unknown growth condition: {:s}".format(condition))
+    starting_od = _require_positive_float(starting_od600, "starting_od600")
 
     growth_id = state.next_growth_id()
     culture = GrowthCulture(
         growth_id=growth_id,
         condition=condition,
         medium=medium_map[condition],
-        starting_od600=float(starting_od600),
+        starting_od600=starting_od,
         doubling_time_minutes=float(doubling_time_map[condition]),
     )
     state.growth_cultures[growth_id] = culture
@@ -425,7 +479,7 @@ def inoculate_growth(
         "status": "inoculated",
         "growth_id": growth_id,
         "condition": condition,
-        "starting_od600": float(starting_od600),
+        "starting_od600": starting_od,
         "doubling_time_minutes": float(doubling_time_map[condition]),
     }
     state.log_event("inoculate_growth", payload)
@@ -439,12 +493,13 @@ def incubate(
 ) -> Dict[str, object]:
     """Advance a growth culture in time."""
     culture = state.growth_cultures[growth_id]
-    culture.current_time_minutes += int(duration_minutes)
+    duration = _require_positive_integer(duration_minutes, "duration_minutes")
+    culture.current_time_minutes += duration
     payload = {
         "status": "incubated",
         "growth_id": growth_id,
         "condition": culture.condition,
-        "duration_minutes": int(duration_minutes),
+        "duration_minutes": duration,
         "elapsed_minutes": int(culture.current_time_minutes),
     }
     state.log_event("incubate", payload)
@@ -462,13 +517,14 @@ def measure_od600(
 ) -> Dict[str, object]:
     """Measure OD600 for a growth culture, optionally after dilution."""
     culture = state.growth_cultures[growth_id]
+    dilution = _require_positive_float(dilution_factor, "dilution_factor")
     true_od600 = _true_growth_od600(culture)
-    observed_od600 = true_od600 / float(dilution_factor)
+    observed_od600 = true_od600 / dilution
     measurement = GrowthMeasurement(
         elapsed_minutes=int(culture.current_time_minutes),
-        dilution_factor=float(dilution_factor),
+        dilution_factor=dilution,
         observed_od600=float(observed_od600),
-        estimated_undiluted_od600=float(observed_od600 * float(dilution_factor)),
+        estimated_undiluted_od600=float(observed_od600 * dilution),
     )
     culture.measurements.append(measurement)
     payload = {
@@ -476,7 +532,7 @@ def measure_od600(
         "growth_id": growth_id,
         "condition": culture.condition,
         "elapsed_minutes": int(culture.current_time_minutes),
-        "dilution_factor": float(dilution_factor),
+        "dilution_factor": dilution,
         "observed_od600": float(observed_od600),
         "estimated_undiluted_od600": float(measurement.estimated_undiluted_od600),
     }
@@ -528,9 +584,38 @@ def fit_growth_curve(
 
     first = qualifying[0]
     last = qualifying[-1]
+    elapsed_span = last.elapsed_minutes - first.elapsed_minutes
+    if elapsed_span <= 0:
+        payload = {
+            "status": "insufficient_points",
+            "growth_id": growth_id,
+            "condition": culture.condition,
+            "qualifying_points": len(qualifying),
+            "lower_bound_od600": float(lower_bound),
+            "upper_bound_od600": float(upper_bound),
+            "warnings": [
+                "Qualifying OD600 measurements did not span positive elapsed time."
+            ],
+        }
+        state.log_event("fit_growth_curve", payload)
+        return payload
     slope_per_minute = (
         math.log(last.estimated_undiluted_od600) - math.log(first.estimated_undiluted_od600)
-    ) / float(last.elapsed_minutes - first.elapsed_minutes)
+    ) / float(elapsed_span)
+    if slope_per_minute <= 0.0:
+        payload = {
+            "status": "insufficient_points",
+            "growth_id": growth_id,
+            "condition": culture.condition,
+            "qualifying_points": len(qualifying),
+            "lower_bound_od600": float(lower_bound),
+            "upper_bound_od600": float(upper_bound),
+            "warnings": [
+                "Qualifying OD600 measurements did not show positive exponential growth."
+            ],
+        }
+        state.log_event("fit_growth_curve", payload)
+        return payload
     estimated_doubling_time = math.log(2.0) / slope_per_minute
     payload = {
         "status": "analyzable",
@@ -956,6 +1041,7 @@ def restriction_digest(
             end_3_prime=end_3,
             recognition_sites=["EcoRI", "BamHI"],
             parent_fragment_id=substrate.fragment_id,
+            source_digest_id=digest_id,
             notes=[
                 "Linearized fragment with compatible EcoRI (5' overhang: AATT) and BamHI (5' overhang: GATC) ends."
             ],
@@ -1023,6 +1109,16 @@ def _resolve_ligation_fragment_id(state: LabState, fragment_id: str) -> str:
             ", ".join(available_digests) if available_digests else "none",
         )
     )
+
+
+def _source_digest_id_for_fragment(state: LabState, fragment_id: str) -> str | None:
+    fragment = state.dna_fragments[fragment_id]
+    if fragment.source_digest_id and fragment.source_digest_id in state.digest_reactions:
+        return fragment.source_digest_id
+    for digest_id, reaction in state.digest_reactions.items():
+        if fragment_id in reaction.output_fragment_ids:
+            return digest_id
+    return None
 
 
 def ligate(
@@ -1104,20 +1200,16 @@ def ligate(
         )
         effective_fraction *= 0.5
 
-    parent_digests = [
-        state.dna_fragments[fragment_id].parent_fragment_id
+    source_digest_ids = [
+        digest_id
         for fragment_id in [vector_fragment_id] + list(insert_fragment_ids)
-        if state.dna_fragments[fragment_id].parent_fragment_id
+        if (digest_id := _source_digest_id_for_fragment(state, fragment_id)) is not None
     ]
-    parent_digest_heat_inactivated = {
-        parent_id: any(
-            reaction.heat_inactivate_after
-            for reaction in state.digest_reactions.values()
-            if reaction.substrate_fragment_id == parent_id
-        )
-        for parent_id in parent_digests
+    digest_heat_inactivated = {
+        digest_id: bool(state.digest_reactions[digest_id].heat_inactivate_after)
+        for digest_id in source_digest_ids
     }
-    if parent_digest_heat_inactivated and not all(parent_digest_heat_inactivated.values()):
+    if digest_heat_inactivated and not all(digest_heat_inactivated.values()):
         notes.append(
             "Digests feeding this ligation were not heat-inactivated; residual nuclease may degrade the ligation."
         )
@@ -1154,6 +1246,7 @@ def ligate(
         "temperature_c": float(temperature_c),
         "duration_minutes": int(duration_minutes),
         "buffer": buffer,
+        "source_digest_ids": list(source_digest_ids),
         "notes": list(notes),
     }
     state.log_event("ligate", payload)

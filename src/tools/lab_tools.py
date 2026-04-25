@@ -64,15 +64,17 @@ async def prepare_media_call(
     plate_count: int = 1,
 ) -> str:
     state = _current_state()
-    return render_observation(
-        prepare_media(
+    try:
+        payload = prepare_media(
             state=state,
             medium=medium,
             antibiotic=antibiotic,
             antibiotic_concentration_ug_ml=antibiotic_concentration_ug_ml,
             plate_count=plate_count,
         )
-    )
+    except ValueError as exc:
+        return _tool_error_observation("prepare_media", exc)
+    return render_observation(payload)
 
 
 async def transform_call(
@@ -84,8 +86,8 @@ async def transform_call(
     ice_incubation_minutes: int = 30,
 ) -> str:
     state = _current_state()
-    return render_observation(
-        transform(
+    try:
+        payload = transform(
             state=state,
             plasmid_mass_pg=plasmid_mass_pg,
             heat_shock_seconds=heat_shock_seconds,
@@ -94,7 +96,9 @@ async def transform_call(
             shaking=shaking,
             ice_incubation_minutes=ice_incubation_minutes,
         )
-    )
+    except ValueError as exc:
+        return _tool_error_observation("transform", exc)
+    return render_observation(payload)
 
 
 async def plate_call(
@@ -124,25 +128,33 @@ async def count_colonies_call(plating_id: str) -> str:
 
 async def inoculate_growth_call(condition: str, starting_od600: float) -> str:
     state = _current_state()
-    return render_observation(
-        inoculate_growth(
+    try:
+        payload = inoculate_growth(
             state=state,
             condition=condition,
             starting_od600=starting_od600,
         )
-    )
+    except ValueError as exc:
+        return _tool_error_observation("inoculate_growth", exc)
+    return render_observation(payload)
 
 
 async def incubate_call(growth_id: str, duration_minutes: int) -> str:
     state = _current_state()
-    return render_observation(incubate(state=state, growth_id=growth_id, duration_minutes=duration_minutes))
+    try:
+        payload = incubate(state=state, growth_id=growth_id, duration_minutes=duration_minutes)
+    except ValueError as exc:
+        return _tool_error_observation("incubate", exc)
+    return render_observation(payload)
 
 
 async def measure_od600_call(growth_id: str, dilution_factor: float = 1.0) -> str:
     state = _current_state()
-    return render_observation(
-        measure_od600(state=state, growth_id=growth_id, dilution_factor=dilution_factor)
-    )
+    try:
+        payload = measure_od600(state=state, growth_id=growth_id, dilution_factor=dilution_factor)
+    except ValueError as exc:
+        return _tool_error_observation("measure_od600", exc)
+    return render_observation(payload)
 
 
 async def fit_growth_curve_call(growth_id: str) -> str:

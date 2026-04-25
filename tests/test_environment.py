@@ -36,7 +36,7 @@ from src.environment.operations import (
     transform_gibson,
     transform_ligation,
 )
-from src.environment.state import create_lab_state
+from src.environment.state import GrowthMeasurement, create_lab_state
 from src.environment.stochastic import (
     load_cloning_parameters,
     load_expression_parameters,
@@ -311,6 +311,103 @@ def test_plate_rejects_nonpositive_volume():
             dilution_factor=1000,
             volume_ul=0,
         )
+
+
+def test_prepare_media_rejects_nonpositive_plate_count_and_antibiotic_concentration():
+    state = create_lab_state(sample_id="prepare-media-validation", seed=101)
+    with pytest.raises(ValueError, match="plate_count must be positive"):
+        prepare_media(
+            state=state,
+            medium="LB agar",
+            antibiotic="ampicillin",
+            antibiotic_concentration_ug_ml=100,
+            plate_count=0,
+        )
+    with pytest.raises(ValueError, match="antibiotic_concentration_ug_ml must be positive"):
+        prepare_media(
+            state=state,
+            medium="LB agar",
+            antibiotic="ampicillin",
+            antibiotic_concentration_ug_ml=0,
+            plate_count=1,
+        )
+
+
+def test_transform_rejects_nonpositive_or_negative_protocol_inputs():
+    state = create_lab_state(sample_id="transform-validation", seed=101)
+    with pytest.raises(ValueError, match="plasmid_mass_pg must be positive"):
+        transform(state=state, plasmid_mass_pg=0, heat_shock_seconds=30, recovery_minutes=60)
+    with pytest.raises(ValueError, match="heat_shock_seconds must be positive"):
+        transform(state=state, plasmid_mass_pg=1000, heat_shock_seconds=0, recovery_minutes=60)
+    with pytest.raises(ValueError, match="recovery_minutes must be non-negative"):
+        transform(state=state, plasmid_mass_pg=1000, heat_shock_seconds=30, recovery_minutes=-1)
+    with pytest.raises(ValueError, match="ice_incubation_minutes must be non-negative"):
+        transform(
+            state=state,
+            plasmid_mass_pg=1000,
+            heat_shock_seconds=30,
+            recovery_minutes=60,
+            ice_incubation_minutes=-1,
+        )
+
+
+def test_growth_operations_reject_nonpositive_inputs():
+    state = create_lab_state(sample_id="growth-validation", seed=101)
+    with pytest.raises(ValueError, match="starting_od600 must be positive"):
+        inoculate_growth(state=state, condition="LB", starting_od600=0)
+
+    inoculated = inoculate_growth(state=state, condition="LB", starting_od600=0.05)
+    growth_id = inoculated["growth_id"]
+    with pytest.raises(ValueError, match="duration_minutes must be positive"):
+        incubate(state=state, growth_id=growth_id, duration_minutes=-15)
+    with pytest.raises(ValueError, match="dilution_factor must be positive"):
+        measure_od600(state=state, growth_id=growth_id, dilution_factor=0)
+
+
+def test_fit_growth_curve_handles_qualifying_points_without_time_span():
+    state = create_lab_state(sample_id="growth-zero-span", seed=101)
+    inoculated = inoculate_growth(state=state, condition="LB", starting_od600=0.05)
+    growth_id = inoculated["growth_id"]
+    culture = state.growth_cultures[growth_id]
+    culture.measurements.extend(
+        [
+            GrowthMeasurement(30, 1.0, 0.05, 0.05),
+            GrowthMeasurement(30, 1.0, 0.06, 0.06),
+            GrowthMeasurement(30, 1.0, 0.07, 0.07),
+            GrowthMeasurement(30, 1.0, 0.10, 0.10),
+        ]
+    )
+
+    fit = fit_growth_curve(state=state, growth_id=growth_id)
+
+    assert fit["status"] == "insufficient_points"
+    assert fit["qualifying_points"] == 3
+    assert any("positive elapsed time" in warning for warning in fit["warnings"])
+
+
+def test_tool_wrappers_report_validation_errors_as_tool_errors():
+    async def run_bad_calls():
+        sample_id = "tool-validation-errors"
+        set_active_sample(sample_id, seed=101)
+        try:
+            bad_prepare = json.loads(await prepare_media_call("LB agar", "ampicillin", 0, 1))
+            bad_transform = json.loads(await transform_call(0, 30, 60))
+            inoculated = json.loads(await inoculate_growth_call("LB", 0.05))
+            bad_incubate = json.loads(await incubate_call(inoculated["growth_id"], -15))
+            bad_measure = json.loads(await measure_od600_call(inoculated["growth_id"], 0))
+            return bad_prepare, bad_transform, bad_incubate, bad_measure
+        finally:
+            cleanup_sample(sample_id)
+
+    bad_prepare, bad_transform, bad_incubate, bad_measure = asyncio.run(run_bad_calls())
+    assert bad_prepare["status"] == "tool_error"
+    assert bad_prepare["tool_name"] == "prepare_media"
+    assert bad_transform["status"] == "tool_error"
+    assert bad_transform["tool_name"] == "transform"
+    assert bad_incubate["status"] == "tool_error"
+    assert bad_incubate["tool_name"] == "incubate"
+    assert bad_measure["status"] == "tool_error"
+    assert bad_measure["tool_name"] == "measure_od600"
 
 
 def test_plate_tool_reports_nonpositive_dilution_as_tool_error():
@@ -679,6 +776,55 @@ def test_ligate_warns_when_only_one_parent_digest_was_heat_inactivated():
         duration_minutes=960,
     )
     assert ligation["status"] == "ligated"
+    assert any("not heat-inactivated" in note for note in ligation["notes"])
+
+
+def test_ligate_tracks_heat_inactivation_per_output_digest_not_parent_substrate():
+    state = create_lab_state(sample_id="clone-digest-provenance", seed=1)
+    list_cloning_substrates(state=state)
+    restriction_digest(
+        state=state,
+        fragment_id="puc19_vector",
+        enzyme_names=["EcoRI", "BamHI"],
+        buffer="CutSmart",
+        temperature_c=37.0,
+        duration_minutes=60,
+        heat_inactivate_after=True,
+    )
+    vector_digest_without_heat = restriction_digest(
+        state=state,
+        fragment_id="puc19_vector",
+        enzyme_names=["EcoRI", "BamHI"],
+        buffer="CutSmart",
+        temperature_c=37.0,
+        duration_minutes=60,
+        heat_inactivate_after=False,
+    )
+    insert_digest = restriction_digest(
+        state=state,
+        fragment_id="insert_raw",
+        enzyme_names=["EcoRI", "BamHI"],
+        buffer="CutSmart",
+        temperature_c=37.0,
+        duration_minutes=60,
+        heat_inactivate_after=True,
+    )
+
+    ligation = ligate(
+        state=state,
+        vector_fragment_id=vector_digest_without_heat["output_fragment_ids"][0],
+        insert_fragment_ids=[insert_digest["output_fragment_ids"][0]],
+        ligase_name="T4 DNA ligase",
+        vector_to_insert_molar_ratio=3.0,
+        temperature_c=16.0,
+        duration_minutes=960,
+    )
+
+    assert ligation["status"] == "ligated"
+    assert ligation["source_digest_ids"] == [
+        vector_digest_without_heat["digest_id"],
+        insert_digest["digest_id"],
+    ]
     assert any("not heat-inactivated" in note for note in ligation["notes"])
 
 

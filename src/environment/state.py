@@ -132,6 +132,7 @@ class DnaFragment:
     end_3_prime: str
     recognition_sites: List[str] = field(default_factory=list)
     parent_fragment_id: Optional[str] = None
+    source_digest_id: Optional[str] = None
     notes: List[str] = field(default_factory=list)
 
 

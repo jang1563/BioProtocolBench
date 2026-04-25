@@ -50,7 +50,17 @@ def test_simulate_validation_assay_is_deterministic_per_sample():
     third = simulate_validation_assay("sample_beta", target_id="TGT_A", assay_id="ASY_CYTOKINE")
 
     assert first == second
+    assert first["target_id"] == "TGT_A"
+    assert first["assay_id"] == "ASY_CYTOKINE"
     assert first["effect_size"] != third["effect_size"]
+
+
+def test_simulate_validation_assay_echoes_ids_on_not_found_results():
+    result = simulate_validation_assay("sample_alpha", target_id="missing", assay_id="missing_assay")
+
+    assert result["status"] == "not_found"
+    assert result["target_id"] == "missing"
+    assert result["assay_id"] == "missing_assay"
 
 
 def test_assay_catalog_and_result_label_helpers():

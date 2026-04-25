@@ -112,6 +112,8 @@ def simulate_validation_assay(sample_id: str, target_id: str, assay_id: str) -> 
     if target_id not in targets:
         return {
             "status": "not_found",
+            "target_id": target_id,
+            "assay_id": assay_id,
             "effect_direction": "unknown",
             "effect_size": 0.0,
             "qc_status": "fail",
@@ -120,6 +122,8 @@ def simulate_validation_assay(sample_id: str, target_id: str, assay_id: str) -> 
     if assay_id not in assays:
         return {
             "status": "not_found",
+            "target_id": target_id,
+            "assay_id": assay_id,
             "effect_direction": "unknown",
             "effect_size": 0.0,
             "qc_status": "fail",
@@ -130,6 +134,8 @@ def simulate_validation_assay(sample_id: str, target_id: str, assay_id: str) -> 
     effect_size = round(float(matrix["base_effect_size"]) + _effect_jitter(sample_id, target_id, assay_id), 3)
     return {
         "status": "completed",
+        "target_id": target_id,
+        "assay_id": assay_id,
         "effect_direction": matrix["effect_direction"],
         "effect_size": effect_size,
         "qc_status": matrix["qc_status"],
