@@ -1193,8 +1193,7 @@
     "safety_notes": "Non-toxic; use aseptic technique in biosafety cabinet",
     "common_uses": [
       "culture of HEK293, HeLa, NIH/3T3, COS-7, and many adherent cell lines",
-      "viral production",
-      "transfection experiments"
+      "non-viral transfection experiments"
     ]
   },
   {
@@ -1230,7 +1229,7 @@
       "serum-free experiments",
       "defined media conditions"
     ],
-    "safety_notes": "Potential biohazard (animal-derived); handle with BSL-2 precautions; may contain endotoxins, mycoplasma, or viral contaminants",
+    "safety_notes": "Potential biohazard (animal-derived); handle with BSL-2 precautions; may contain endotoxins, mycoplasma, or other adventitious biological contaminants",
     "common_uses": [
       "cell culture supplement",
       "growth factor source",

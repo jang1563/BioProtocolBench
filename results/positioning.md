@@ -2,7 +2,7 @@
 
 Short literature-grounded audit placing BioProtocolBench against published biology-agent and lab-protocol benchmarks. The goal is to say clearly (a) what space this repo occupies, (b) where it is genuinely novel, and (c) where it is redundant with stronger prior work that a reviewer will already know about.
 
-Unless noted otherwise, the scale claims in this document refer to the frozen April 2026 evaluated portfolio snapshot (5 tasks). The current codebase now implements 11 runnable tasks, including `express_01`, `purify_01`, and `followup_01`, but those newer tasks were added after the snapshot analyzed here. Separate frontier and discovery-facing extensions now exist as well; this document keeps those extensions clearly separated from the frozen snapshot and uses them only where noted.
+Unless noted otherwise, the scale claims in this document refer to the frozen April 2026 evaluated portfolio snapshot (5 tasks). The current codebase now implements 14 runnable tasks: the 5-task snapshot, 5 newer wet-lab tasks, `followup_01`, and 3 Discovery Decision Track tasks. Those newer tasks were added after the snapshot analyzed here, so this document keeps the extensions clearly separated from the frozen snapshot and uses them only where noted.
 
 ## Comparable benchmarks surveyed
 
@@ -19,7 +19,7 @@ Unless noted otherwise, the scale claims in this document refer to the frozen Ap
 | **HeurekaBench (sc-HeurekaBench)** | 2026 | Interactive single-cell pipelines | Open-ended research questions | Reference-based + workflow verification | Panigrahi/Brbić et al. ([arXiv:2601.01678](https://arxiv.org/abs/2601.01678)) |
 | **GPT-5 ProtocolQA Open-Ended + TroubleshootingBench** | 2025 | Text QA, some non-public | 108 open-ended + 52 protocols × 3 questions | Human PhD baseline; expert 80th percentile = 36.4% | OpenAI GPT-5 System Card ([PDF](https://cdn.openai.com/gpt-5-system-card.pdf)) |
 | **OpenAI × Red Queen Bio wet-lab framework** | 2025 | **Real wet-lab** molecular cloning | 1 iterative optimisation task | Physical assay (79× cloning efficiency gain) | OpenAI announcement ([link](https://openai.com/index/accelerating-biological-research-in-the-wet-lab/)) |
-| **BioProtocolBench (this repo)** | 2026 | **Interactive stochastic simulator** | 5-task evaluated snapshot; 11 tasks implemented in current repo | Deterministic hierarchical rubric + 4-axis trajectory scorer | This repo |
+| **BioProtocolBench (this repo)** | 2026 | **Interactive stochastic simulator** | 5-task evaluated snapshot; 14 tasks implemented in current repo | Deterministic hierarchical rubric + 4-axis trajectory scorer | This repo |
 
 ## Where BioProtocolBench is genuinely novel
 
@@ -35,7 +35,7 @@ Against the surveyed work, the defensible design points are:
 
 To reviewers at Anthropic / OpenAI / DeepMind who will already know the references above, the honest pre-empts are:
 
-- **Scale is small.** BioProBench has 556K task instances (26K × ~20 derived each); the evaluated BioProtocolBench snapshot has 5 tasks, and even the current repo's 11 implemented tasks are still small by comparison. Scale alone makes BioProBench a stronger test-bed for statistical claims about model capability.
+- **Scale is small.** BioProBench has 556K task instances (26K × ~20 derived each); the evaluated BioProtocolBench snapshot has 5 tasks, and even the current repo's 14 implemented tasks are still small by comparison. Scale alone makes BioProBench a stronger test-bed for statistical claims about model capability.
 - **No real wet-lab grounding.** OpenAI's Red Queen Bio collaboration executed *actual physical molecular cloning experiments* with GPT-5 and measured outcomes by physical assay. BioProtocolBench's stochastic simulator has citation-backed parameters but the agent never touches real biology. For claims about real-world capability uplift this is a hard ceiling.
 - **No human baseline.** TroubleshootingBench was baselined against 12 PhD experts (80th percentile = 36.4%). Every stddev figure in this repo is agent-vs-agent. A single expert-graded seed on each task would contextualise the scores.
 - **Task surface is still mostly execution-reliability-heavy.** As the analysis already admits, the hardest task (`transform_01`, mean 0.50) is mostly punishing agents for dropping one of four reported numbers or missing a consistency keyword — not for reasoning depth. The new `followup_01` extension begins to address this by scoring targeted next-experiment choice after ambiguous intervention data, but that slice is still small. BoxingGym and EXP-Bench score broader scientific reasoning and hypothesis revision, which remains a harder target.
@@ -70,7 +70,7 @@ The newer Discovery Decision Track pushes the repo beyond protocol execution int
 
 That is the value of `perturb_followup_01`, `target_prioritize_01`, and `target_validate_01`. They are still small and synthetic, so this repo is not competing with Biomni on breadth, with FutureHouse on full autonomous scientific workflows, or with physical wet-lab systems on real-world execution. What it does offer is a compact, auditable evaluation surface for discovery-decision quality, which is exactly the sort of reliability framing that complements broader biomedical-agent portfolio work.
 
-For the runnable bundle and public score summary, see [results/discovery_track.md](discovery_track.md). Company-specific positioning notes can live separately under `docs/company_briefs/` without constraining the public project framing.
+For the runnable bundle and public score summary, see [results/discovery_track.md](discovery_track.md). Company-specific positioning drafts should be made from [docs/company_briefs/company_brief_template.md](../docs/company_briefs/company_brief_template.md) so the public project framing stays company-portable.
 
 ## Recommended framing for a portfolio reviewer
 

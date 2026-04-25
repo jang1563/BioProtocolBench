@@ -30,6 +30,27 @@ def _tier_satisfies(citation, minimum_tier_required):
     return TIER_RANK[citation["tier"]] >= TIER_RANK[minimum_tier_required]
 
 
+def _iter_ground_truth_citation_blocks(payload):
+    yield from payload.get("decision_points", [])
+    yield from payload.get("failure_diagnosis_map", {}).values()
+
+
+def _source_reference_tokens(citation):
+    tokens = []
+    doi = citation.get("doi")
+    if doi:
+        normalized = doi.lower().strip()
+        normalized = normalized.removeprefix("https://doi.org/")
+        normalized = normalized.removeprefix("http://doi.org/")
+        tokens.extend([normalized, "doi.org/{}".format(normalized)])
+    canonical_url = citation.get("canonical_url")
+    if canonical_url:
+        normalized = canonical_url.lower().strip().rstrip("/")
+        tokens.append(normalized)
+        tokens.append(normalized.removeprefix("https://").removeprefix("http://"))
+    return [token for token in tokens if token]
+
+
 def test_parameter_files_exist():
     assert PARAMETER_FILES
 
@@ -76,3 +97,22 @@ def test_sources_file_documents_rejected_sources():
         assert sources_path.exists()
         content = sources_path.read_text()
         assert "Rejected Sources" in content
+
+
+def test_ground_truth_citations_are_documented_in_sources_files():
+    for path in GROUND_TRUTH_FILES:
+        sources_path = path.parent / "SOURCES.md"
+        sources_text = sources_path.read_text().lower()
+        payload = _load_json(path)
+        for block in _iter_ground_truth_citation_blocks(payload):
+            for citation in block.get("citations", []):
+                tokens = _source_reference_tokens(citation)
+                assert tokens, "{} citation needs a DOI or canonical URL".format(
+                    citation.get("title", "<untitled>")
+                )
+                assert any(token in sources_text for token in tokens), (
+                    "{} citation is not documented in {}".format(
+                        citation.get("title", "<untitled>"),
+                        sources_path.relative_to(ROOT),
+                    )
+                )

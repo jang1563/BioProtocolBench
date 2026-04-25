@@ -4,7 +4,7 @@
 
 - Gold: 0
 - Silver: 3
-- Bronze: 5
+- Bronze: 7
 - Copper: 0
 
 ## Included Sources
@@ -36,6 +36,12 @@
 
 5. NEB. *Quick Ligation Protocol (M2200).* https://www.neb.com/en-us/protocols/0001/01/01/dna-ligation-with-t4-dna-ligase-m2200
    - Used for: 10-minute room-temperature T4 ligation as an acceptable alternative.
+
+6. NEB. *NEB 5-alpha Competent E. coli.* https://www.neb.com/en-us/products/c2987-neb-5-alpha-competent-e-coli-high-efficiency
+   - Used for: ampicillin selection concentration for the competent-cell host in Clone-01.
+
+7. NIST/SEMATECH. *e-Handbook of Statistical Methods: Binomial Distribution.* https://www.itl.nist.gov/div898/handbook/eda/section3/eda366i.htm
+   - Used for: the binomial screening-confidence calculation behind the colony-screening stopping rule.
 
 ## Rejected Sources
 

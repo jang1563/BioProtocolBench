@@ -35,9 +35,9 @@ Quick discovery links:
 
 ## Results
 
-100 runs · 5 tasks · 4 frontier models · 5 stochastic seeds · April 2026 · total API cost ~$2.50
+100 scored sample rows · 5 tasks · 4 frontier models · 5 stochastic seeds · April 2026 · total API cost ~$2.50
 
-This scorecard is a frozen April 2026 portfolio snapshot covering the first five tasks: `transform_01`, `growth_01`, `pcr_01`, `screen_01`, and `clone_01`. The repo now also implements `golden_gate_01`, `gibson_01`, `miniprep_01`, `express_01`, `purify_01`, and `followup_01`; those newer tasks are runnable today but are not yet included in the tables or charts below.
+This scorecard is a frozen April 2026 portfolio snapshot covering the first five tasks: `transform_01`, `growth_01`, `pcr_01`, `screen_01`, and `clone_01`. The repo now implements 14 runnable tasks total: those five snapshot tasks, five newer wet-lab tasks (`golden_gate_01`, `gibson_01`, `miniprep_01`, `express_01`, `purify_01`), one follow-up decision task (`followup_01`), and three Discovery Decision Track tasks (`perturb_followup_01`, `target_prioritize_01`, `target_validate_01`). The newer wet-lab and discovery tasks are runnable today but are reported in separate result pages so the frozen scorecard remains stable.
 
 See **[results/analysis.md](results/analysis.md)** for per-task failure-mode analysis, [results/results.md](results/results.md) for per-sample scores, and [results/logs/](results/logs/) for the raw Inspect trajectories.
 
