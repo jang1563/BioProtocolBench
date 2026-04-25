@@ -7,7 +7,6 @@ import re
 from pathlib import Path
 from typing import Dict, List
 
-from .observations import render_observation
 from .state import (
     AssemblyReaction,
     DigestReaction,
@@ -316,12 +315,19 @@ def plate(
     """Plate a transformed culture onto a prepared plate."""
     culture = state.cultures[culture_id]
     prepared_plate = state.prepared_plates[plate_id]
+    dilution = float(dilution_factor)
+    volume = float(volume_ul)
+    if dilution <= 0.0:
+        raise ValueError("dilution_factor must be positive.")
+    if volume <= 0.0:
+        raise ValueError("volume_ul must be positive.")
+
     warnings: List[str] = []
     countable_min, countable_max = state.parameters.countable_colony_range()
     recommended = state.parameters.recommended_antibiotic_concentration(prepared_plate.antibiotic or "")
     if recommended is None:
         status = "plated_without_reference"
-        expected = culture.expected_total_transformants * (float(volume_ul) / 1000.0) / float(dilution_factor)
+        expected = culture.expected_total_transformants * (volume / 1000.0) / dilution
         observed = sample_poisson(state.rng, expected)
     elif float(prepared_plate.antibiotic_concentration_ug_ml) != float(recommended):
         status = "selection_failed"
@@ -330,7 +336,7 @@ def plate(
         warnings.append("Selection plate concentration does not match the cited working concentration.")
     else:
         status = "plated"
-        expected = culture.expected_total_transformants * (float(volume_ul) / 1000.0) / float(dilution_factor)
+        expected = culture.expected_total_transformants * (volume / 1000.0) / dilution
         observed = sample_poisson(state.rng, expected)
         if observed < countable_min or observed > countable_max:
             status = "count_out_of_range"
@@ -344,8 +350,8 @@ def plate(
         plating_id=plating_id,
         culture_id=culture_id,
         plate_id=plate_id,
-        dilution_factor=float(dilution_factor),
-        volume_ul=float(volume_ul),
+        dilution_factor=dilution,
+        volume_ul=volume,
         expected_colonies=expected,
         observed_colonies=observed,
         status=status,
@@ -357,8 +363,8 @@ def plate(
         "plating_id": plating_id,
         "plate_id": plate_id,
         "culture_id": culture_id,
-        "dilution_factor": float(dilution_factor),
-        "volume_ul": float(volume_ul),
+        "dilution_factor": dilution,
+        "volume_ul": volume,
         "countable_range_colonies": {"min": countable_min, "max": countable_max},
         "warnings": warnings,
     }
@@ -1103,14 +1109,15 @@ def ligate(
         for fragment_id in [vector_fragment_id] + list(insert_fragment_ids)
         if state.dna_fragments[fragment_id].parent_fragment_id
     ]
-    if not any(
-        any(
+    parent_digest_heat_inactivated = {
+        parent_id: any(
             reaction.heat_inactivate_after
             for reaction in state.digest_reactions.values()
             if reaction.substrate_fragment_id == parent_id
         )
         for parent_id in parent_digests
-    ) and parent_digests:
+    }
+    if parent_digest_heat_inactivated and not all(parent_digest_heat_inactivated.values()):
         notes.append(
             "Digests feeding this ligation were not heat-inactivated; residual nuclease may degrade the ligation."
         )
@@ -1379,6 +1386,18 @@ def golden_gate_assembly(
                 expected_fragment_count, len(fragment_ids)
             )
         )
+    else:
+        expected_fragment_ids = {
+            "gg_backbone",
+            "gg_insert_promoter",
+            "gg_insert_cds",
+            "gg_insert_terminator",
+        }
+        if set(fragment_ids) != expected_fragment_ids:
+            status = "wrong_fragment_count"
+            notes.append(
+                "Golden Gate-01 requires each expected backbone/promoter/CDS/terminator fragment exactly once."
+            )
 
     enzyme_normalized = _normalize_choice(enzyme_name).replace("-hfv2", "").replace("-v2", "").replace(" ", "")
     if not any(enzyme_normalized == a.replace("-hfv2", "").replace("-v2", "").replace(" ", "") for a in accepted_enzymes):
@@ -1642,6 +1661,10 @@ def gibson_assembly(
 
     notes: List[str] = []
     status = "assembled"
+    expected_fragment_ids = {"gibson_backbone_linear", "gibson_insert_pcr"}
+    if len(fragment_ids) != len(expected_fragment_ids) or set(fragment_ids) != expected_fragment_ids:
+        status = "wrong_fragment_count"
+        notes.append("Gibson-01 requires the linear backbone and PCR insert exactly once.")
 
     normalized_mix = _normalize_choice(master_mix_name)
     mix_ok = any(normalized_mix == a or a in normalized_mix or normalized_mix in a for a in accepted_mixes)

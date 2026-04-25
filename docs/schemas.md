@@ -1,6 +1,6 @@
 # LabCraft Data Schemas
 
-This document defines the Phase 0 schema contract for LabCraft's static JSON artifacts. The goal is not to provide executable JSON Schema files yet, but to pin the required fields, meanings, and validation expectations before Phase 1 implementation.
+This document defines the current schema contract for LabCraft's static JSON artifacts. The goal is not to provide executable JSON Schema files yet, but to pin the required fields, meanings, and validation expectations enforced by tests and scorer code.
 
 ## 1. Parameter Files
 
@@ -11,7 +11,7 @@ Each parameter file contains one or more parameter objects. The exact top-level 
 - a JSON object with a `parameters` array, or
 - a JSON object keyed by parameter identifier
 
-Whichever container style is used in Phase 1, every parameter record must expose the following fields.
+Whichever container style is used, every parameter record must expose the following fields.
 
 ### Parameter record
 
@@ -120,7 +120,7 @@ Each task ground-truth file defines decision scoring, troubleshooting references
       "acceptable_variants": [
         "Cells needed recovery time before antibiotic selection."
       ],
-      "judge_strategy": "llm_text_match",
+      "judge_strategy": "substring_any",
       "citations": [
         {
           "canonical_url": "https://www.neb.com/",
@@ -154,7 +154,8 @@ Each task ground-truth file defines decision scoring, troubleshooting references
 - `description`: required string.
 - `matcher`: required object describing how the scorer identifies the corresponding tool call in the transcript.
 - `acceptable_values`: required object. The exact shape depends on whether the decision is a range, enum set, boolean, free-text judgment target, or structured argument block.
-- `scoring_rule`: required string such as `binary`, `partial_credit`, or `llm_judge`.
+- `scoring_rule`: required string such as `binary`, `partial_credit`, or `structured_match`.
+- `judge_strategy`: when present in `failure_diagnosis_map`, currently uses deterministic strategies such as `substring_any`; live task scoring does not depend on an LLM judge.
 - `citations`: required non-empty array following the citation rules above.
 
 ### Efficiency reference rules
@@ -217,7 +218,7 @@ Rules:
 
 ### Recommended top-level rubric dimensions
 
-Phase 1 rubrics should use the four top-level dimensions defined in the implementation plan:
+Rubrics should use the four top-level dimensions defined by the deterministic trajectory scorer:
 
 - `Task Success`
 - `Decision Quality`

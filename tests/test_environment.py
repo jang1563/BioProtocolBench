@@ -263,6 +263,80 @@ def test_plate_out_of_countable_range_is_reported():
     assert "25-250 colonies per plate" in counted["warnings"][0]
 
 
+def test_plate_rejects_nonpositive_dilution_factor():
+    state = create_lab_state(sample_id="plate-bad-dilution", seed=101)
+    prepared = prepare_media(
+        state=state,
+        medium="LB agar",
+        antibiotic="ampicillin",
+        antibiotic_concentration_ug_ml=100,
+        plate_count=1,
+    )
+    transformed = transform(
+        state=state,
+        plasmid_mass_pg=1000,
+        heat_shock_seconds=30,
+        recovery_minutes=60,
+    )
+    with pytest.raises(ValueError, match="dilution_factor must be positive"):
+        plate(
+            state=state,
+            culture_id=transformed["culture_id"],
+            plate_id=prepared["plates"][0]["plate_id"],
+            dilution_factor=0,
+            volume_ul=100,
+        )
+
+
+def test_plate_rejects_nonpositive_volume():
+    state = create_lab_state(sample_id="plate-bad-volume", seed=101)
+    prepared = prepare_media(
+        state=state,
+        medium="LB agar",
+        antibiotic="ampicillin",
+        antibiotic_concentration_ug_ml=100,
+        plate_count=1,
+    )
+    transformed = transform(
+        state=state,
+        plasmid_mass_pg=1000,
+        heat_shock_seconds=30,
+        recovery_minutes=60,
+    )
+    with pytest.raises(ValueError, match="volume_ul must be positive"):
+        plate(
+            state=state,
+            culture_id=transformed["culture_id"],
+            plate_id=prepared["plates"][0]["plate_id"],
+            dilution_factor=1000,
+            volume_ul=0,
+        )
+
+
+def test_plate_tool_reports_nonpositive_dilution_as_tool_error():
+    async def run_bad_plate():
+        sample_id = "plate-tool-bad-dilution"
+        set_active_sample(sample_id, seed=101)
+        try:
+            prepared = json.loads(await prepare_media_call("LB agar", "ampicillin", 100, 1))
+            transformed = json.loads(await transform_call(1000, 30, 60))
+            return json.loads(
+                await plate_call(
+                    culture_id=transformed["culture_id"],
+                    plate_id=prepared["plates"][0]["plate_id"],
+                    dilution_factor=0,
+                    volume_ul=100,
+                )
+            )
+        finally:
+            cleanup_sample(sample_id)
+
+    payload = asyncio.run(run_bad_plate())
+    assert payload["status"] == "tool_error"
+    assert payload["tool_name"] == "plate"
+    assert "dilution_factor must be positive" in payload["message"]
+
+
 def test_concurrent_sample_isolation():
     async def run_pair():
         loop = asyncio.get_running_loop()
@@ -574,6 +648,40 @@ def test_ligate_with_wrong_ligase_reports_wrong_ligase():
     assert bad_ligation["status"] == "wrong_ligase"
 
 
+def test_ligate_warns_when_only_one_parent_digest_was_heat_inactivated():
+    state = create_lab_state(sample_id="clone-partial-heat-kill", seed=1)
+    list_cloning_substrates(state=state)
+    vector_digest = restriction_digest(
+        state=state,
+        fragment_id="puc19_vector",
+        enzyme_names=["EcoRI", "BamHI"],
+        buffer="CutSmart",
+        temperature_c=37.0,
+        duration_minutes=60,
+        heat_inactivate_after=True,
+    )
+    insert_digest = restriction_digest(
+        state=state,
+        fragment_id="insert_raw",
+        enzyme_names=["EcoRI", "BamHI"],
+        buffer="CutSmart",
+        temperature_c=37.0,
+        duration_minutes=60,
+        heat_inactivate_after=False,
+    )
+    ligation = ligate(
+        state=state,
+        vector_fragment_id=vector_digest["output_fragment_ids"][0],
+        insert_fragment_ids=[insert_digest["output_fragment_ids"][0]],
+        ligase_name="T4 DNA ligase",
+        vector_to_insert_molar_ratio=3.0,
+        temperature_c=16.0,
+        duration_minutes=960,
+    )
+    assert ligation["status"] == "ligated"
+    assert any("not heat-inactivated" in note for note in ligation["notes"])
+
+
 def test_transform_ligation_produces_culture_and_screening_plate():
     state, _, _, ligation, transform_result = _run_good_clone_core("clone-good-transform", 1)
     assert transform_result["status"] == "transformed"
@@ -688,6 +796,24 @@ def test_golden_gate_wrong_ligase_is_flagged():
     assert result["status"] == "wrong_ligase"
 
 
+def test_golden_gate_duplicate_fragment_is_flagged_even_with_four_inputs():
+    state = create_lab_state(sample_id="gg-duplicate-fragment", seed=1)
+    list_golden_gate_substrates(state=state)
+    result = golden_gate_assembly(
+        state=state,
+        fragment_ids=[
+            "gg_backbone",
+            "gg_insert_promoter",
+            "gg_insert_cds",
+            "gg_insert_cds",
+        ],
+        enzyme_name="BsaI",
+        ligase_name="T4 DNA ligase",
+    )
+    assert result["status"] == "wrong_fragment_count"
+    assert result["output_fragment_id"] is None
+
+
 def test_transform_assembly_produces_culture():
     state, assembly = _run_good_golden_gate_core("gg-transform", 42)
     result = transform_assembly(state=state, assembly_id=assembly["assembly_id"])
@@ -744,6 +870,21 @@ def test_gibson_wrong_master_mix_is_flagged():
         overlap_length_bp=20,
     )
     assert result["status"] == "wrong_master_mix"
+
+
+def test_gibson_duplicate_fragment_is_flagged_even_with_two_inputs():
+    state = create_lab_state(sample_id="gibson-duplicate-fragment", seed=1)
+    list_gibson_substrates(state=state)
+    result = gibson_assembly(
+        state=state,
+        fragment_ids=["gibson_backbone_linear", "gibson_backbone_linear"],
+        master_mix_name="Gibson Assembly Master Mix",
+        temperature_c=50.0,
+        duration_minutes=15,
+        overlap_length_bp=20,
+    )
+    assert result["status"] == "wrong_fragment_count"
+    assert result["output_fragment_id"] is None
 
 
 def test_transform_gibson_produces_culture():

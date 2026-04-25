@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import argparse
 from datetime import datetime, timezone
-import json
 import os
 import statistics
 import sys
@@ -32,8 +31,8 @@ os.environ.setdefault("MPLBACKEND", "Agg")
 os.environ.setdefault("MPLCONFIGDIR", str(DEFAULT_MPLCONFIGDIR))
 DEFAULT_MPLCONFIGDIR.mkdir(parents=True, exist_ok=True)
 
-import matplotlib.pyplot as plt
-import numpy as np
+import matplotlib.pyplot as plt  # noqa: E402
+import numpy as np  # noqa: E402
 
 SNAPSHOT_TASKS = ["transform_01", "growth_01", "pcr_01", "screen_01", "clone_01"]
 CURRENT_TASKS = SNAPSHOT_TASKS + [
@@ -49,6 +48,7 @@ DISCOVERY_TASKS = [
     "target_prioritize_01",
     "target_validate_01",
 ]
+ALL_TASKS = CURRENT_TASKS + DISCOVERY_TASKS
 PREFERRED_MODELS = [
     "openai/gpt-4o-mini",
     "openai/gpt-4o",
@@ -190,12 +190,14 @@ def resolve_tasks(rows, task_preset: str, explicit_tasks: list[str] | None) -> l
         return explicit_tasks
     if task_preset == "snapshot":
         return list(SNAPSHOT_TASKS)
-    if task_preset in {"current", "all"}:
+    if task_preset == "current":
         return list(CURRENT_TASKS)
     if task_preset == "discovery":
         return list(DISCOVERY_TASKS)
+    if task_preset == "all":
+        return list(ALL_TASKS)
     if task_preset == "auto":
-        return _ordered_subset(CURRENT_TASKS + DISCOVERY_TASKS, {row["task"] for row in rows})
+        return _ordered_subset(ALL_TASKS, {row["task"] for row in rows})
     raise ValueError("Unknown task preset: {}".format(task_preset))
 
 

@@ -18,9 +18,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from src.tasks.growth_01 import build_growth_01_sample
-from src.tasks.transform_01 import build_transform_01_sample
-from src.tools.lab_tools import (
+from src.tasks.growth_01 import build_growth_01_sample  # noqa: E402
+from src.tasks.transform_01 import build_transform_01_sample  # noqa: E402
+from src.tools.lab_tools import (  # noqa: E402
     cleanup_sample,
     count_colonies_call,
     fit_growth_curve_call,
@@ -32,8 +32,8 @@ from src.tools.lab_tools import (
     set_active_sample,
     transform_call,
 )
-from src.tools.reference import check_safety_call, lookup_reagent_call
-from src.trajectory_scorer import score_growth_trajectory, score_transform_trajectory
+from src.tools.reference import check_safety_call, lookup_reagent_call  # noqa: E402
+from src.trajectory_scorer import score_growth_trajectory, score_transform_trajectory  # noqa: E402
 
 AsyncToolHandler = Callable[..., Awaitable[str]]
 

@@ -17,7 +17,7 @@ LabCraft is a public evaluation environment for benign biology tasks across seve
   - Standard host housekeeping proteins
   - Workflows: induction, cell lysis, affinity purification, SDS-PAGE, spectrophotometric activity assays, Michaelis–Menten kinetics
 - **BSL-1 adherent mammalian cell lines for non-viral work**
-  - Approved lines: HEK293, HeLa, NIH-3T3, CHO (and close derivatives thereof listed in `data/organisms/mammalian_lines.json`)
+  - Approved candidate lines for future task expansion: HEK293, HeLa, NIH-3T3, CHO and close derivatives
   - Operations: thawing, passaging, counting (trypan blue), non-viral transfection (Lipofectamine or equivalent), **benign reporter assays only** (GFP, mCherry, luciferase, β-galactosidase, SEAP)
 - Text and structured-tool observations for simulated experiments
 
@@ -38,7 +38,7 @@ These exclusions are **non-negotiable** and override the Included Scope wherever
 
 ## Provenance requirement for new organisms
 
-Every strain, cell line, or host referenced in a task must appear in `data/organisms/*.json` with a public registry reference (ATCC, DSMZ, ECACC, EUROSCARF, Addgene, or equivalent) checked in at build time. The allowed registries and exact accession numbers are reviewable in `data/organisms/`.
+Every strain, cell line, or host referenced in a task must have a checked-in public registry reference (ATCC, DSMZ, ECACC, EUROSCARF, Addgene, or equivalent) in the relevant task metadata or a future organism registry before the task is released. The current implemented task set is constrained to the task surfaces under `task_data/` and the checked-in reagent, enzyme, safety, and parameter data under `data/`.
 
 ## Public-Data Commitment
 

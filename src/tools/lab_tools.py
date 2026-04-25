@@ -104,15 +104,17 @@ async def plate_call(
     volume_ul: float,
 ) -> str:
     state = _current_state()
-    return render_observation(
-        plate(
+    try:
+        payload = plate(
             state=state,
             culture_id=culture_id,
             plate_id=plate_id,
             dilution_factor=dilution_factor,
             volume_ul=volume_ul,
         )
-    )
+    except ValueError as exc:
+        return _tool_error_observation("plate", exc)
+    return render_observation(payload)
 
 
 async def count_colonies_call(plating_id: str) -> str:

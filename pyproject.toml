@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=65", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,7 +7,7 @@ name = "labcraft"
 version = "0.1.0"
 description = "Stochastic agentic environment for evaluating frontier models on benign microbiology tasks"
 requires-python = ">=3.11"
-license = {text = "Apache-2.0"}
+license = "Apache-2.0"
 dependencies = [
     "inspect-ai>=0.3.0",
 ]
@@ -31,7 +31,7 @@ labcraft = "src.inspect_task"
 include = ["src*"]
 
 [tool.setuptools.package-data]
-src = ["../task_data/**/*.json", "../task_data/**/*.md", "../data/parameters/*.json", "../data/parameters/*.bib"]
+src = ["../task_data/**/*.json", "../task_data/**/*.md", "../data/**/*.json", "../data/**/*.bib"]
 
 [tool.ruff]
 line-length = 100

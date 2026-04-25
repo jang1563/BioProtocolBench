@@ -11,7 +11,7 @@ Built on **LabCraft**, the underlying framework in [`src/`](src/). Each task pla
 Each task gives the agent:
 
 - A **protocol prompt** (e.g., "measure transformation efficiency across four plasmid inputs")
-- Access to lab-operation tools (`prepare_plate`, `transform`, `plate`, `incubate`, `count_colonies`, ...) and reference tools (`lookup_reagent`, `lookup_enzyme`, `check_safety`)
+- Access to lab-operation tools (`prepare_media`, `transform`, `plate`, `incubate`, `count_colonies`, ...) and reference tools (`lookup_reagent`, `lookup_enzyme`, `check_safety`)
 - A stochastic sample state seeded per run, with realistic noise on growth, plating, colony counts, etc.
 
 The agent must plan the experiment, call tools in the right order, interpret observations, and report quantitative results. A trajectory scorer inspects the full interaction (tool calls, results, final answer) and grades it against a hierarchical rubric.
@@ -229,10 +229,11 @@ inspect eval src/inspect_task.py@perturb_followup_01   --model openai/gpt-4o-min
 inspect eval src/inspect_task.py@target_prioritize_01  --model openai/gpt-4o-mini
 inspect eval src/inspect_task.py@target_validate_01    --model openai/gpt-4o-mini
 
-# With a different grader model (trajectory scorer uses LLM-as-judge for some rubric leaves)
+# With explicit seed control for reproducible stochastic samples
 inspect eval src/inspect_task.py@transform_01 \
     --model anthropic/claude-sonnet-4-5 \
-    -T grader_model=openai/gpt-4o
+    -T seeds=3 \
+    -T seed_start=0
 
 # Run the Discovery decision bundle
 TASK_PRESET=discovery \
@@ -259,13 +260,14 @@ BioProtocolBench/
 │   ├── environment/          # Stochastic lab simulator (state, operations, noise)
 │   ├── tasks/                # Per-task prompts and sample builders
 │   ├── tools/                # lookup_reagent / lookup_enzyme / check_safety / lab ops
-│   ├── trajectory_scorer.py  # Three-axis scorer with rubric traversal
+│   ├── trajectory_scorer.py  # Four-axis deterministic trajectory scorer
 │   ├── rubric_utils.py       # Weighted tree scoring
-│   └── judge.py              # LLM-judge prompts for qualitative leaves
+│   └── judge.py              # Legacy judge prompt utilities; trajectory scoring is deterministic
 ├── data/
-│   ├── reagent_database.json     # 85 common reagents
+│   ├── reagent_database.json     # 84 common reagents
 │   ├── enzyme_database.json      # 46 enzymes
 │   ├── safety_database.json      # 44 chemicals with GHS hazards
+│   ├── discovery_track/          # Synthetic target/assay evidence for discovery tasks
 │   └── parameters/               # Stochastic parameters with citations
 ├── task_data/
 │   ├── transform_01/         # rubric.json, ground_truth.json, SOURCES.md
@@ -287,7 +289,7 @@ Every stochastic parameter, ground-truth value, and safety statement traces to a
 
 ```bash
 pip install -e ".[dev]"
-pytest tests/ -v
+uv run --extra dev pytest
 ```
 
 Tests cover the stochastic environment (determinism under seed, sample isolation), rubric loading, citation enforcement, tool contracts, and trajectory scoring (transcript parsing, CFU/µg reconstruction, rubric application).

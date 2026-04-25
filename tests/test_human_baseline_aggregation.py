@@ -211,7 +211,7 @@ def test_load_completed_sessions_rescores_supported_tasks(tmp_path):
 
     assert len(rows) == 1
     assert rows[0]["score_source"] == "rescored"
-    assert rows[0]["overall"] == pytest.approx(0.3)
+    assert rows[0]["overall"] == pytest.approx(0.0)
 
 
 def test_load_completed_sessions_falls_back_to_stored_score_when_ground_truth_path_is_stale(tmp_path):
@@ -246,7 +246,7 @@ def test_load_completed_sessions_falls_back_to_stored_score_when_ground_truth_pa
 
     assert len(rows) == 1
     assert rows[0]["score_source"] == "rescored"
-    assert rows[0]["overall"] == pytest.approx(0.3)
+    assert rows[0]["overall"] == pytest.approx(0.0)
 
 
 def test_load_snapshot_sample_scores_parses_per_sample_markdown(tmp_path):

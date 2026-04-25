@@ -339,11 +339,17 @@ def score_decision_quality(tool_calls: List[Dict[str, Any]], ground_truth: Dict[
 def score_efficiency(tool_calls: List[Dict[str, Any]], ground_truth: Dict[str, Any]) -> float:
     reference = ground_truth["efficiency_reference"]
     total_calls = len(tool_calls)
+    if total_calls == 0:
+        return 0.0
     if total_calls <= reference["optimal_tool_calls"]:
         return 1.0
     if total_calls <= reference["max_reasonable_tool_calls"]:
         return 0.5
     return 0.0
+
+
+def _score_no_failure_troubleshooting(tool_calls: List[Dict[str, Any]]) -> float:
+    return 1.0 if tool_calls else 0.0
 
 
 def score_troubleshooting(final_answer: str, tool_calls: List[Dict[str, Any]], ground_truth: Dict[str, Any]) -> float:
@@ -353,7 +359,7 @@ def score_troubleshooting(final_answer: str, tool_calls: List[Dict[str, Any]], g
         if "selection_failed" in content:
             failure_markers.append("wrong_selection_pressure")
     if not failure_markers:
-        return 1.0
+        return _score_no_failure_troubleshooting(tool_calls)
 
     final_answer_lower = final_answer.lower()
     resolved = 0
@@ -518,7 +524,7 @@ def score_growth_troubleshooting(final_answer: str, tool_calls: List[Dict[str, A
         if observed.get("status") == "insufficient_points":
             failure_markers.append("insufficient_growth_points")
     if not failure_markers:
-        return 1.0
+        return _score_no_failure_troubleshooting(tool_calls)
 
     final_answer_lower = final_answer.lower()
     resolved = 0
@@ -651,7 +657,7 @@ def score_followup_troubleshooting(final_answer: str, tool_calls: List[Dict[str,
         if observed.get("status") == "insufficient_points":
             failure_markers.append("insufficient_growth_points")
     if not failure_markers:
-        return 1.0
+        return _score_no_failure_troubleshooting(tool_calls)
 
     final_answer_lower = final_answer.lower()
     resolved = 0
@@ -818,7 +824,7 @@ def score_pcr_troubleshooting(final_answer: str, tool_calls: List[Dict[str, Any]
                 failure_markers.append("overcycled_pcr")
 
     if not failure_markers:
-        return 1.0
+        return _score_no_failure_troubleshooting(tool_calls)
 
     final_answer_lower = final_answer.lower()
     resolved = 0
@@ -962,7 +968,7 @@ def score_screen_troubleshooting(final_answer: str, tool_calls: List[Dict[str, A
             failure_markers.append("undersampled_white_colonies")
 
     if not failure_markers:
-        return 1.0
+        return _score_no_failure_troubleshooting(tool_calls)
 
     final_answer_lower = final_answer.lower()
     resolved = 0
@@ -1384,7 +1390,7 @@ def score_clone_troubleshooting(
         failure_markers.append("screened_blue_background")
 
     if not failure_markers:
-        return 1.0
+        return _score_no_failure_troubleshooting(tool_calls)
 
     final_answer_lower = final_answer.lower()
     resolved = 0
@@ -1580,7 +1586,7 @@ def score_golden_gate_troubleshooting(
         elif status == "wrong_fragment_count":
             failure_markers.append("wrong_fragment_count")
     if not failure_markers:
-        return 1.0
+        return _score_no_failure_troubleshooting(tool_calls)
     final_answer_lower = final_answer.lower()
     resolved = 0
     for marker in failure_markers:
@@ -1757,7 +1763,7 @@ def score_gibson_troubleshooting(
         if status == "wrong_master_mix":
             failure_markers.append("wrong_master_mix")
     if not failure_markers:
-        return 1.0
+        return _score_no_failure_troubleshooting(tool_calls)
     final_answer_lower = final_answer.lower()
     resolved = 0
     for marker in failure_markers:
@@ -1939,7 +1945,7 @@ def score_miniprep_troubleshooting(
         }:
             failure_markers.append(status)
     if not failure_markers:
-        return 1.0
+        return _score_no_failure_troubleshooting(tool_calls)
     final_answer_lower = final_answer.lower()
     resolved = 0
     for marker in failure_markers:
@@ -2109,7 +2115,7 @@ def score_express_troubleshooting(
         if status in {"wrong_host_strain", "wrong_induction_temperature", "wrong_lysis_ph"}:
             failure_markers.append(status)
     if not failure_markers:
-        return 1.0
+        return _score_no_failure_troubleshooting(tool_calls)
     final_answer_lower = final_answer.lower()
     resolved = 0
     for marker in failure_markers:
@@ -2289,7 +2295,7 @@ def score_purify_troubleshooting(
         if status in {"wrong_resin", "weak_elution"}:
             failure_markers.append(status)
     if not failure_markers:
-        return 1.0
+        return _score_no_failure_troubleshooting(tool_calls)
     final_answer_lower = final_answer.lower()
     resolved = 0
     for marker in failure_markers:
@@ -2595,12 +2601,17 @@ def score_target_prioritize_task_success(
     tool_calls: List[Dict[str, Any]],
     ground_truth: Dict[str, Any],
 ) -> float:
-    del tool_calls
     reported = _extract_reported_target_prioritize_summary(final_answer)
     required = {"top_target", "do_not_advance_target", "advance_reason", "main_risk"}
     if required - set(reported):
         return 0.0
     expected = ground_truth["expected_outcome"]
+    required_targets = set(expected["required_target_lookups"])
+    observed_targets = set(_unique_profile_target_ids(tool_calls))
+    if not _saw_tool(tool_calls, "list_candidate_targets"):
+        return 0.0
+    if not required_targets.issubset(observed_targets):
+        return 0.0
     if reported["top_target"] != expected["top_target"]:
         return 0.0
     if reported["do_not_advance_target"] != expected["do_not_advance_target"]:
@@ -2637,7 +2648,13 @@ def score_target_prioritize_decision_quality(
     }
 
 
-def score_target_prioritize_troubleshooting(final_answer: str, ground_truth: Dict[str, Any]) -> float:
+def score_target_prioritize_troubleshooting(
+    final_answer: str,
+    tool_calls: List[Dict[str, Any]],
+    ground_truth: Dict[str, Any],
+) -> float:
+    if not tool_calls:
+        return 0.0
     reported = _extract_reported_target_prioritize_summary(final_answer)
     risk_text = reported.get("main_risk", "")
     if not _target_prioritize_risk_targets_top_candidate(risk_text, reported):
@@ -2655,7 +2672,7 @@ def score_target_prioritize_trajectory(
     tool_calls = _extract_tool_calls(transcript)
     decision_quality = score_target_prioritize_decision_quality(final_answer, tool_calls, ground_truth)
     task_success = score_target_prioritize_task_success(final_answer, tool_calls, ground_truth)
-    troubleshooting = score_target_prioritize_troubleshooting(final_answer, ground_truth)
+    troubleshooting = score_target_prioritize_troubleshooting(final_answer, tool_calls, ground_truth)
     efficiency = score_efficiency(tool_calls, ground_truth)
     overall = (
         0.4 * task_success

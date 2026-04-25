@@ -11,6 +11,7 @@
 #   MODELS="openai/gpt-4o-mini" ./scripts/run_portfolio_eval.sh
 #   TASKS="transform_01 clone_01" ./scripts/run_portfolio_eval.sh
 #   TASK_PRESET=current ./scripts/run_portfolio_eval.sh   # run the current implemented task set
+#   TASK_PRESET=all ./scripts/run_portfolio_eval.sh       # run current + discovery tasks
 set -euo pipefail
 
 REPO_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
@@ -20,6 +21,7 @@ SNAPSHOT_TASKS="transform_01 growth_01 pcr_01 screen_01 clone_01"
 CURRENT_TASKS="${SNAPSHOT_TASKS} golden_gate_01 gibson_01 miniprep_01 express_01 purify_01"
 CURRENT_TASKS="${CURRENT_TASKS} followup_01"
 DISCOVERY_TASKS="perturb_followup_01 target_prioritize_01 target_validate_01"
+ALL_TASKS="${CURRENT_TASKS} ${DISCOVERY_TASKS}"
 
 : "${SEEDS:=3}"
 : "${SEED_START:=0}"
@@ -33,11 +35,14 @@ if [ -z "$TASKS" ]; then
     snapshot)
       TASKS="$SNAPSHOT_TASKS"
       ;;
-    current|all)
+    current)
       TASKS="$CURRENT_TASKS"
       ;;
     discovery)
       TASKS="$DISCOVERY_TASKS"
+      ;;
+    all)
+      TASKS="$ALL_TASKS"
       ;;
     *)
       echo "Unknown TASK_PRESET: $TASK_PRESET" >&2

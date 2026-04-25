@@ -1,6 +1,4 @@
 """Tests for rubric loading and scoring."""
-
-import json
 from pathlib import Path
 
 import pytest

@@ -15,7 +15,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from src.trajectory_scorer import score_growth_trajectory, score_transform_trajectory
+from src.trajectory_scorer import score_growth_trajectory, score_transform_trajectory  # noqa: E402
 
 DEFAULT_SESSION_DIR = REPO_ROOT / "results" / "human_baseline_sessions"
 DEFAULT_OUT = REPO_ROOT / "results" / "human_baseline_pilot.md"

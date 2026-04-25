@@ -2,11 +2,9 @@ FROM python:3.12-slim-bookworm
 
 WORKDIR /workspace
 
-# Copy reference databases
+# Copy benchmark content and reference databases
 COPY data/ /workspace/data/
-
-# Copy protocols
-COPY protocols/ /workspace/protocols/
+COPY task_data/ /workspace/task_data/
 
 # Install minimal dependencies
 RUN pip install --no-cache-dir inspect-ai

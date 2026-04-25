@@ -17,8 +17,8 @@ os.environ.setdefault("MPLBACKEND", "Agg")
 os.environ.setdefault("MPLCONFIGDIR", str(DEFAULT_MPLCONFIGDIR))
 DEFAULT_MPLCONFIGDIR.mkdir(parents=True, exist_ok=True)
 
-import matplotlib.pyplot as plt
-import numpy as np
+import matplotlib.pyplot as plt  # noqa: E402
+import numpy as np  # noqa: E402
 
 MODEL_ORDER = [
     "gpt-4o-mini",

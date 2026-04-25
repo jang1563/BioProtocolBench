@@ -8,23 +8,19 @@ from pathlib import Path
 from src.trajectory_scorer import (
     score_clone_task_success,
     score_clone_trajectory,
-    score_express_task_success,
     score_express_trajectory,
     score_followup_task_success,
     score_followup_trajectory,
-    score_gibson_task_success,
     score_gibson_trajectory,
     score_golden_gate_task_success,
     score_golden_gate_trajectory,
     score_growth_task_success,
     score_growth_trajectory,
-    score_miniprep_task_success,
     score_miniprep_trajectory,
     score_pcr_task_success,
     score_pcr_trajectory,
     score_perturb_followup_task_success,
     score_perturb_followup_trajectory,
-    score_purify_task_success,
     score_purify_trajectory,
     score_screen_task_success,
     score_screen_trajectory,
@@ -68,6 +64,35 @@ TARGET_VALIDATE_GROUND_TRUTH_PATH = (
     Path(__file__).resolve().parents[1] / "task_data" / "target_validate_01" / "ground_truth.json"
 )
 TARGET_MASSES = [10, 100, 1000, 10000]
+
+
+def test_empty_transcript_has_zero_floor_across_tasks():
+    scorer_specs = [
+        (score_transform_trajectory, TRANSFORM_GROUND_TRUTH_PATH),
+        (score_growth_trajectory, GROWTH_GROUND_TRUTH_PATH),
+        (score_followup_trajectory, FOLLOWUP_GROUND_TRUTH_PATH),
+        (score_pcr_trajectory, PCR_GROUND_TRUTH_PATH),
+        (score_screen_trajectory, SCREEN_GROUND_TRUTH_PATH),
+        (score_clone_trajectory, CLONE_GROUND_TRUTH_PATH),
+        (score_golden_gate_trajectory, GOLDEN_GATE_GROUND_TRUTH_PATH),
+        (score_gibson_trajectory, GIBSON_GROUND_TRUTH_PATH),
+        (score_miniprep_trajectory, MINIPREP_GROUND_TRUTH_PATH),
+        (score_express_trajectory, EXPRESS_GROUND_TRUTH_PATH),
+        (score_purify_trajectory, PURIFY_GROUND_TRUTH_PATH),
+        (score_perturb_followup_trajectory, PERTURB_FOLLOWUP_GROUND_TRUTH_PATH),
+        (score_target_prioritize_trajectory, TARGET_PRIORITIZE_GROUND_TRUTH_PATH),
+        (score_target_validate_trajectory, TARGET_VALIDATE_GROUND_TRUTH_PATH),
+    ]
+
+    for scorer, ground_truth_path in scorer_specs:
+        scores = scorer(
+            final_answer="",
+            transcript=[],
+            ground_truth_path=str(ground_truth_path),
+        )
+
+        assert scores["overall"] == 0.0
+        assert scores["efficiency"] == 0.0
 
 
 def _good_transcript():
@@ -1618,8 +1643,21 @@ def test_missing_target_profile_coverage_reduces_prioritize_score():
         transcript=transcript,
         ground_truth_path=str(TARGET_PRIORITIZE_GROUND_TRUTH_PATH),
     )
+    assert scores["task_success"] == 0.0
     assert scores["decision_scores"]["full_profile_coverage"] == 0.0
     assert scores["decision_quality"] < 1.0
+
+
+def test_target_prioritize_oracle_answer_without_tools_does_not_get_task_success():
+    scores = score_target_prioritize_trajectory(
+        final_answer=_good_target_prioritize_answer(),
+        transcript=[],
+        ground_truth_path=str(TARGET_PRIORITIZE_GROUND_TRUTH_PATH),
+    )
+
+    assert scores["task_success"] == 0.0
+    assert scores["decision_quality"] == 0.5
+    assert scores["overall"] < 0.35
 
 
 def test_target_prioritize_task_success_accepts_signal_context_and_liability_reasoning():
