@@ -210,6 +210,12 @@ cd BioProtocolBench
 pip install -e ".[dev]"
 ```
 
+The installable Python distribution is currently named `labcraft`, because
+LabCraft is the simulator framework underneath BioProtocolBench. For v0.1.x,
+direct Python imports remain internal `src.*` imports to preserve the existing
+Inspect task paths; the public execution surface is the Inspect task file and
+the runner scripts below.
+
 ## Running
 
 ```bash
@@ -243,6 +249,10 @@ MODELS="openai/gpt-4o-mini anthropic/claude-sonnet-4-5" \
 ```
 
 Task entry points are registered via the `inspect_ai` plugin in [pyproject.toml](pyproject.toml).
+For multi-task suites, prefer [scripts/run_portfolio_eval.sh](scripts/run_portfolio_eval.sh)
+with `TASK_PRESET=snapshot`, `current`, `discovery`, or `all`. The
+`labcraft_suite()` Inspect entry point is kept only as a backwards-compatible
+single-task smoke alias.
 
 For a minimal manual expert-baseline workflow on the two most informative snapshot tasks, see [docs/human_baseline.md](docs/human_baseline.md). That CLI reuses the same seeded task instances and deterministic scorer for `transform_01` and `growth_01`, now includes a pilot launcher at [scripts/run_human_baseline_pilot.py](scripts/run_human_baseline_pilot.py), and safely resumes `in_progress` session files instead of overwriting them. The recommended first-pass seed set is documented in [results/human_baseline_seed_plan.md](results/human_baseline_seed_plan.md), and aggregated pilot outputs now include [results/human_baseline_pilot.md](results/human_baseline_pilot.md), [results/human_baseline_pilot.json](results/human_baseline_pilot.json), and the companion plots in [results/human_baseline_plots](results/human_baseline_plots).
 
@@ -251,7 +261,10 @@ For a minimal manual expert-baseline workflow on the two most informative snapsh
 ```
 BioProtocolBench/
 ├── README.md
+├── CITATION.cff
 ├── LICENSE
+├── LICENSE-DATA
+├── NOTICE
 ├── SAFETY.md                 # Scope and safety policy
 ├── pyproject.toml
 ├── src/
@@ -276,6 +289,7 @@ BioProtocolBench/
 │   └── purify_01/
 ├── environments/             # Docker sandbox
 ├── docs/schemas.md           # JSON schema contract
+├── docs/release_checklist.md  # Public snapshot checklist
 └── tests/                    # Unit tests (environment, scorer, tools, rubrics)
 ```
 
@@ -293,6 +307,13 @@ uv run --extra dev pytest
 ```
 
 Tests cover the stochastic environment (determinism under seed, sample isolation), rubric loading, citation enforcement, tool contracts, and trajectory scoring (transcript parsing, CFU/µg reconstruction, rubric application).
+
+## Citation
+
+If you use BioProtocolBench, cite the repository URL, the commit SHA, and the
+result bundle or log directory you used. Machine-readable citation metadata is
+available in [CITATION.cff](CITATION.cff), and the public snapshot checklist is
+in [docs/release_checklist.md](docs/release_checklist.md).
 
 ## Related work
 

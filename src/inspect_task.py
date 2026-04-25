@@ -1,6 +1,8 @@
-"""Inspect AI task entry points for LabCraft.
+"""Inspect AI task entry points for BioProtocolBench/LabCraft.
 
-Phase 1 begins with Transform-01.
+Each public task is registered separately so Inspect can attach the task-specific
+setup hook, solver, scorer, and cleanup hook. Multi-task suites are orchestrated
+by ``scripts/run_portfolio_eval.sh`` presets rather than by a single Inspect Task.
 """
 
 from __future__ import annotations
@@ -73,6 +75,32 @@ from src.trajectory_scorer import (
     build_target_validate_trajectory_scorer,
     build_transform_trajectory_scorer,
 )
+
+SNAPSHOT_TASKS = ("transform_01", "growth_01", "pcr_01", "screen_01", "clone_01")
+CURRENT_TASKS = SNAPSHOT_TASKS + (
+    "golden_gate_01",
+    "gibson_01",
+    "miniprep_01",
+    "express_01",
+    "purify_01",
+    "followup_01",
+)
+DISCOVERY_TASKS = ("perturb_followup_01", "target_prioritize_01", "target_validate_01")
+ALL_TASKS = CURRENT_TASKS + DISCOVERY_TASKS
+TASK_PRESETS = {
+    "snapshot": SNAPSHOT_TASKS,
+    "current": CURRENT_TASKS,
+    "discovery": DISCOVERY_TASKS,
+    "all": ALL_TASKS,
+}
+
+
+def available_task_ids(preset: str = "all") -> tuple[str, ...]:
+    """Return the task ids included in a named portfolio preset."""
+    try:
+        return TASK_PRESETS[preset]
+    except KeyError as exc:
+        raise ValueError("Unknown task preset: {}".format(preset)) from exc
 
 
 async def _cleanup_transform_sample(state):
@@ -344,13 +372,26 @@ def purify_01(seeds: int = 1, seed_start: int = 0):
 
 
 @task
-def labcraft_suite():
+def labcraft_suite(seeds: int = 1, seed_start: int = 0):
+    """Backward-compatible single-task smoke entry point.
+
+    Heterogeneous BioProtocolBench suites need different setup, solver, scorer,
+    and cleanup contracts per task. Use ``scripts/run_portfolio_eval.sh`` with
+    ``TASK_PRESET=snapshot``, ``current``, ``discovery``, or ``all`` for real
+    portfolio runs.
+    """
     if Task is None:
         raise ImportError("inspect_ai is required to instantiate LabCraft tasks.")
-    return transform_01()
+    return transform_01(seeds=seeds, seed_start=seed_start)
 
 
 __all__ = [
+    "SNAPSHOT_TASKS",
+    "CURRENT_TASKS",
+    "DISCOVERY_TASKS",
+    "ALL_TASKS",
+    "TASK_PRESETS",
+    "available_task_ids",
     "transform_01",
     "growth_01",
     "followup_01",

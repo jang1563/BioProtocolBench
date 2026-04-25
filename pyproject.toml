@@ -6,11 +6,34 @@ build-backend = "setuptools.build_meta"
 name = "labcraft"
 version = "0.1.0"
 description = "Stochastic agentic environment for evaluating frontier models on benign microbiology tasks"
+readme = "README.md"
 requires-python = ">=3.11"
 license = "Apache-2.0"
+authors = [
+    { name = "The BioProtocolBench Authors" },
+]
+keywords = [
+    "agent-evaluation",
+    "benchmark",
+    "inspect-ai",
+    "microbiology",
+    "stochastic-simulation",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
 dependencies = [
     "inspect-ai>=0.3.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/jang1563/BioProtocolBench"
+Repository = "https://github.com/jang1563/BioProtocolBench"
+Issues = "https://github.com/jang1563/BioProtocolBench/issues"
 
 [project.optional-dependencies]
 dev = [

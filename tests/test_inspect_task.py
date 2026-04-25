@@ -1,3 +1,5 @@
+import pytest
+
 from src.inspect_task import _expand_seeds
 import src.inspect_task as inspect_task
 from src.tasks.target_prioritize_01 import build_target_prioritize_01_prompt
@@ -57,6 +59,33 @@ def test_discovery_tasks_are_registered():
     assert "perturb_followup_01" in inspect_task.__all__
     assert "target_prioritize_01" in inspect_task.__all__
     assert "target_validate_01" in inspect_task.__all__
+
+
+def test_task_inventory_constants_are_consistent():
+    assert inspect_task.SNAPSHOT_TASKS == (
+        "transform_01",
+        "growth_01",
+        "pcr_01",
+        "screen_01",
+        "clone_01",
+    )
+    assert inspect_task.DISCOVERY_TASKS == (
+        "perturb_followup_01",
+        "target_prioritize_01",
+        "target_validate_01",
+    )
+    assert inspect_task.ALL_TASKS == inspect_task.CURRENT_TASKS + inspect_task.DISCOVERY_TASKS
+    assert inspect_task.TASK_PRESETS["all"] == inspect_task.ALL_TASKS
+    assert set(inspect_task.ALL_TASKS).issubset(set(inspect_task.__all__))
+
+
+def test_available_task_ids_returns_named_preset():
+    assert inspect_task.available_task_ids("discovery") == inspect_task.DISCOVERY_TASKS
+
+
+def test_available_task_ids_rejects_unknown_preset():
+    with pytest.raises(ValueError, match="Unknown task preset"):
+        inspect_task.available_task_ids("unknown")
 
 
 def test_target_prioritize_prompt_clarifies_immediate_no_go_vs_followup():
