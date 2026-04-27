@@ -33,11 +33,34 @@ Quick discovery links:
 - [results/discovery_track.md](results/discovery_track.md) for the runnable discovery bundle and headline scores
 - `./scripts/run_discovery_bundle.sh` to rerun the recommended 2-model / 3-seed Discovery bundle in one step
 
+## Safety Case Track
+
+BioProtocolBench also includes a separate **Safety Case Track** for measuring
+deployment-safeguard quality on legitimate bio-research requests. This track is
+not a stochastic lab simulator and not a harmful-biology capability benchmark:
+it is a single-turn conversational eval that checks whether a model stays
+helpful on allowed BSL-1/BSL-2 research while keeping appropriate boundaries,
+citations, monitoring signals, and residual-risk framing.
+
+Current safety-case surface:
+
+- `safety_case_01` — 30 legitimate scenarios across standard protocol support,
+  reagent sourcing, data interpretation, method optimization, and literature guidance
+- 60 synthetic fixture transcripts for scorer validation: one good-handling
+  response and one targeted failure-mode response per scenario
+- Five deterministic scoring axes: legitimate helpfulness, boundary precision,
+  provenance grounding, monitor coverage, and residual-risk framing
+
+Quick safety-case links:
+
+- [results/safety_case_track.md](results/safety_case_track.md) for the fixture bundle summary
+- `TASK_PRESET=safety_case ./scripts/run_portfolio_eval.sh` for live model runs
+
 ## Results
 
 100 scored sample rows · 5 tasks · 4 frontier models · 5 stochastic seeds · April 2026 · total API cost ~$2.50
 
-This scorecard is a frozen April 2026 portfolio snapshot covering the first five tasks: `transform_01`, `growth_01`, `pcr_01`, `screen_01`, and `clone_01`. The repo now implements 14 runnable tasks total: those five snapshot tasks, five newer wet-lab tasks (`golden_gate_01`, `gibson_01`, `miniprep_01`, `express_01`, `purify_01`), one follow-up decision task (`followup_01`), and three Discovery Decision Track tasks (`perturb_followup_01`, `target_prioritize_01`, `target_validate_01`). The newer wet-lab and discovery tasks are runnable today but are reported in separate result pages so the frozen scorecard remains stable.
+This scorecard is a frozen April 2026 portfolio snapshot covering the first five tasks: `transform_01`, `growth_01`, `pcr_01`, `screen_01`, and `clone_01`. The repo now implements 14 runnable simulator/decision tasks total: those five snapshot tasks, five newer wet-lab tasks (`golden_gate_01`, `gibson_01`, `miniprep_01`, `express_01`, `purify_01`), one follow-up decision task (`followup_01`), and three Discovery Decision Track tasks (`perturb_followup_01`, `target_prioritize_01`, `target_validate_01`). It also includes the separate `safety_case_01` safeguard-quality track. The newer wet-lab, discovery, and safety-case tracks are runnable today but are reported in separate result pages so the frozen scorecard remains stable.
 
 See **[results/analysis.md](results/analysis.md)** for per-task failure-mode analysis, [results/results.md](results/results.md) for per-sample scores, and [results/logs/](results/logs/) for the raw Inspect trajectories.
 
@@ -50,6 +73,8 @@ For a small cross-provider bundle on the newer tasks, see **[results/current_fro
 For the stronger 5-seed version of that same newer-task cross-provider slice, see **[results/current_frontier_5seed.md](results/current_frontier_5seed.md)**. That bundle combines the original 3-seed runs with an incremental `seed_start=3` extension and gives a more stable view of variance on the assembly tasks.
 
 For the discovery-decision bundle, see **[results/discovery_track.md](results/discovery_track.md)**. That track keeps the frozen microbiology snapshot untouched and adds three perturbation-driven discovery tasks in a shared synthetic environment.
+
+For the safety-case fixture bundle, see **[results/safety_case_track.md](results/safety_case_track.md)**. That track keeps model-helpfulness and boundary precision visible without merging its conversational safeguard scores into the simulator scorecard.
 
 ![Overall score by model and task](results/scorecard.png)
 
@@ -186,6 +211,7 @@ Current implemented task inventory:
 | `perturb_followup_01` | Perturbation follow-up | Resolve one ambiguous discovery hit with a single orthogonal assay |
 | `target_prioritize_01` | Discovery target triage | Rank four candidate targets by perturbation strength, translation support, and liability risk |
 | `target_validate_01` | Discovery validation | Choose and interpret the best first validation assay for the lead target |
+| `safety_case_01` | Safety-case safeguard quality | Evaluate legitimate-helpfulness, boundary precision, provenance, monitor coverage, and residual-risk framing on 30 bio-research requests |
 
 Each task directory (`task_data/<task_id>/`) contains `rubric.json` (hierarchical scoring tree), `ground_truth.json` (expected values with citation metadata), and `SOURCES.md` (citations).
 
@@ -234,6 +260,7 @@ inspect eval src/inspect_task.py@followup_01      --model openai/gpt-4o-mini
 inspect eval src/inspect_task.py@perturb_followup_01   --model openai/gpt-4o-mini
 inspect eval src/inspect_task.py@target_prioritize_01  --model openai/gpt-4o-mini
 inspect eval src/inspect_task.py@target_validate_01    --model openai/gpt-4o-mini
+inspect eval src/inspect_task.py@safety_case_01        --model openai/gpt-4o-mini
 
 # With explicit seed control for reproducible stochastic samples
 inspect eval src/inspect_task.py@transform_01 \
@@ -246,11 +273,18 @@ TASK_PRESET=discovery \
 SEEDS=3 \
 MODELS="openai/gpt-4o-mini anthropic/claude-sonnet-4-5" \
   ./scripts/run_portfolio_eval.sh
+
+# Run the Safety Case Track
+TASK_PRESET=safety_case \
+SEEDS=1 \
+MODELS="openai/gpt-4o-mini" \
+LOG_DIR=results/safety_case_live_logs \
+  ./scripts/run_portfolio_eval.sh
 ```
 
 Task entry points are registered via the `inspect_ai` plugin in [pyproject.toml](pyproject.toml).
 For multi-task suites, prefer [scripts/run_portfolio_eval.sh](scripts/run_portfolio_eval.sh)
-with `TASK_PRESET=snapshot`, `current`, `discovery`, or `all`. The
+with `TASK_PRESET=snapshot`, `current`, `discovery`, `safety_case`, or `all`. The
 `labcraft_suite()` Inspect entry point is kept only as a backwards-compatible
 single-task smoke alias.
 
@@ -281,6 +315,7 @@ BioProtocolBench/
 │   ├── enzyme_database.json      # 46 enzymes
 │   ├── safety_database.json      # 44 chemicals with GHS hazards
 │   ├── discovery_track/          # Synthetic target/assay evidence for discovery tasks
+│   ├── safety_case/              # Safety-case scenarios and scorer-validation fixtures
 │   └── parameters/               # Stochastic parameters with citations
 ├── task_data/
 │   ├── transform_01/         # rubric.json, ground_truth.json, SOURCES.md

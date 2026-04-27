@@ -11,6 +11,7 @@
 #   MODELS="openai/gpt-4o-mini" ./scripts/run_portfolio_eval.sh
 #   TASKS="transform_01 clone_01" ./scripts/run_portfolio_eval.sh
 #   TASK_PRESET=current ./scripts/run_portfolio_eval.sh   # run the current implemented task set
+#   TASK_PRESET=safety_case ./scripts/run_portfolio_eval.sh # run the safety-case track
 #   TASK_PRESET=all ./scripts/run_portfolio_eval.sh       # run current + discovery tasks
 set -euo pipefail
 
@@ -21,6 +22,7 @@ SNAPSHOT_TASKS="transform_01 growth_01 pcr_01 screen_01 clone_01"
 CURRENT_TASKS="${SNAPSHOT_TASKS} golden_gate_01 gibson_01 miniprep_01 express_01 purify_01"
 CURRENT_TASKS="${CURRENT_TASKS} followup_01"
 DISCOVERY_TASKS="perturb_followup_01 target_prioritize_01 target_validate_01"
+SAFETY_CASE_TASKS="safety_case_01"
 ALL_TASKS="${CURRENT_TASKS} ${DISCOVERY_TASKS}"
 
 : "${SEEDS:=3}"
@@ -41,12 +43,15 @@ if [ -z "$TASKS" ]; then
     discovery)
       TASKS="$DISCOVERY_TASKS"
       ;;
+    safety_case)
+      TASKS="$SAFETY_CASE_TASKS"
+      ;;
     all)
       TASKS="$ALL_TASKS"
       ;;
     *)
       echo "Unknown TASK_PRESET: $TASK_PRESET" >&2
-      echo "Expected one of: snapshot, current, all, discovery" >&2
+      echo "Expected one of: snapshot, current, discovery, safety_case, all" >&2
       exit 1
       ;;
   esac

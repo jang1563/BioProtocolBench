@@ -10,7 +10,7 @@ snapshot.
 - Treat direct `src.*` imports as internal compatibility paths for v0.1.x.
   Avoid introducing a second public import namespace in a patch release.
 - Keep multi-task execution on [scripts/run_portfolio_eval.sh](../scripts/run_portfolio_eval.sh)
-  presets: `snapshot`, `current`, `discovery`, and `all`.
+  presets: `snapshot`, `current`, `discovery`, `safety_case`, and `all`.
 - Keep `labcraft_suite()` as a single-task smoke alias unless a future breaking
   release introduces a real cross-task Inspect orchestration layer.
 

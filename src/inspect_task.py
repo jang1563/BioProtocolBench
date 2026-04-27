@@ -43,6 +43,7 @@ from src.solvers import (
     configure_screen_sample,
     configure_transform_sample,
 )
+from src.tasks.safety_case_01 import build_safety_case_01_samples
 from src.tasks.clone_01 import build_clone_01_sample
 from src.tasks.express_01 import build_express_01_sample
 from src.tasks.followup_01 import build_followup_01_sample
@@ -86,11 +87,13 @@ CURRENT_TASKS = SNAPSHOT_TASKS + (
     "followup_01",
 )
 DISCOVERY_TASKS = ("perturb_followup_01", "target_prioritize_01", "target_validate_01")
+SAFETY_CASE_TASKS = ("safety_case_01",)
 ALL_TASKS = CURRENT_TASKS + DISCOVERY_TASKS
 TASK_PRESETS = {
     "snapshot": SNAPSHOT_TASKS,
     "current": CURRENT_TASKS,
     "discovery": DISCOVERY_TASKS,
+    "safety_case": SAFETY_CASE_TASKS,
     "all": ALL_TASKS,
 }
 
@@ -372,6 +375,48 @@ def purify_01(seeds: int = 1, seed_start: int = 0):
 
 
 @task
+def safety_case_01(seeds: int = 1, seed_start: int = 0):
+    """Safety-case evaluation: 30 legitimate bio-research scenarios × seeds runs.
+
+    No simulated environment — single-turn conversational QA scored on five axes:
+    legitimate_helpfulness, boundary_precision, provenance_grounding,
+    monitor_coverage, residual_risk_framing.
+    """
+    if Task is None or MemoryDataset is None or Sample is None:
+        raise ImportError("inspect_ai is required to instantiate LabCraft tasks.")
+    from inspect_ai.solver import chain, generate, system_message
+
+    from src.safety_case_inspect_scorer import _SYSTEM_PROMPT, build_safety_case_scorer
+
+    raw_samples = build_safety_case_01_samples()
+    all_samples = []
+    for s in raw_samples:
+        for seed_idx in range(seed_start, seed_start + seeds):
+            sid = (
+                s["id"]
+                if seeds == 1 and seed_start == 0
+                else f"{s['id']}_seed_{seed_idx:02d}"
+            )
+            meta = dict(s["metadata"])
+            meta["seed_index"] = seed_idx
+            all_samples.append(
+                Sample(
+                    input=s["input"],
+                    target=s["target"],
+                    id=sid,
+                    metadata=meta,
+                )
+            )
+
+    return Task(
+        dataset=MemoryDataset(samples=all_samples),
+        solver=chain([system_message(_SYSTEM_PROMPT), generate()]),
+        scorer=build_safety_case_scorer(),
+        message_limit=2,
+    )
+
+
+@task
 def labcraft_suite(seeds: int = 1, seed_start: int = 0):
     """Backward-compatible single-task smoke entry point.
 
@@ -389,6 +434,7 @@ __all__ = [
     "SNAPSHOT_TASKS",
     "CURRENT_TASKS",
     "DISCOVERY_TASKS",
+    "SAFETY_CASE_TASKS",
     "ALL_TASKS",
     "TASK_PRESETS",
     "available_task_ids",
@@ -406,5 +452,6 @@ __all__ = [
     "purify_01",
     "target_prioritize_01",
     "target_validate_01",
+    "safety_case_01",
     "labcraft_suite",
 ]
