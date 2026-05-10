@@ -22,9 +22,9 @@ BioProtocolBench now also includes a separate **Discovery Decision Track** for p
 
 Current discovery-track tasks:
 
-- `perturb_followup_01` — resolve one ambiguous perturbation hit with a single orthogonal follow-up
-- `target_prioritize_01` — rank four candidate targets for an inflammatory-disease program
-- `target_validate_01` — choose and interpret the best first validation assay for the lead target
+- `perturb_followup_01`: resolve one ambiguous perturbation hit with a single orthogonal follow-up
+- `target_prioritize_01`: rank four candidate targets for an inflammatory-disease program
+- `target_validate_01`: choose and interpret the best first validation assay for the lead target
 
 This is meant to complement the wet-lab execution tasks, not replace them: the original LabCraft benchmark still measures experimental reliability, while the discovery track measures discovery decision quality.
 
@@ -151,9 +151,9 @@ python3 scripts/plot_scorecard.py \
 
 ### What this evaluation showed
 
-1. **The OpenAI troubleshooting blind spot is partially prompt-sensitive.** Under the default prompt, both Anthropic models score 1.00 on the `growth_01` troubleshooting axis across 10/10 seeds, and both OpenAI models score 0.00. A follow-up ablation ([analysis.md § Ablation](results/analysis.md#ablation-is-the-openai-growth_01-troubleshooting-gap-prompt-sensitivity-or-model-behaviour)) adds a single explicit sentence instructing the agent to surface any `insufficient_points` fit warning in the final answer. With that hint, `gpt-4o-mini` hits 5/5 on troubleshooting and `gpt-4o` hits 3/5 — but both models' `task_success` drops sharply (0.80 → 0.20 – 0.40) because the extra narrative crowds out the doubling-time reporting. **The provider gap is partially prompt-sensitivity and partially model behaviour, and closing it creates a tradeoff rather than a free win.**
+1. **The OpenAI troubleshooting blind spot is partially prompt-sensitive.** Under the default prompt, both Anthropic models score 1.00 on the `growth_01` troubleshooting axis across 10/10 seeds, and both OpenAI models score 0.00. A follow-up ablation ([analysis.md § Ablation](results/analysis.md#ablation-is-the-openai-growth_01-troubleshooting-gap-prompt-sensitivity-or-model-behaviour)) adds a single explicit sentence instructing the agent to surface any `insufficient_points` fit warning in the final answer. With that hint, `gpt-4o-mini` hits 5/5 on troubleshooting and `gpt-4o` hits 3/5: but both models' `task_success` drops sharply (0.80 → 0.20 – 0.40) because the extra narrative crowds out the doubling-time reporting. **The provider gap is partially prompt-sensitivity and partially model behaviour, and closing it creates a tradeoff rather than a free win.**
 
-2. **`claude-sonnet-4-5` and `claude-haiku-4-5` are statistically indistinguishable on these tasks** (0.852 vs. 0.856 — haiku numerically wins by 0.004). The 6× price premium for sonnet buys nothing measurable here. This is a specific, narrow finding — it does not generalise beyond this five-task benchmark, but it is the kind of finding only a multi-seed eval can make visible.
+2. **`claude-sonnet-4-5` and `claude-haiku-4-5` are statistically indistinguishable on these tasks** (0.852 vs. 0.856: haiku numerically wins by 0.004). The 6× price premium for sonnet buys nothing measurable here. This is a specific, narrow finding: it does not generalise beyond this five-task benchmark, but it is the kind of finding only a multi-seed eval can make visible.
 
 3. **The benchmark did useful work by finding infrastructure bugs.** The eval surfaced two latent simulator issues that hand-written tests missed: (a) `ligate` rejecting the `digest_NNN` shorthand that `gpt-4o` consistently used, killing 5/5 samples; (b) tool-layer `ValueError`s propagating through Inspect as fatal task failures instead of agent-visible observations, nuking an entire 5-seed cell when a digest produced no output fragments. Both are fixed and live in [src/environment/operations.py](src/environment/operations.py) and [src/tools/lab_tools.py](src/tools/lab_tools.py). Adversarial agent exploration is doing the bug-finding work that formal tests cannot.
 
@@ -193,10 +193,10 @@ Each task directory (`task_data/<task_id>/`) contains `rubric.json` (hierarchica
 
 Trajectory scoring (see [src/trajectory_scorer.py](src/trajectory_scorer.py)) produces four axes per task:
 
-- **Task success** — were the requested values reported, within tolerance of ground truth?
-- **Decision quality** — were the experimental choices (dilutions, controls, replicates) sound?
-- **Troubleshooting** — did the agent recognize and recover from stochastic failures (uncountable plates, contamination, etc.)?
-- **Efficiency** — did the agent solve the task with a reasonable tool-call budget rather than wandering or hitting message-limit artifacts?
+- **Task success**: were the requested values reported, within tolerance of ground truth?
+- **Decision quality**: were the experimental choices (dilutions, controls, replicates) sound?
+- **Troubleshooting**: did the agent recognize and recover from stochastic failures (uncountable plates, contamination, etc.)?
+- **Efficiency**: did the agent solve the task with a reasonable tool-call budget rather than wandering or hitting message-limit artifacts?
 
 Rubrics follow the hierarchical-tree methodology from [PaperBench](https://openai.com/index/paperbench/): leaf nodes are binary pass/fail, internal nodes are weighted averages.
 
@@ -321,22 +321,22 @@ See **[results/positioning.md](results/positioning.md)** for a full literature-g
 
 Key references:
 
-- [LAB-Bench / ProtocolQA](https://arxiv.org/abs/2407.10362) (FutureHouse, 2024) — 2,400 text-only MCQ.
-- [BioLP-bench](https://www.biorxiv.org/content/10.1101/2024.08.21.608694v1) (Ivanov, 2024) — mistake-identification on real lab protocols.
-- [BioProBench](https://arxiv.org/abs/2505.07889) (Liu et al., 2025) — 556K text instances across 5 tasks on 27K protocols.
-- [BoxingGym](https://arxiv.org/abs/2501.01540) (Gandhi/Goodman et al., 2025) — interactive probabilistic environments scored by expected information gain.
-- [BioAgent Bench](https://arxiv.org/abs/2601.21800) (Fa et al., 2026) — end-to-end bioinformatics pipelines scored by LLM-as-judge.
-- [OpenAI × Red Queen Bio wet-lab framework](https://openai.com/index/accelerating-biological-research-in-the-wet-lab/) (2025) — GPT-5 iteratively optimised a real molecular-cloning protocol, scored by physical assay (79× efficiency gain).
-- [GPT-5 System Card](https://cdn.openai.com/gpt-5-system-card.pdf) — ProtocolQA Open-Ended (108 questions) + TroubleshootingBench (52 non-public protocols × 3 questions; 80th-percentile PhD expert scores 36.4%).
-- [PaperBench](https://openai.com/index/paperbench/) (OpenAI, 2025) — hierarchical rubric-tree methodology this repo's scorer follows.
-- [Inspect AI](https://inspect.aisi.org.uk/) (UK AISI) — the evaluation framework this benchmark plugs into.
+- [LAB-Bench / ProtocolQA](https://arxiv.org/abs/2407.10362) (FutureHouse, 2024): 2,400 text-only MCQ.
+- [BioLP-bench](https://www.biorxiv.org/content/10.1101/2024.08.21.608694v1) (Ivanov, 2024): mistake-identification on real lab protocols.
+- [BioProBench](https://arxiv.org/abs/2505.07889) (Liu et al., 2025): 556K text instances across 5 tasks on 27K protocols.
+- [BoxingGym](https://arxiv.org/abs/2501.01540) (Gandhi/Goodman et al., 2025): interactive probabilistic environments scored by expected information gain.
+- [BioAgent Bench](https://arxiv.org/abs/2601.21800) (Fa et al., 2026): end-to-end bioinformatics pipelines scored by LLM-as-judge.
+- [OpenAI × Red Queen Bio wet-lab framework](https://openai.com/index/accelerating-biological-research-in-the-wet-lab/) (2025): GPT-5 iteratively optimised a real molecular-cloning protocol, scored by physical assay (79× efficiency gain).
+- [GPT-5 System Card](https://cdn.openai.com/gpt-5-system-card.pdf): ProtocolQA Open-Ended (108 questions) + TroubleshootingBench (52 non-public protocols × 3 questions; 80th-percentile PhD expert scores 36.4%).
+- [PaperBench](https://openai.com/index/paperbench/) (OpenAI, 2025): hierarchical rubric-tree methodology this repo's scorer follows.
+- [Inspect AI](https://inspect.aisi.org.uk/) (UK AISI): the evaluation framework this benchmark plugs into.
 
 ## License
 
 BioProtocolBench is dual-licensed:
 
-- **Source code** (everything under `src/`, `tests/`, `environments/`, `docs/`, build config) — [Apache License 2.0](LICENSE). Commercial use permitted.
-- **Benchmark content** (everything under `task_data/` and `data/` — rubrics, ground-truth values, parameter distributions, citations, reagent/enzyme/safety databases) — [Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)](LICENSE-DATA). Free for research, teaching, and other non-commercial use with attribution.
+- **Source code** (everything under `src/`, `tests/`, `environments/`, `docs/`, build config): [Apache License 2.0](LICENSE). Commercial use permitted.
+- **Benchmark content** (everything under `task_data/` and `data/`: rubrics, ground-truth values, parameter distributions, citations, reagent/enzyme/safety databases): [Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)](LICENSE-DATA). Free for research, teaching, and other non-commercial use with attribution.
 
 For commercial use of the benchmark content (e.g., bundling with a commercial product, or evaluating models in a commercial training pipeline without a separate arrangement), please open an issue to discuss licensing.
 
