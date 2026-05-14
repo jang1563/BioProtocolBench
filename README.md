@@ -1,10 +1,25 @@
 # BioProtocolBench
 
+[![Code License: Apache-2.0](https://img.shields.io/badge/code%20license-Apache--2.0-blue.svg)](LICENSE)
+[![Benchmark Content: CC BY-NC 4.0](https://img.shields.io/badge/benchmark%20content-CC%20BY--NC%204.0-lightgrey.svg)](LICENSE-DATA)
+
 An [Inspect AI](https://inspect.aisi.org.uk/) evaluation environment for measuring how well AI agents execute benign molecular-microbiology protocols inside a stochastic laboratory simulator.
 
 Built on **LabCraft**, the underlying framework in [`src/`](src/). Each task places the agent in a seeded stochastic environment with a fixed tool set, a public protocol, and a citation-backed ground truth.
 
 > Not to be confused with [BioProBench](https://github.com/YuyangSunshine/bioprotocolbench) (Liu et al., 2025), an NLP corpus of 556K instances. BioProtocolBench is an agent evaluation environment with four-axis trajectory scoring.
+
+Public release surfaces:
+
+| Surface | Link |
+|---------|------|
+| Code and benchmark repository | <https://github.com/jang1563/BioProtocolBench> |
+| Frozen simulator scorecard | [results/results.md](results/results.md) |
+| Failure-mode analysis | [results/analysis.md](results/analysis.md) |
+| Discovery decision bundle | [results/discovery_track.md](results/discovery_track.md) |
+| Public snapshot checklist | [docs/release_checklist.md](docs/release_checklist.md) |
+
+Recommended reading path: start with the frozen simulator scorecard, then the failure-mode analysis, then the Discovery Decision Track. The Safety Case Track is separate and optional; it is not merged into the simulator leaderboard.
 
 ## What the agent does
 
@@ -33,7 +48,7 @@ Quick discovery links:
 - [results/discovery_track.md](results/discovery_track.md) for the runnable discovery bundle and headline scores
 - `./scripts/run_discovery_bundle.sh` to rerun the recommended 2-model / 3-seed Discovery bundle in one step
 
-## Safety Case Track
+## Optional Safety Case Track
 
 BioProtocolBench also includes a separate **Safety Case Track** for measuring
 deployment-safeguard quality on legitimate bio-research requests. This track is
